@@ -1,0 +1,824 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    string type = ViewData["Type"].ToString();
+    if (type == "DateRange")
+    {
+        <form class="form-inline" method="get">
+            <label for="from" class="label-navbar">Estimated Arrival Date:</label>
+            <input class="form-control mr-sm-2 datepicker" id="fromDate" name="from" type="text" placeholder="From" autocomplete="off" value="@ViewData["FromValue"]" />
+            <input class="form-control mr-sm-2 datepicker" id="toDate" name="to" type="text" placeholder="To" autocomplete="off" value="@ViewData["ToValue"]" />
+            <button class="btn btn-outline-light my-2 my-sm-0" type="submit" onclick="ShowLoading()">Search</button>
+        </form>
+    }
+    if (type == "FastTrack")
+    {
+        <form class="form-inline" method="get">
+            <label for="from" class="label-navbar" style="margin-right:12px">Estimated Arrival Date:</label>
+            <input class="form-control mr-sm-2 datepicker" id="fromDate" name="from" type="text" placeholder="From" autocomplete="off" value="@ViewData["FromValue"]" style="width:120px;text-align:center" />
+            <input class="form-control mr-sm-2 datepicker" id="toDate" name="to" type="text" placeholder="To" autocomplete="off" value="@ViewData["ToValue"]" style="width:120px;text-align:center" />
+            <select class="selectpicker form-control" multiple name="warehouse" id="warehouse" data-width="120px" title="Warehouse">
+                @{ List<string> values = ViewData["Warehouse"] as List<string>; }
+                <option value="A" selected="@(values.Contains("A"))">A</option>
+                <option value="U" selected="@(values.Contains("U"))">U</option>
+                <option value="P" selected="@(values.Contains("P"))">P</option>
+            </select>
+            <button class="btn btn-outline-light my-2 my-sm-0" type="submit" onclick="ShowLoading()" style="margin-left:8px">Search</button>
+        </form>
+    }
+    else if (type == "QuoteInquiryOSQ")
+    {
+        <form class="form-inline" method="get">
+            <input id="is61" value="@ViewData["Is61"].ToString()" hidden />
+            <input class="form-control mr-sm-2" id="orderno" name="orderno" type="search" value="@ViewData["FormValue"]" placeholder="Quote #" aria-label="Search">
+            <select class="selectpicker form-control mr-sm-2" data-live-search="true" name="locations" id="selLocations" data-actions-box="true" data-selected-text-format="count > 1" title="Choose Location...">
+                @{ var selectedLocations = ViewData["SelectedUsedLocations"] as IEnumerable<string>; }
+                @{ List<SelectValues> allLocations = ViewData["UsedLocations"] as List<SelectValues>; }
+
+                @if (allLocations != null)
+                {
+                    @foreach (var loc in allLocations)
+                    {
+                        <option value="@loc.ID" selected="@(selectedLocations?.Contains(loc.ID))" class="w-100">@loc.Label</option>
+                    }
+                }
+            </select>
+            <button class="btn btn-outline-light my-2 my-sm-0" type="submit" onclick="showLoading()">Search</button>
+            <div class="col-1  m-0 pl-2 text-right">
+                <a asp-controller="quoteinquiryosq" class="btn btn-outline-warning" title="Reset search...">Reset</a>
+            </div>
+        </form>
+    }
+    else if (type == "InternalStatusReport")
+    {
+        <form method="post" style="width:650px">
+            <div class="row">
+                <div class="col-3 m-0 p-0 pr-1">
+                    <select class="form-control" name="regionISR" id="regionISR">
+                        <option value="OWP" selected="@(ViewData["Region"].ToString() == "OWP")">OWP</option>
+                        <option value="OSQ" selected="@(ViewData["Region"].ToString() == "OSQ")">Open Square</option>
+                    </select>
+                </div>
+                <div class="col-2 m-0 p-0 pr-1">
+                    <input class="form-control datepicker" id="cutOffDateISR" name="cutoffdate" type="text" placeholder="Cut Off Date" autocomplete="off" value="@ViewData["CutOffDate"]" style="text-indent:8px;" />
+                </div>
+                <div class="col-4 m-0 p-0">
+                    <select class="selectpicker form-control" name="salesperson" id="selespersonSelectISR" multiple data-live-search="true" data-actions-box="true" data-selected-text-format="count > 3" title="Choose Salespersons...">
+                        @{ List<string> value = ViewData["SalesPerson"] as List<string>; }
+
+                        @foreach (var person in ViewData["SalesPersons"] as List<SelectValues>)
+                        {
+                            <option value="@person.ID" selected="@(value.Contains(person.ID))" class="w-100">@person.Label</option>
+                        }
+
+                    </select>
+                </div>
+                <div class="col-2 m-0 p-0" style="left:4px">
+                    <select class="form-control" name="salespersontype" id="spType">
+                        <option value="0" selected="@(ViewData["SPType"].ToString() == "0")">Both</option>
+                        <option value="1" selected="@(ViewData["SPType"].ToString() == "1")">SP 1</option>
+                        <option value="2" selected="@(ViewData["SPType"].ToString() == "2")">SP 2</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row pt-1">
+                <div class="col-2 m-0 p-0 pr-1">
+                    <input class="form-control" id="projfolder" name="projfolder" type="text" placeholder="Project #" value="@ViewData["ProjectFolder"]">
+                </div>
+                <div class="col-2 m-0 p-0 pr-1">
+                    <input class="form-control" id="ordernoISR" name="o" type="search" placeholder="Order #" aria-label="Search" value="@ViewData["OrderNo"]">
+                </div>
+                <div class="col-4 m-0 p-0">
+                    <select class="selectpicker form-control" multiple data-live-search="true" name="selectedCustomers" id="isrCustomerMultiselect" data-actions-box="true" data-selected-text-format="count > 3" title="Choose Customers...">
+                        @{ List<string> selectedCustomers = ViewData["SelectedCustomers"] as List<string>; }
+                        @{ List<SelectValues> allCustomers = ViewData["Customers"] as List<SelectValues>; }
+
+                        @if (allCustomers != null)
+                        {
+                            @foreach (var customer in allCustomers)
+                            {
+                                <option value="@customer.ID" selected="@(selectedCustomers.Contains(customer.ID))" class="w-100">@customer.Label</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-3 m-0 p-0" style="left:4px">
+                    <button class="btn btn-outline-light btn-block" type="submit" onclick="ShowLoading()">Search</button>
+                </div>
+                @*<a href="/home/internalstatusreport" class="btn btn-outline-light ml-2" onclick="ShowLoading()">Reset</a>*@
+            </div>
+        </form>
+    }
+    else if (type == "Date")
+    {
+        <form class="form-inline" method="get">
+            <input class="form-control mr-sm-2 datepicker" style="text-indent:10px" id="date" name="date" type="text" placeholder="Date" autocomplete="off" value="@ViewData["FormValue"]">
+            <button class="btn btn-outline-light my-2 my-sm-0" type="submit" onclick="ShowLoading()">Search</button>
+        </form>
+    }
+    else if (type == "POPDashboard")
+    {
+        <form style="flex-grow:0.6" id="popdashboardform" method="post">
+            <input id="regionpopdash" value="@ViewData["Region"].ToString()" hidden />
+            <div class="row">
+                <div class="col-4 mr-0 p-0 pr-1">
+                    <select class="custom-select form-control" name="salesperson" id="salespersonSelect" required>
+                        @{ string salesPersonValue = (ViewData["SalesPersonsFormValue"] != null) ? ViewData["SalesPersonsFormValue"].ToString() : ""; }
+
+                        @if (string.IsNullOrEmpty(salesPersonValue))
+                        {
+                            <option value="" disabled selected hidden>Choose Salesperson...</option>
+                        }
+
+                        @foreach (var person in ViewData["SalesPersons"] as List<SelectValues>)
+                        {
+                            <option value="@person.ID" selected="@(salesPersonValue == person.ID ? true : false)" class="w-100">@person.Label</option>
+                        }
+
+
+                    </select>
+                </div>
+                <div class="col-8 m-0 p-0">
+                    <select class="selectpicker form-control" multiple data-live-search="true" name="selectedCustomers" id="popCustomerMultiselect" data-actions-box="true" data-selected-text-format="count > 3" title="Choose Customers...">
+                        @{ string[] selectedCustomers = (ViewData["SelectedCustomers"] != null) ? ViewData["SelectedCustomers"] as string[] : new string[] { }; }
+                        @{ List<SelectValues> allCustomers = ViewData["Customers"] as List<SelectValues>; }
+
+                        @foreach (var customer in allCustomers)
+                        {
+                            <option value="@customer.ID" selected="@(Array.IndexOf(selectedCustomers,customer.ID) >= 0 ? true : false)" class="w-100">@customer.Label</option>
+                        }
+
+                        @if (allCustomers.Count == 0)
+                        {
+                            <option value="" disabled>Customers</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row pt-1">
+                <div class="col-4 m-0 p-0 pr-1">
+                    <input class="form-control" id="customerno" name="customerno" type="search" value="@ViewData["CustomerNoFormValue"]" placeholder="Customer #" aria-label="Search">
+                </div>
+                <div class="col-4  m-0 p-0 pr-1">
+                    <input class="form-control" id="projectid" name="projectid" type="search" value="@ViewData["ProjectIDFormValue"]" placeholder="Project ID" aria-label="Search">
+                </div>
+                <input class="form-control" id="region" name="region" type="text" value="@ViewData["Region"]" hidden>
+                <div class="col-3  m-0 p-0 pl-1 pr-1">
+                    <button class="btn btn-outline-light btn-block" type="submit">Search</button>
+                </div>
+                <div class="col-1  m-0 pl-2 pt-2 text-right">
+                    <a asp-controller="POPDashboard" style="color:white" title="Reset search values...">Reset</a>
+                </div>
+            </div>
+        </form>
+    }
+    else if (type == "VendorDepositRequest")
+    {
+        <form method="post" class="form-inline" id="vdrform">
+
+
+            @{ string suffixs = (ViewData["Suffixs"] != null) ? ViewData["Suffixs"].ToString() : ""; }
+
+            @if (string.IsNullOrEmpty(suffixs))
+            {
+                <input class="form-control mr-sm-2" id="orderno" name="order" type="search" placeholder="Order #" aria-label="Search" required>
+                <input class="form-control mr-sm-2" id="orderno" name="poSuffix" type="search" placeholder="PO Suffix" aria-label="Search">
+            }
+            else
+            {
+                <input class="form-control mr-sm-2" id="orderno" name="order" type="search" value="@ViewData["OrderNo"]" placeholder="Order #" aria-label="Search" required>
+                <select class="form-control mr-sm-2" name="poSuffix" id="orderno" style="width: 200px;" required>
+
+                    @foreach (var suffix in ViewData["Suffixs"] as List<string>)
+                    {
+                        <option value="@suffix">@suffix</option>
+                    }
+
+                </select>
+            }
+
+            <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
+        </form>
+    }
+    else if (type == "DefaultPricingReport")
+    {
+        <form style="flex-grow:0.6" id="dprform" method="post">
+            <div class="row">
+                <div class="col-4 m-0 p-0 pl-1 pr-1">
+                    <input class="form-control datepicker" id="dprDateFrom" name="dateFrom" type="text" placeholder="Date From" autocomplete="off" value="@ViewData["DateFrom"]" style="text-align:center" />
+                </div>
+                <div class="col-8 m-0 p-0 pl-1 pr-1">
+                    <select class="custom-select form-control" name="location" id="selLocations">
+                        @{ string location = (ViewData["Location"] != null) ? ViewData["Location"].ToString() : ""; }
+                        @foreach (var loc in ViewData["Locations"] as List<SelectValues>)
+                        {
+                            if (location == loc.ID)
+                            {
+                                <option value="@loc.ID" selected="selected" class="w-100">@loc.Label</option>
+                            }
+                            else
+                            {
+                                <option value="@loc.ID" class="w-100">@loc.Label</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row my-1">
+                <div class="col-4 m-0 p-0 pl-1 pr-1">
+                    <input class="form-control datepicker" id="dprDateTo" name="dateTo" type="text" placeholder="Date To" autocomplete="off" value="@ViewData["DateTo"]" style="text-align:center" />
+                </div>
+                <div class="col-4 m-0 p-0 pl-1 pr-1">
+                    <button class="btn btn-outline-light btn-block" type="submit">Search</button>
+                </div>
+                <div class="col-4 m-0 p-0 pl-3 pr-1 mt-2">
+                    @{ string excludeVendors = (bool)ViewData["ExcludeVendors"] ? "checked" : "";
+                        string disableExclVndrs = ViewData["DetView"] != null ? "disabled" : ""; }
+                    <input type="checkbox" id="chkExcludeVendor" name="excludeVendors" style="vertical-align:-2px;" @excludeVendors @disableExclVndrs />
+                    <label for="chkExcludeVendor" style="color:white">Exclude STE01/BRA00</label>
+                </div>
+            </div>
+        </form>
+    }
+    else if (type == "ISRManagerView")
+    {
+        <form method="post">
+            <div class="row">
+                <div class="col-7 m-0 p-0 mr-1">
+                    <select class="custom-select form-control" name="salesDirector" id="selSalesDirectors">
+                        @{ string salesDirector = (ViewData["SalesDirector"] != null) ? ViewData["SalesDirector"].ToString() : ""; }
+
+                        <option selected disabled>Sales Directors</option>
+                        @foreach (var sd in ViewData["SalesDirectors"] as List<SelectValues>)
+                        {
+                            <option value="@sd.ID" selected="@(salesDirector == sd.ID ? true : false)" class="w-100">@sd.Label</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-4 m-0 p-0">
+                    <input class="form-control datepicker" id="cuttOffDate" name="cuttOffDate" type="text" placeholder="Cut Off Date" autocomplete="off" value="@ViewData["CutOffDate"]" style="text-align: center;" />
+                </div>
+            </div>
+            <div class="row mt-1">
+                <div class="col-7 m-0 p-0 mr-1">
+                    <select class="custom-select form-control" name="salesSupportManager" id="selSupportManagers">
+                        @{ string salesSupportManager = (ViewData["SalesSupportManager"] != null) ? ViewData["SalesSupportManager"].ToString() : ""; }
+
+                        <option selected disabled>Sales Support Managers</option>
+                        @foreach (var ssm in ViewData["SalesSupportManagers"] as List<SelectValues>)
+                        {
+                            <option value="@ssm.ID" selected="@(salesSupportManager == ssm.ID ? true : false)" class="w-100">@ssm.Label</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-4 m-0 p-0">
+                    <button class="btn btn-outline-light btn-block" type="submit" onclick="ShowLoading()">Search</button>
+                </div>
+            </div>
+        </form>
+    }
+    else if (type == "StockInventory")
+    {
+        <form method="post">
+            <div class="row">
+                <div class="col-4 m-0 p-0 pr-1">
+                    <select class="form-control" name="region" id="region">
+                        <option value="OWP" selected="@(ViewData["Region"].ToString() == "OWP")">OWP</option>
+                        <option value="OSQ" selected="@(ViewData["Region"].ToString() == "OSQ")">Open Square</option>
+                    </select>
+                </div>
+                <div class="col-4 m-0 p-0 pr-1">
+                    @{ string itemNoValue = (ViewData["ItemNo"] != null) ? ViewData["ItemNo"].ToString() : ""; }
+                    <input class="form-control" id="itemNo" name="itemNo" type="search" placeholder="Item #" aria-label="Search" value="@itemNoValue">
+                </div>
+                <div class="col-4 m-0 p-0">
+                    <select class="custom-select form-control" name="vendor" id="selVendor">
+                        @{ string selectedVendor = (ViewData["Vendor"] != null) ? ViewData["Vendor"].ToString() : ""; }
+                        <option value="" selected>Choose Vendor</option>
+                        @foreach (var vendor in ViewData["Vendors"] as List<SelectValues>)
+                        {
+                            <option value="@vendor.ID" selected="@(selectedVendor == vendor.ID ? true : false)" class="w-100">@vendor.Label</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row pt-1">
+                <div class="col-3 m-0 p-0 pr-1">
+                    <select class="selectpicker form-control mr-sm-2" multiple data-live-search="true" name="locations" id="selLocations" data-actions-box="true" data-selected-text-format="count > 1" title="Choose Location...">
+                        @{ List<string> selectedLocations = ViewData["Location"] as List<string>; }
+                        @{ List<SelectValues> allLocations = ViewData["Locations"] as List<SelectValues>; }
+
+                        @if (allLocations != null)
+                        {
+                            @foreach (var loc in allLocations)
+                            {
+                                <option value="@loc.ID" selected="@(selectedLocations?.Contains(loc.ID))" class="w-100">@loc.Label</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-3 m-0 p-0 pr-1">
+                    @{ string prodIdValue = (ViewData["ProductId"] != null) ? ViewData["ProductId"].ToString() : ""; }
+                    <input class="form-control" id="productId" name="productId" type="search" placeholder="Product ID" aria-label="Search" value="@prodIdValue">
+                </div>
+                <div class="col-3 m-0 p-0 pr-1">
+                    @{ string catalogNoValue = (ViewData["CatalogNo"] != null) ? ViewData["CatalogNo"].ToString() : ""; }
+                    <input class="form-control" id="catalogNo" name="catalogNo" type="search" placeholder="Catalog #" aria-label="Search" value="@catalogNoValue">
+                </div>
+                <div class="col-3 m-0 p-0">
+                    <button class="btn btn-outline-light btn-block" type="submit" onclick="ShowLoading()">Search</button>
+                </div>
+            </div>
+        </form>
+    }
+    else if (type == "OneQuoteForm")
+    {
+        if (!(bool)ViewData["IsReadOnly"])
+        {
+            var display = (bool)ViewData["IsRevision"] ? "none" : "block";
+            <form id="frmRevisionQuote" method="post" style="display:@display">
+                <div class="form-inline form-group row">
+                    <div id="divCreateRevisionButton">
+                        <button type="submit" class="btn btn-primary btn-block" id="CreateRevision" style="width:200px">Create Revision</button>
+                    </div>
+                    <div id="divSelectOriginalLaborQuoteNo" style="display:none">
+                        <label style="float:left;margin-top:8px;margin-right:10px">Revision of Original Labor Quote #:</label>
+                        <select style="float:left;margin-right:30px;" class="custom-select form-control" id="selectOriginalLaborQuotes" name="OriginalLaborQuoteNo"></select>
+                        <button style="float:left;width:80px" type="submit" name="submit" class="btn btn-primary btn-block" value="CreateRevision">Create</button>
+                        <a href="/onequoteform" class="btn btn-primary" style="width:80px;margin-left:10px">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        }
+    }
+    else if (type == "LaborQuoteRequestForm")
+    {
+        if (!(bool)ViewData["IsReadOnly"])
+        {
+            var display = (bool)ViewData["IsRevision"] || (bool)ViewData["IsDraft"] ? "none" : "block";
+            <form id="frmRevisionQuote" method="post" style="display:@display">
+                <div class="form-inline form-group row">
+                    <div id="divCreateRevisionButton">
+                        <button type="submit" class="btn btn-primary btn-block" id="CreateRevision" style="width:200px">Create Revision</button>
+                    </div>
+                    <div id="divSelectOriginalLaborQuoteNo" style="display:none">
+                        <label style="float:left;margin-top:8px;margin-right:10px">Revision of Original Labor Quote #:</label>
+                        <select style="float:left;margin-right:30px;" class="custom-select form-control" id="selectOriginalLaborQuotes" name="OriginalLaborQuoteNo"></select>
+                        <button style="float:left;width:80px" type="submit" name="submit" class="btn btn-primary btn-block" value="CreateRevision">Create</button>
+                        <a href="/laborquoterequestform" class="btn btn-primary" style="width:80px;margin-left:10px">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        }
+    }
+    else if (type == "EstimatorProjectTotals")
+    {
+        <fieldset style="@((bool)ViewData["FromDashboard"] ? "display:none" : "")">
+            @if (!(Convert.ToBoolean(ViewData["IsReadOnly"])) && !(Convert.ToBoolean(ViewData["FromURL"])))
+            {
+                <form method="post">
+                    <div class="form-inline form-group row">
+                        <select class="form-control" name="region" id="region">
+                            <option value="OWP" selected="@(ViewData["Region"].ToString() == "OWP")">OWP</option>
+                            <option value="OSQ" selected="@(ViewData["Region"].ToString() == "OSQ")">Open Square</option>
+                        </select>
+                        <input class="form-control" name="lqCode" type="search" value="@ViewData["LaborQuoteNo"]" placeholder="Labor Quote #" aria-label="Search">
+                        <button style="float:left;width:118px" type="submit" name="submit" class="btn btn-primary btn-block ml-1" value="Search">Estimate/Edit</button>
+                    </div>
+                </form>
+            }
+            @if (Convert.ToBoolean(ViewData["FromURL"]))
+            {
+                <a href="/estimatorprojecttotals">Search by Labor Quote #</a>
+            }
+        </fieldset>
+    }
+    else if (type == "LaborQuoteDashboard")
+    {
+
+        <form method="post" style="float:left;width:700px">
+            <div class="row">
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control datepicker" id="lqdbDateFrom" name="dateFrom" type="text" placeholder="Date From" autocomplete="off" value="@ViewData["DateFrom"]" style="text-indent:8px" />
+                </div>
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control datepicker" id="lqdbDateTo" name="dateTo" type="text" placeholder="Date To" autocomplete="off" value="@ViewData["DateTo"]" style="text-indent:8px" />
+                </div>
+                <div class="col-3 m-0 p-0">
+                    <select class="custom-select form-control" name="status">
+                        @{ string statusValue = (ViewData["Status"] != null) ? ViewData["Status"].ToString() : ""; }
+
+
+                        @foreach (var status in ViewData["StatusList"] as List<SelectValues>)
+                        {
+                            <option value="@status.ID" selected="@(statusValue == status.ID ? true : false)" class="w-100">@status.Label</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-1">
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control" name="requestor" type="search" value="@ViewData["Requestor"]" placeholder="Requestor Name" aria-label="Search">
+                </div>
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input list="selCustomers" placeholder="Customer" class="custom-select form-control" id="lstCustomer" name="customerText" value="@ViewData["CustomerText"]" />
+                    <datalist id="selCustomers">
+                        <option value="" selected style="color:#495057"></option>
+                        @foreach (var cust in ViewData["CustomerList"] as List<SelectValues>)
+                        {
+                            <option value="@cust.Label" data-value="@cust.ID" class="w-100" style="color:#495057"></option>
+                        }
+                    </datalist>
+                </div>
+                <div class="col-3 m-0 p-0">
+                    <input class="form-control" name="projectId" type="search" value="@ViewData["ProjectID"]" placeholder="Project ID" aria-label="Search">
+                </div>
+            </div>
+            <div class="row mt-1">
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control" name="code" type="search" value="@ViewData["Code"]" placeholder="Labor Quote Code" aria-label="Search">
+                </div>
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control" name="originalCode" type="search" value="@ViewData["OriginalLaborQuoteNo"]" placeholder="Original Labor Qt#" aria-label="Search">
+                </div>
+                <div class="col-3 m-0 p-0">
+                    <input class="form-control" name="quoOrdNo" type="search" value="@ViewData["QuoteOrderNo"]" placeholder="Quote/Order #" aria-label="Search">
+                </div>
+            </div>
+            <div class="row mt-1">
+                <div class="col-3 m-0 p-0 pr-1">
+                    <select class="form-control" name="region" id="region">
+                        <option value="OWP" selected="@(ViewData["Region"].ToString() == "OWP")">OWP</option>
+                        <option value="OSQ" selected="@(ViewData["Region"].ToString() == "OSQ")">Open Square</option>
+                    </select>
+                </div>
+                <div class="col-3 m-0 p-0">
+                    <button class="btn btn-primary" style="width:183px" type="submit">Search</button>
+                </div>
+            </div>
+            <input type="hidden" id="lstCustomer-hidden" name="customer" />
+        </form>
+    }
+    else if (type == "SubcontractorReceiving")
+    {
+        <form method="post">
+            <div style="text-align:-webkit-right">
+                <div class="col-6" style="max-width:none">
+                    <span style="vertical-align:text-top"><strong>@ViewData["UserName"]</strong></span>
+                </div>
+                <div class="col-6">
+                    <a href="subcontractorreceiving/logout" style="color:white">Log out</a>
+                </div>
+            </div>
+        </form>
+    }
+    else if (type == "EstimatorDashboard")
+    {
+        <form method="post" style="width:700px;margin-right:-150px;">
+            <input class="form-control" name="type" type="text" value="search" hidden />
+            <div class="row">
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control" name="code" type="search" value="@ViewData["LaborQuoteNo"]" placeholder="Labor Qt #" aria-label="Search">
+                </div>
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control" name="originalCode" type="search" value="@ViewData["OriginalLaborQuoteNo"]" placeholder="Original Labor Qt #" aria-label="Search">
+                </div>
+                <div class="col-3 m-0 p-0 mr-1">
+                    <select class="custom-select form-control" name="customer">
+                        @{ string customerValue = (ViewData["Customer"] != null) ? ViewData["Customer"].ToString() : ""; }
+
+                        <option value="" selected="@(string.IsNullOrEmpty(customerValue) ? true : false)">Customer</option>
+
+                        @foreach (var cust in ViewData["CustomerList"] as List<SelectValues>)
+                        {
+                            <option value="@cust.ID" selected="@(customerValue == cust.ID ? true : false)" class="w-100">@cust.Label</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-2 m-0 p-0">
+                </div>
+            </div>
+            <div class="row mt-1">
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control" name="requestedBy" type="search" value="@ViewData["RequestedBy"]" placeholder="Requested By" aria-label="Search">
+                </div>
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control" name="assignedTo" type="search" value="@ViewData["AssignedTo"]" placeholder="Assigned To" aria-label="Search">
+                </div>
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control" name="projectId" type="search" value="@ViewData["ProjectID"]" placeholder="Project ID" aria-label="Search">
+                </div>
+            </div>
+            <div class="row mt-1">
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control datepicker" name="dateFrom" type="text" placeholder="Date From" autocomplete="off" value="@ViewData["RequestedDateFrom"]" style="text-indent:8px" />
+                </div>
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control datepicker" name="dateTo" type="text" placeholder="Date To" autocomplete="off" value="@ViewData["RequestedDateTo"]" style="text-indent:8px" />
+                </div>
+                <div class="col-3 m-0 p-0 mr-1">
+                    <select class="form-control" name="region" id="region">
+                        <option value="OWP" selected="@(ViewData["Region"].ToString() == "OWP")">OWP</option>
+                        <option value="OSQ" selected="@(ViewData["Region"].ToString() == "OSQ")">Open Square</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-1">
+                <div class="col-3 m-0 p-0 mr-1"></div>
+                <div class="col-3 m-0 p-0 mr-1"></div>
+                <div class="col-3 m-0 p-0 mr-1">
+                    <button class="btn btn-primary" type="submit" style="width:182px">Search</button>
+                </div>
+            </div>
+        </form>
+    }
+    else if (type == "EstimatorStatsReport")
+    {
+        <form method="post" style="width:700px;margin-right:-150px;">
+            <input name="type" type="text" value="search" hidden />
+            <div class="row">
+                <div class="col-3 m-0 p-0 mr-1" style="text-align:right">
+                    <label class="label-navbar" style="color:black;margin-top:5px">Date Range:</label>
+                </div>
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control datepicker" id="dateFromStatsReport" name="dateFrom" type="text" placeholder="Date From" autocomplete="off" value="@ViewData["SRDateFrom"]" style="text-align:center" />
+                </div>
+                <div class="col-3 m-0 p-0">
+                    <input class="form-control datepicker" id="dateToStatsReport" name="dateTo" type="text" placeholder="Date To" autocomplete="off" value="@ViewData["SRDateTo"]" style="text-align:center" />
+                </div>
+            </div>
+            <div class="row mt-1">
+                <div class="col-3 m-0 p-0 mr-1" style="text-align:right">
+                    <label class="label-navbar" style="color:black;margin-top:5px">Select Estimator:</label>
+                </div>
+                <div class="col-6 m-0 p-0" style="border: 1px solid #ced4da">
+                    <select class="selectpicker form-control" name="estimators" id="estimatorsSelect" multiple data-live-search="true" data-actions-box="true" data-selected-text-format="count > 3" title="Choose Estimators...">
+                        @{ List<string> values = ViewData["SelectedEstimators"] as List<string>; }
+                        @if (values?.Count == 0)
+                        {
+                            @foreach (var estimator in ViewData["EstimatorList"] as List<SelectValues>)
+                            {
+                                <option value="@estimator.ID" selected="selected" class="w-100">@estimator.Label</option>
+                            }
+                        }
+                        else
+                        {
+                            @foreach (var estimator in ViewData["EstimatorList"] as List<SelectValues>)
+                            {
+                                <option value="@estimator.ID" selected="@(values.Contains(estimator.ID))" class="w-100">@estimator.Label</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-1">
+                <div class="col-3 m-0 p-0 mr-1"></div>
+                <div class="col-3 m-0 p-0 mr-1"></div>
+                <div class="col-3 m-0 p-0 mr-1">
+                    <button class="btn btn-primary" type="submit" onclick="ShowLoading()" style="width:182px">Search</button>
+                </div>
+            </div>
+        </form>
+    }
+    else if (type == "ClosedOrderSummary")
+    {
+        <form method="post" style="width: 600px;">
+            <div class="row">
+                <div class="col-3 m-0 p-0 mr-1">
+                    <select class="form-control" id="csvRegion" name="csvRegion" style="text-indent:8px;">
+                        <option value="OWP" selected="@(ViewData["Region"].ToString() == "OWP")">OWP</option>
+                        <option value="OSQ" selected="@(ViewData["Region"].ToString() == "OSQ")">Open Square</option>
+                    </select>
+                </div>
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control datepicker" id="dateFrom" name="dateFrom" type="text" placeholder="Date From" autocomplete="off" value="@ViewData["DateFrom"]" style="text-indent:8px;" />
+                </div>
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control datepicker" id="dateTo" name="dateTo" type="text" placeholder="Date To" autocomplete="off" value="@ViewData["DateTo"]" style="text-indent:8px;" />
+                </div>
+
+            </div>
+            <div class="row mt-1">
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control" id="orderNo" name="orderNo" type="search" placeholder="Order #" aria-label="Search" value="@ViewData["OrderNo"]">
+                </div>
+                <div class="col-3 m-0 p-0 mr-1">
+                    <input class="form-control" id="projectId" name="projectId" type="search" value="@ViewData["ProjectID"]" placeholder="Project ID" aria-label="Search">
+                </div>
+                <div class="col-3 m-0 p-0 mr-1">
+                    <select class="selectpicker form-control" multiple data-live-search="true" name="customers" id="customers" data-actions-box="true" data-selected-text-format="count > 3" title="Choose Customers...">
+                        @{ List<string> selectedCustomers = ViewData["SelectedCustomers"] as List<string>; }
+                        @{ List<SelectValues> allCustomers = ViewData["Customers"] as List<SelectValues>; }
+
+                        @if (allCustomers != null)
+                        {
+                            @foreach (var customer in allCustomers)
+                            {
+                                <option value="@customer.ID" selected="@(selectedCustomers.Contains(customer.ID))" class="w-100">@customer.Label</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-2 m-0 p-0 mr-1">
+                    <button class="btn btn-outline-light btn-block" type="submit" onclick="SetDates()">Search</button>
+                </div>
+            </div>
+            <input type="hidden" value="@ViewData["CSVSalesperson"]" name="csvSalesperson" />
+            <input type="hidden" value="@ViewData["CSVCustomers"]" name="csvCustomers" />
+            <input type="hidden" value="@ViewData["CSVCuttOffDate"]" name="csvCuttOffDate" />
+            <input type="hidden" value="@ViewData["CSVSalespersonType"]" name="csvSalespersonType" />
+        </form>
+    }
+    else if (type == "WarehouseDT")
+    {
+        <form class="form-inline" method="get">
+            <input class="form-control mr-sm-2 datepicker" style="text-indent:10px" id="date" name="date" type="text" placeholder="Date" autocomplete="off" value="@ViewData["FormValue"]">
+            <select class="custom-select form-control" style="margin-right:7px" name="scheduleType" id="scheduleTypeSelect" required>
+                <option value="ALL" disabled selected hidden>ALL</option>
+                @{ string value = (ViewData["ScheduleType"] != null) ? ViewData["ScheduleType"].ToString() : ""; }
+                @foreach (var st in ViewData["ScheduleTypes"] as List<SelectValues>)
+                {
+                    <option value="@st.Label" selected="@(value == st.Label ? true : false)" class="w-100">@st.Label</option>
+                }
+            </select>
+            <select class="selectpicker form-control" multiple name="warehouse" id="warehouse" data-width="185px" title="Warehouse">
+                @{ List<string> values = ViewData["Warehouse"] as List<string>; }
+                <option value="A" selected="@(values.Contains("A"))">A</option>
+                <option value="U" selected="@(values.Contains("U"))">U</option>
+            </select>
+            <button class="btn btn-outline-light my-2 my-sm-0" style="margin-left:7px" type="submit" onclick="ShowLoading()">Search</button>
+        </form>
+    }
+    else if (type == "JobCosting")
+    {
+        <form id="jobcostingform" method="post">
+            <div class="row">
+                <div class="col-2 mr-0 p-0 pr-1">
+                    <input class="form-control mr-sm-2 datepicker" id="fromDate" name="fromDate" type="text" placeholder="Date From" autocomplete="off" value="@ViewData["SelectedFromDate"]" />
+                </div>
+                <div class="col-2 mr-0 p-0 pr-1">
+                    <input class="form-control mr-sm-2 datepicker" id="toDate" name="toDate" type="text" placeholder="Date To" autocomplete="off" value="@ViewData["SelectedToDate"]" />
+                </div>
+                <div class="col-2  m-0 p-0 pr-1">
+                    <input class="form-control" id="projectid" name="projectid" type="search" value="@ViewData["SelectedProject"]" placeholder="Project ID" aria-label="Search">
+                </div>
+                <div class="col-2 m-0 p-0 pr-1">
+                    <input class="form-control" id="orderno" name="orderno" type="search" value="@ViewData["SelectedOrder"]" placeholder="Order #" aria-label="Search">
+                </div>
+            </div>
+            <div class="row pt-1">
+                <div class="col-4 mr-0 p-0 pr-1">
+                    <select class="custom-select form-control" name="warehoseid" id="warehoseid">
+                        @{ List<SelectValues> warehouses = ViewData["Warehouses"] as List<SelectValues>;
+                            string selectedwarehouse = ViewData["SelectedWarehouse"] as string;
+                        }
+                        <option selected disabled>Warehouses</option>
+                        @foreach (var wh in warehouses)
+                        {
+                            <option value="@wh.ID" selected="@(selectedwarehouse == wh.ID ? true : false)" class="w-100">@wh.Label</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-4 mr-0 p-0 pr-1">
+                    <select class="selectpicker form-control" multiple data-live-search="true" name="customerid" id="customerid" data-actions-box="true" data-selected-text-format="count > 3" title="Choose Customers...">
+                        @{ List<SelectValues> allCustomers = ViewData["Customers"] as List<SelectValues>;
+                            string[] selectedCustomers = ViewData["SelectedCustomers"] as string[];
+                        }
+
+                        @if (allCustomers != null)
+                        {
+                            @foreach (var customer in allCustomers)
+                            {
+                                <option value="@customer.ID" selected="@(selectedCustomers.Contains(customer.ID))" class="w-100">@customer.Label</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row pt-1">
+                <div class="col-4 mr-0 p-0 pr-1">
+                    @if (ViewData["Leads"] != null)
+                    {
+                        <select class="custom-select form-control" name="leadid" id="leadid">
+                            @{ List<SelectValues> leads = ViewData["Leads"] as List<SelectValues>;
+                                string selectedLead = ViewData["SelectedLead"] as string;
+                            }
+
+                            <option selected disabled>Leads</option>
+                            @foreach (var lead in leads)
+                            {
+                                if (selectedLead != null && selectedLead == lead.ID)
+                                {
+                                    <option value="@lead.ID" selected class="w-100">@lead.Label</option>
+                                }
+                                else
+                                {
+                                    <option value="@lead.ID" class="w-100">@lead.Label</option>
+                                }
+                            }
+                        </select>
+                    }
+                    else
+                    {
+                        <select class="custom-select form-control" name="leadid" id="leadid">
+                            <option selected disabled>Leads</option>
+                        </select>
+                    }
+
+                </div>
+                <div class="col-3  m-0 p-0 pl-1 pr-1">
+                    <button class="btn btn-outline-light btn-block" type="submit">Search</button>
+                </div>
+                <div class="col-1  m-0 pl-2 pt-2 text-right">
+                    <a asp-controller="JobCosting" style="color:white" title="Reset search values...">Reset</a>
+                </div>
+            </div>
+        </form>
+    }
+    else if (type == "JobCostingLeadership")
+    {
+        <form id="jobcostingleadershipform" method="post">
+            <div class="row">
+                <div class="col-3 mr-0 p-1">
+                    <input class="form-control mr-sm-2 datepicker" id="fromDate" name="fromDate" type="text" placeholder="Date From" autocomplete="off" value="@ViewData["SelectedFromDate"]" />
+                </div>
+                <div class="col-3 mr-0 p-1">
+                    <input class="form-control mr-sm-2 datepicker" id="toDate" name="toDate" type="text" placeholder="Date To" autocomplete="off" value="@ViewData["SelectedToDate"]" />
+                </div>
+                <div class="col-3  m-0 p-1">
+                    <input class="form-control" id="projectid" name="projectid" type="search" value="@ViewData["SelectedProject"]" placeholder="Project ID" aria-label="Search">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3 mr-0 p-1">
+                    <select class="selectpicker form-control" multiple data-live-search="true" name="customerid" id="customerid" data-actions-box="true" data-selected-text-format="count > 3" title="Choose Customers...">
+                        @{ List<SelectValues> allCustomers = ViewData["Customers"] as List<SelectValues>;
+                            string[] selectedCustomers = ViewData["SelectedCustomers"] as string[];
+                        }
+
+                        @if (allCustomers != null)
+                        {
+                            @foreach (var customer in allCustomers)
+                            {
+                                <option value="@customer.ID" selected="@(selectedCustomers.Contains(customer.ID))" class="w-100">@customer.Label</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-3 mr-0 p-1">
+                    <select class="form-control" id="region" name="region" style="text-indent:8px;">
+                        <option value="OWP" selected="@(ViewData["Region"].ToString() == "OWP")">OWP</option>
+                        <option value="OSQ" selected="@(ViewData["Region"].ToString() == "OSQ")">Open Square</option>
+                    </select>
+                </div>
+                <div class="col-3 mr-0 p-1">
+                    <select class="selectpicker form-control" data-live-search="true" name="location" id="location" data-actions-box="true" data-selected-text-format="count > 3" title="Choose Location...">
+                        @{ List<JCLocations> locations = ViewData["Locations"] as List<JCLocations>;
+                            string selectedLoc = ViewData["SelectedLoc"].ToString(); }
+
+                        @if (locations != null)
+                        {
+                            <option value="" selected="@(selectedLoc ==  "")" class="w-100"></option>
+                            @foreach (var location in locations)
+                            {
+                                <option value="@location.ID" selected="@(selectedLoc == location.ID)" class="w-100">@location.Location_Desc</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-3 mr-0 p-1">
+                    <button class="btn btn-outline-light btn-block" type="submit">Search</button>
+                </div>
+            </div>
+        </form>
+    }
+    else if (type == "PostOrderPlacementOWP")
+    {
+        <form class="form-inline" method="get">
+            <input class="form-control mr-sm-2" id="orderno" name="orderno" type="search" value="@ViewData["FormValue"]" placeholder="Order #" aria-label="Search">
+            <input class="form-control mr-sm-2" id="projectid" name="projectid" type="search" value="@ViewData["ProjectId"]" placeholder="Project ID" aria-label="Search">
+            <button class="btn btn-outline-light my-2 my-sm-0" type="submit" onclick="ShowLoading()">Search</button>
+        </form>
+    }
+    else if (type == "PostOrderPlacementOSQ")
+    {
+        <form class="form-inline" method="get">
+            <input class="form-control mr-sm-2" id="orderno" name="orderno" type="search" value="@ViewData["FormValue"]" placeholder="Order #" aria-label="Search">
+            <input class="form-control mr-sm-2" id="projectidpoposq" name="projectid" type="search" value="@ViewData["ProjectId"]" placeholder="Project ID" aria-label="Search">
+            <button class="btn btn-outline-light my-2 my-sm-0" type="submit" onclick="ShowLoading()">Search</button>
+        </form>
+    }
+    else if (type == "_Ignore_Use_RenderSection_")
+    {
+        // Will render empty -> workaround for using RenderSection for headers untill all views are migrated
+    }
+    else
+    {
+        <form class="form-inline" method="get">
+            <input class="form-control mr-sm-2" id="orderno" name="orderno" type="search" value="@ViewData["FormValue"]" placeholder="@ViewData["Type"] #" aria-label="Search">
+            <button class="btn btn-outline-light my-2 my-sm-0" type="submit" onclick="ShowLoading()">Search</button>
+        </form>
+    }
+
+}

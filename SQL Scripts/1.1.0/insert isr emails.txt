@@ -1,0 +1,5 @@
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('OSQ-Receiving', 'receiving@open-sq.com', 'SYSTEM', GETDATE());
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('OSQ-Ticketing Product', 'mcampbell@open-sq.com', 'SYSTEM', GETDATE());
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('OSQ-Ticketing Labor', 'mcampbell@open-sq.com', 'SYSTEM', GETDATE());
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('OSQ-Vendor Invoice', 'accountspayable@open-sq.com', 'SYSTEM', GETDATE());
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('OSQ-Invoicing', 'accountsreceivable@open-sq.com', 'SYSTEM', GETDATE());

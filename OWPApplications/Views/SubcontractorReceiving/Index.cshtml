@@ -1,0 +1,447 @@
+﻿@model OWPApplications.Models.SubcontractorReceiving.SubcontractorReceivingViewModel;
+
+@{
+	ViewData["Title"] = "Subcontractor Receiving";
+	ViewData["NavBarColor"] = "blue";
+	ViewData["ShowNavBar"] = "True";
+	ViewData["Type"] = "SubcontractorReceiving";
+}
+
+<style type="text/css">
+	[data-toggle="collapse"] .fas:before {
+		content: "\f103";
+	}
+
+	[data-toggle="collapse"].collapsed .fas:before {
+		content: "\f101";
+	}
+
+	.linkBtn {
+		background: none !important;
+		border: none;
+		padding: 0 !important;
+		color: dodgerblue;
+	}
+	tbody td {
+		vertical-align: baseline !important;
+	}
+	#popupRequestEmail {
+		width: 700px;
+		position: fixed;
+		top: calc(50% - 280px);
+		left: calc(50% - 365px);
+		background-color: white;
+	}
+
+    .tooltip.top .tooltip-arrow {
+        border-top-color: black;
+    }
+
+    .tooltip.right .tooltip-arrow {
+        border-right-color: black;
+    }
+
+    .tooltip.bottom .tooltip-arrow {
+        border-bottom-color: black;
+    }
+
+    .tooltip.left .tooltip-arrow {
+        border-left-color: black;
+    }
+
+    .tooltip-inner {
+        background-color: black !important;
+    }
+
+    .tooltip-inner {
+        min-width: 100%;
+        max-width: 100%;
+        background-color: white;
+    }
+</style>
+
+@if (Model.ShowSummary)
+{
+	<form class="form-inline" method="post" style="margin-left:380px">
+		<label for="dateFrom" class="mr-2 mt-4">Expected Arrive Date Range:</label>
+		<input class="form-control datepicker mr-1 mt-4" id="dateFrom" name="dateFrom" type="text" placeholder="From" autocomplete="off" value="@Model.DateFrom" style="width:100px;text-align:center" />
+		<input class="form-control datepicker mr-3 mt-4" id="dateTo" name="dateTo" type="text" placeholder="To" autocomplete="off" value="@Model.DateTo" style="width:100px;text-align:center" />
+		<label for="orderNo" class="mr-2 mt-4">Order #:</label>
+		<input class="form-control mr-3 mt-4" id="orderNo" name="orderNo" type="search" value="@Model.OrderNo" style="width:140px;text-align:center">
+		<button class="btn btn-primary mt-4" type="submit" onclick="setDates()">Search</button>
+	</form>
+
+    <div class="card mt-5" style="width:1730px;margin-left:-300px">
+        <a style="align-self:end;margin:5px;" href="https://www.wrike.com/form/eyJhY2NvdW50SWQiOjYwNTE2LCJ0YXNrRm9ybUlkIjo2MDIxMTJ9CTQ3OTI1MjAzMzk0NjMJMWFiMDlmODRmZWM3ZDIyNTJhMDhhZGM0ODQwOTg4ODBjYzBhMjRiMTZmZWM0N2U3YzA2N2U4ZDcxMzgyYmM5ZA==">Subcontractor DT & Invoice Submission Form</a>
+
+        <div class="card-body">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link h3 mb-0 active" id="summary-tab" data-toggle="tab" href="#sum" role="tab" aria-controls="sum" aria-selected="true">Summary Info</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link h3 mb-0" id="received-tab" data-toggle="tab" href="#rec" role="tab" aria-controls="rec" aria-selected="false">Received Complete</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div id="sum" class="tab-pane fade show active mt-3">
+                    <div class="card col-12 p-3">
+                        @if (Model.Summary != null && Model.Summary.Count() > 0)
+                        {
+                            <div class="alt-table-responsive table-responsive">
+                                <table class="table table-sm table-bordered text-center">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" class="table-header" style="width:102px">PO #</th>
+                                            <th scope="col" class="table-header">Salesperson</th>
+                                            <th scope="col" class="table-header">Vendor Name</th>
+                                            <th scope="col" class="table-header">Order Date</th>
+                                            <th scope="col" class="table-header">Ack #</th>
+                                            <th scope="col" class="table-header">Ship Date(s)</th>
+                                            <th scope="col" class="table-header">Expected Arrival Date(s)</th>
+                                            <th scope="col" class="table-header">Scheduled Receipt Date</th>
+                                            <th scope="col" class="table-header">Carrier</th>
+                                            <th scope="col" class="table-header">Tracking #/PRO/BOL</th>
+                                            <th scope="col" class="table-header">Total Qty</th>
+                                            <th scope="col" class="table-header">Received</th>
+                                            <th scope="col" class="table-header">Last Request Dt</th>
+                                            <th scope="col" class="table-header" style="width:300px">Line Detail</th>
+                                            <th scope="col" class="table-header" style="width:356px">Requests</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var si in Model.Summary)
+                                        {
+                                            <tr>
+                                                <td>@si.POReference</td>
+                                                <td>@si.Salesperson</td>
+                                                <td>@si.CatalogVendorNo</td>
+                                                <td>@si.DateEntered</td>
+                                                <td>@si.AckNo</td>
+                                                <td>@si.ShipDate</td>
+                                                <td>@si.ExpectedReceiptDate</td>
+                                                <td>@si.ScheduledReceiptDate</td>
+                                                <td>@si.Carrier</td>
+                                                <td>@si.TrackingNo</td>
+                                                <td>@si.TotalQtyOrdered</td>
+                                                <td>@si.TotallyReceived</td>
+                                                <td>@si.OrderLastRequest</td>
+                                                <td>
+                                                    @using (Html.BeginForm("Index", "SubcontractorReceiving", FormMethod.Post))
+                                                    {
+                                                        <select class="custom-select mr-sm-2" name="emailType" onchange="this.form.submit()">
+                                                            <option value="" selected></option>
+                                                            @foreach (var et in Model.EmailTypeList)
+                                                            {
+                                                                <option value="@(et.LookupGeneralID + "|" + et.Value)">@et.Value</option>
+                                                            }
+                                                        </select>
+                                                        <input type="text" value="@si.OrderNo" name="orderNo" hidden />
+                                                        <input type="text" value="@si.POReference" name="poRef" hidden />
+                                                        <input type="text" value="true" name="isDetail" hidden />
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-primary mt-4" type="button" id="reqShipDate" style="width:118px;vertical-align:baseline" onclick="openPopupRequestEmail('156', '@si.VendorName', '@si.POReference')">Ship Date</button>
+                                                    <button class="btn btn-primary mt-4" type="button" id="reqTrackInfo" style="width:118px;vertical-align:baseline" onclick="openPopupRequestEmail('157', '@si.VendorName', '@si.POReference')">Tracking Info</button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="no-results">
+                                <span id="noresults">No results to show.</span>
+                                <div class="d-flex justify-content-center">
+                                    <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                                        <span class="sr-only">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div id="rec" class="tab-pane fade mt-3" style="text-align:-webkit-center">
+                    <div class="card col-12 p-3" style="width:1690px">
+                        @if (Model.POsReceivedComplete != null && Model.POsReceivedComplete.Count() > 0)
+                        {
+                            <div class="alt-table-responsive table-responsive">
+                                <table class="table table-sm table-bordered text-center">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" class="table-header" style="width:105px">PO #</th>
+                                            <th scope="col" class="table-header">Order Title</th>
+                                            <th scope="col" class="table-header">Salesperson</th>
+                                            <th scope="col" class="table-header">Vendor Name</th>
+                                            <th scope="col" class="table-header">Order Date</th>
+                                            <th scope="col" class="table-header">Ack #</th>
+                                            <th scope="col" class="table-header">Ship Date(s)</th>
+                                            <th scope="col" class="table-header">Expected Arrival Date(s)</th>
+                                            <th scope="col" class="table-header">Scheduled Receipt Date</th>
+                                            <th scope="col" class="table-header">Carrier</th>
+                                            <th scope="col" class="table-header">Received Date</th>
+                                            <th scope="col" class="table-header" style="width:250px">Tracking #/PRO/BOL</th>
+                                            <th scope="col" class="table-header">Total Qty</th>
+                                            <th scope="col" class="table-header">Last Request Dt</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var prc in Model.POsReceivedComplete)
+                                        {
+                                            <tr>
+                                                <td>@prc.POReference</td>
+                                                <td>@prc.OrderTitle</td>
+                                                <td>@prc.Salesperson</td>
+                                                <td>@prc.CatalogVendorNo</td>
+                                                <td>@prc.DateEntered</td>
+                                                <td>@prc.AckNo</td>
+                                                <td>@prc.ShipDate</td>
+                                                <td>@prc.ExpectedReceiptDate</td>
+                                                <td>@prc.ScheduledReceiptDate</td>
+                                                <td>@prc.Carrier</td>
+                                                <td>@prc.ReceivedDate</td>
+                                                <td>@prc.TrackingNo</td>
+                                                <td>@prc.TotalQtyOrdered</td>
+                                                <td>@prc.OrderLastRequest</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else if (Model.ShowDetails)
+{
+	<div class="mt-4" style="margin-left:973px">
+		@using (Html.BeginForm("Index", "SubcontractorReceiving", FormMethod.Post))
+		{
+			<input type="text" value="@Model.VendorNo" name="vendorNo" hidden />
+			<button type="submit" class="linkBtn">Back to Summary</button>
+		}
+	</div>
+
+	<h4>@Model.EmailTypeText.ToUpper()</h4>
+
+	if (Model.Lines != null && Model.Lines.Count() > 0)
+	{
+		<div id="detailsGrid">
+			<div class="row mt-5 expanded-table-s1">
+				<div class="col-12 lines-header" style="margin-left: 0px;">
+					<h3 class="d-inline-block">Line Details Info</h3>
+				</div>
+				<div class="card col-12 p-3">
+					<div class="form form-inline mx-4 mb-4 align-self-center">
+						<div class="input-group mx-4  mb-2">
+							<span class="font-weight-bold">@Model.Lines.ToList()[0].CustomerName</span>
+						</div>
+						<div class="input-group mx-4  mb-2">
+							<span class="font-weight-bold">@Model.Lines.ToList()[0].VendorName</span>
+						</div>
+						<div class="input-group mx-4  mb-2">
+							<span class="font-weight-bold">@Model.Lines.ToList()[0].Salesperson</span>
+						</div>
+						<div class="input-group mx-4  mb-2">
+							<span class="font-weight-bold">@Model.Lines.ToList()[0].POReference</span>
+						</div>
+					</div>
+					<div class="alt-table-responsive table-responsive">
+						<table class="table table-sm table-bordered text-center">
+							<thead>
+								<tr>
+									<th scope="col" class="table-header">
+										<label for="selAll">Select All</label>
+										<input type="checkbox" id="selAll" />
+									</th>
+									<th scope="col" class="table-header">Line #</th>
+									<th scope="col" class="table-header">QTY Expected</th>
+									<th scope="col" class="table-header" @(Model.EmailType != 155 ? "style=display:none" : "")>QTY Received</th>
+									<th scope="col" class="table-header">Catalog #</th>
+									<th scope="col" class="table-header">Description</th>
+									<th scope="col" class="table-header">Ack #</th>
+									<th scope="col" class="table-header">Ship Date</th>
+									<th scope="col" class="table-header">Expected Receipt Date</th>
+									<th scope="col" class="table-header">Received</th>
+									<th scope="col" class="table-header">Date of Last Request</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var li in Model.Lines)
+								{
+								<tr>
+									<td>
+										<input type="checkbox" class="show-email-options" id="cb-@li.LineNo"
+											   data-line="@li.LineNo" data-qty="@li.QtyOrdered"
+											   data-vendorname="@li.VendorName"
+											   data-posuffix="@li.POSuffix"
+											   data-prodvendor="@li.ProductVendor"
+											   data-lineqtyreceived="@li.LineQtyReceived"
+											   data-lqrwasmodified="@li.LQRWasModified"
+											   data-lineindex="@li.LineIndex"
+											   data-orderindex="@li.OrderIndex"
+											   data-orderno="@li.OrderNo">
+									</td>
+									<td>@li.LineNo</td>
+									<td>@li.QtyOrdered</td>
+									<td @(Model.EmailType != 155 ? "style=display:none" : "")><input type="text" class="inputQtyLineReceived" style="width:99px;text-align:center" value="@li.LineQtyReceived" data-compcode="@li.CompanyCode" data-posuffix="@li.POSuffix" data-orderindex="@li.OrderIndex" data-lineindex="@li.LineIndex" /></td>
+									<td>@li.CatNo</td>
+									<td><div style="height:50px;overflow:hidden; cursor: default;" data-toggle="tooltip" title="@li.Description">@li.Description</div></td>
+									<td>@li.AckNo</td>
+									<td>@li.ShipDate</td>
+									<td>@li.ExpectedReceiptDate</td>
+									<td>@(li.Received == 1 ? "X" : (li.Received ==  0 ? "" : "N/A"))</td>
+									<td>@li.LineLastRequest</td>
+								</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+
+			<div class="row mt-5" style="justify-content:center">
+				<h3 class="col-12" style="text-align:center">Email Form</h3>
+				<div class="card col-md-6 p-5">
+					<form id="EmailForm" enctype="multipart/form-data">
+						<input type="hidden" id="hdnPOReference" value="@Model.POReference" />
+						<input type="hidden" id="hdnPOSuffix" value="@Model.POSuffix" />
+						<input type="hidden" id="hdnProductVendor" value="@Model.Lines.ToList()[0].VendorName" />
+						<input type="hidden" id="hdnDate" value="@Model.Lines.ToList()[0].DateEntered" />
+						<input type="hidden" id="hdnUserEmail" value="@ViewData["UserEmail"]" />
+						<div id="reportIssueForm" @(Model.EmailType != 158 ? "style=display:none" : "")>
+							<div class="form-group">
+								<label for="inputIssueType">Issue Type</label>
+								<select class="custom-select mr-sm-2" id="inputIssueType">
+									@foreach (var it in Model.IssueTypeList)
+									{
+										<option value="@it.LookupGeneralID">@it.Value</option>
+									}
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="inputIssueDetail">Detail</label>
+								<select class="custom-select mr-sm-2" id="inputIssueDetail">
+									@foreach (var id in Model.IssueDetailList)
+									{
+										<option value="@id.LookupGeneralID">@id.Value</option>
+									}
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="inputQty">Quantity</label>
+								<input type="text" class="form-control" id="inputQty" name="inputQty">
+							</div>
+							<div class="form-group">
+								<label for="inputDesc">Description</label>
+								<textarea class="form-control" id="inputDesc" name="inputDesc" rows="3"></textarea>
+							</div>
+							<div class="form-group">
+								<label for="inputAttachment">Attachments</label>
+								<input type="file" class="form-control-file" id="inputAttachment">
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="inputYourName">Your Name</label>
+							<input type="text" class="form-control" id="inputYourName" name="inputYourName" required>
+						</div>
+						<div class="form-group">
+							<label for="subYourEmail">Your Email Address</label>
+							<input type="email" class="form-control" id="subYourEmail" name="subYourEmail" value="@ViewData["UserEmail"]" required>
+						</div>
+						<div class="form-row">
+							<div class="form-group col-md-6">
+								<label for="inputCC1">CC</label>
+								<input type="email" class="form-control" id="inputCC1" value="@ViewData["UserEmail"]" />
+							</div>
+							<div class="form-group  col-md-6">
+								<label for="inputCC2">CC</label>
+								<input type="email" class="form-control" id="inputCC2" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="inputNotes">Notes:</label>
+							<textarea class="form-control" id="inputNotes" name="inputNotes" rows="3"></textarea>
+						</div>
+						<div class="form-row">
+							<button type="submit" class="btn btn-primary btn-block mb-2" id="btnSubmitEmailSubcontractor">Submit</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	}
+	else
+	{
+		<div class="no-results">
+			<span id="noresults">No results to show.</span>
+			<div class="d-flex justify-content-center">
+				<div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+					<span class="sr-only">Loading...</span>
+				</div>
+			</div>
+		</div>
+	}
+}
+else
+{
+	<div class="no-results">
+		<span id="noresults">No results to show.</span>
+		<div class="d-flex justify-content-center">
+			<div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+				<span class="sr-only">Loading...</span>
+			</div>
+		</div>
+	</div>
+}
+
+<input type="hidden" id="hdnEmailType" value="@Model.EmailType" />
+<input type="hidden" id="hdnVendorName" />
+<input type="hidden" id="hdnPORef" />
+
+<div id="popupRequestEmail" class="modal-content" style="display:none;background-color:whitesmoke">
+	<div class="modal-header">
+		<h3 class="col-12" style="text-align:center">Email Form</h3>
+		<button type="button" class="close" style="margin-left:-30px">  X  </button>
+	</div>
+	<div class="modal-body card col-md-10 p-5 my-5" style="margin-left:57px">
+		<form id="EmailForm" enctype="multipart/form-data">
+			<input type="hidden" id="hdnPOReference" value="@Model.POReference" />
+			<input type="hidden" id="hdnPOSuffix" value="@Model.POSuffix" />
+			<input type="hidden" id="hdnProductVendor" value="@Model.Lines?.ToList()[0].VendorName" />
+			<input type="hidden" id="hdnDate" value="@Model.Lines?.ToList()[0].DateEntered" />
+			<input type="hidden" id="hdnUserEmail" value="@ViewData["UserEmail"]" />
+			<div class="form-group">
+				<label for="inputYourName">Your Name</label>
+				<input type="text" class="form-control" id="inputYourName" name="inputYourName" required>
+			</div>
+			<div class="form-group">
+				<label for="subYourEmail">Your Email Address</label>
+				<input type="email" class="form-control" id="subYourEmail" name="subYourEmail" value="@ViewData["UserEmail"]" required>
+			</div>
+			<div class="form-row">
+				<div class="form-group col-md-6">
+					<label for="inputCC1">CC</label>
+					<input type="email" class="form-control" id="inputCC1" value="@ViewData["UserEmail"]" />
+				</div>
+				<div class="form-group  col-md-6">
+					<label for="inputCC2">CC</label>
+					<input type="email" class="form-control" id="inputCC2" />
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="inputNotes">Notes:</label>
+				<textarea class="form-control" id="inputNotes" name="inputNotes" rows="3"></textarea>
+			</div>
+			<div class="form-row">
+				<button type="submit" class="btn btn-primary btn-block mb-2" id="btnSubmitRequestEmailSubcontractor">Submit</button>
+			</div>
+		</form>
+	</div>
+</div>

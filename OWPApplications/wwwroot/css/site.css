@@ -1,0 +1,394 @@
+﻿
+body {
+    background-color: whitesmoke;
+    min-height: 100%;
+}
+
+.body-content {
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.header-info {
+    list-style: none;
+    margin: 0;
+}
+
+    .header-info li {
+        margin-bottom: 5px;
+    }
+
+.header-info--label {
+    font-weight: 600;
+    display: inline-block;
+    text-align: end;
+    padding-right: 20px;
+}
+
+    .header-info--label.left {
+        min-width: 40%;
+    }
+
+    .header-info--label.right {
+        min-width: 30%;
+    }
+
+.header-info--value {
+    vertical-align: top;
+    flex: auto;
+}
+
+a.title {
+    font-size: 22pt;
+    font-weight: 600;
+}
+
+th.table-header {
+    font-weight: 600;
+    line-height: 1.2;
+    padding: 0.5rem;
+}
+
+.bg-blue--custom {
+    background-color: #247BA0
+}
+
+.bg-grey--custom {
+    background-color: #50514F
+}
+
+.bg-green--custom {
+    background-color: #379c37;
+}
+
+.bg-brown--custom {
+    background-color: #d2a528;
+}
+
+.bg-violet--custom {
+    background-color: #563d7c;
+}
+.bg-ceil--custom {
+    background-color: #8A8FD1;
+}
+
+
+.text-blue--custom {
+    color: #247BA0
+}
+
+.text-grey--custom {
+    color: #50514F
+}
+
+.text-green--custom {
+    color: #379c37;
+}
+
+.text-brown--custom {
+    color: #d2a528;
+}
+
+.text-violet--custom {
+    color: #563d7c;
+}
+.text-ceil--custom {
+    color: #8A8FD1;
+}
+
+
+footer {
+    bottom: 0px;
+    padding-right: 15px;
+    padding-left: 15px;
+    width: 100%;
+    position: fixed;
+}
+
+.no-results {
+    text-align: center;
+    padding: 20rem;
+    font-style: italic;
+    font-size: 14pt;
+}
+
+@media (max-width: 764px) {
+    a.title {
+        font-size: 16pt;
+        font-weight: 600;
+    }
+
+    .no-results {
+        padding: 5rem;
+    }
+}
+
+.card {
+    -webkit-box-shadow: 2px 2px 10px 0px rgba(161,161,161,0.75);
+    -moz-box-shadow: 2px 2px 10px 0px rgba(161,161,161,0.75);
+    box-shadow: 1px 2px 5px 0px rgba(161,161,161,0.75);
+}
+
+nav {
+    -webkit-box-shadow: 2px 2px 10px 0px rgba(161,161,161,0.75);
+    -moz-box-shadow: 2px 2px 10px 0px rgba(161,161,161,0.75);
+    box-shadow: 0px 4px 10px 0px rgba(161,161,161,0.75);
+}
+
+.form-group label {
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.row-isbo {
+    background-color: burlywood;
+    display: none;
+}
+
+pre {
+    margin: 0;
+    padding: 1rem;
+    white-space: pre-wrap;
+    background-color: #f5f5f5;
+    border: 1px solid rgba(0,0,0,0.15);
+}
+
+#loading {
+    display: none;
+    width: 3rem;
+    height: 3rem;
+}
+
+.btn-loading {
+    display: none;
+}
+
+.text-red {
+    color: red;
+}
+
+.label-navbar {
+    color: white;
+    margin: 0 5px 5px 0;
+    font-size: large;
+}
+
+.datepicker#from {
+    width: 150px;
+}
+
+.datepicker#to {
+    width: 150px;
+}
+
+@media (min-width: 1200px) {
+    .expanded-table-s1 {
+        margin-left: -100px;
+        margin-right: -100px;
+    }
+
+    .expanded-table-s2 {
+        margin-left: -200px;
+        margin-right: -200px;
+    }
+
+    .expanded-table-s1 .lines-header {
+        margin-left: 100px;
+        margin-right: 100px;
+    }
+
+    .expanded-table-s2 .lines-header {
+        margin-left: 200px;
+        margin-right: 200px;
+    }
+
+    .postorder-table {
+        margin-left: -15vw;
+        margin-right: -15vw;
+    }
+
+    .postorder-table .lines-header {
+        padding-right: 14.5vw;
+        padding-left: 14.5vw;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .expanded-table-s1, .expanded-table-s2 {
+        margin-left: -15px;
+        margin-right: -15px;
+    }
+
+    .expanded-table-s1 .lines-header, .expanded-table-s2 .lines-header {
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+
+    .postorder-table {
+        margin-left: -15px;
+        margin-right: -15px;
+    }
+
+    .postorder-table .lines-header {
+        padding-right: 0px;
+        padding-left: 0px;
+    }
+}
+
+#alert {
+    position: fixed;
+    top: 2%;
+    right: 2%;
+}
+
+.alt-table table {
+    table-layout: fixed;
+}
+
+    .alt-table table th, td {
+        overflow: hidden;
+    }
+
+@media screen and (max-width: 767px) {
+    .alt-table-responsive {
+        width: 100%;
+        margin-bottom: 15px;
+        overflow-y: hidden;
+        overflow-x: auto;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+        border: 1px solid #dddddd;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+.custom-pickerselect {
+    border: 1px solid #ced4da !important;
+}
+
+
+.custom-text-Red {
+    color: red;
+}
+
+.custom-text-green {
+    color: #25de0d;
+}
+
+.optionrow {
+    display: none;
+    padding: 3rem;
+}
+
+.optionsEmails {
+    display: inherit;
+    width: 100%;
+}
+
+.w-85 {
+    width: 85% !important
+}
+
+.paginationjs {
+    margin: 1rem;
+}
+
+.paginationjs-pages ul {
+    display: -ms-flexbox;
+    display: flex;
+    padding-left: 0;
+    list-style: none;
+    border-radius: .25rem;
+}
+
+.paginationjs-pages li {
+}
+
+.paginationjs-page.active a {
+    z-index: 1;
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.paginationjs-page a {
+    position: relative;
+    display: block;
+    padding: .5rem .75rem;
+    margin-left: -1px;
+    line-height: 1.25;
+    color: #007bff;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+}
+
+.receivedStatusColor-Green {
+    background-color: #aafca8;
+}
+
+.receivedStatusColor-Yellow {
+    background-color: #ffff86;
+}
+
+.receivedStatusColor-White {
+    background-color: white;
+}
+
+
+.multiple-dates {
+    font-weight: bold;
+    color: #007bff;
+}
+
+    .multiple-dates:hover {
+        text-decoration: line-through;
+    }
+
+.bg-red-ft {
+    background-color: #ff959f;
+}
+
+.bg-yellow-light {
+    background-color: #ffff86;
+}
+
+.bg-red-light {
+    background-color: #ff959f;
+}
+
+.suggestion {
+    float: right;
+    padding-bottom: 10px;
+}
+
+.row-gray {
+    background-color: lightgray;
+}
+
+.wdt-location-color-Red {
+    background-color: #ff959f;
+}
+.wdt-location-color-Yellow {
+    background-color: #ffff86;
+}
+.wdt-location-color-Green {
+    background-color: #aafca8;
+}
+
+.wdt-received-color-Red {
+    color: red;
+}
+
+.phone-container{
+    text-align: start;
+}
+
+
+.isDisabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    color: currentColor;
+    display: inline-block; /* For IE11/ MS Edge bug */
+    pointer-events: none;
+    text-decoration: none;
+}

@@ -1,0 +1,344 @@
+﻿<Root>
+  <Dealer>osq</Dealer>
+  <EmailTemplates>
+    <EmailTemplate app="pop" type="ack" title="Acknowledgement Inquiry">
+      <subject>Order Acknowledgment Needed: A##ORDERNO##-##POSUFFIX##-##SPID## | ##SUFFIXDATE## | ##CUSTNAME## | ##TITLE## | PID# ##PID##</subject>
+      <body>
+        <![CDATA[<html>
+      <style>
+        body {font:14px arial, sans-serif;color:#666;}
+        table {border-collapse:collapse;}
+        table, td, th {border: 1px solid #ccc; padding:10px;}
+        th {font-size:14px; background-color:#ff4d4d; border:1px solid #ff4d4d; color:#fff;}
+        p {
+        margin: 0;
+        padding: 0;
+        }
+      </style>
+      <body>
+        <br/>
+        <p>Dear Valued Partner:</p>
+        <br/>
+        <p>
+          Our system has indicated that an acknowledgment has not been
+            received for One Workplace PO# ##PO_NO##. In order to maintain project 
+            statusing required to ensure a seamless delivery and installation 
+            experience for our clients, please provide an acknowledgement and ship 
+            date/arrival information within 24 hours.
+        </p>
+        <br/>
+        <p>Notes: </p>
+        <p>##NOTES##</p>
+        <br/>
+        <p>
+          <strong>***Please be sure to reply all to e-mail thread to ensure that all necessary parties receive your response***</strong>
+        </p>
+        <br/>
+        <p>Please let us know if you have any other questions.</p>
+        <p>Thank you!</p>
+        <p>##YOURNAME##</p>
+      </body>
+    </html>]]>
+      </body>
+    </EmailTemplate>
+    <EmailTemplate app="pop" type="track" title="Tracking Inquiry">
+      <subject>Tracking Information Needed: A##ORDERNO##-##POSUFFIX##-##SPID## | ##SUFFIXDATE## | ##CUSTNAME## | ##TITLE## | PID# ##PID##</subject>
+      <body>
+        <![CDATA[<html>
+      <style>
+        body {font:14px arial, sans-serif;color:#666;}
+        table {border-collapse:collapse;}
+        table, td, th {border: 1px solid #ccc; padding:10px;}
+        th {font-size:14px; background-color:#ff4d4d; border:1px solid #ff4d4d; color:#fff;}
+        p {
+        margin: 0;
+        padding: 0;
+        }
+      </style>
+      <body>
+        <br/>
+        <p>Dear Valued Partner:</p>
+        <br/>
+        <p>
+          Our system has indicated that this acknowledgement ##ACK_NO## has shipped
+            and has not been received for One Workplace PO# ##PO_NO##. In order to 
+            maintain project statusing required to ensure a seamless delivery 
+            and installation experience for our clients, please provide the 
+            following within 24 hours:
+            <ul>
+                <li>Tracking Information (Carrier and Tracking/PRL #)</li>
+                <li>Expected Transit Time</li>
+            </ul>
+        </p>
+        <br/>
+        <p>Notes: </p>
+        <p>##NOTES##</p>
+        <br/>
+        <p>
+          <strong>***Please be sure to reply all to e-mail thread to ensure that all necessary parties receive your response***</strong>
+        </p>
+        <br/>
+        <p>Please let us know if you have any other questions.</p>
+        <p>Thank you!</p>
+        <p>##YOURNAME##</p>
+      </body>
+    </html>]]>
+      </body>
+    </EmailTemplate>
+    <EmailTemplate app="pop" type="free" title="Freeform">
+      <subject>##SUBJECT##: ##ORDERNO##-##POSUFFIX##-##SPID## | ##SUFFIXDATE## | ##CUSTNAME## | Ack# ##ACK## | ##TITLE## | PID# ##PID##</subject>
+      <body>
+        <![CDATA[<html>
+      <style>
+        body {font:14px arial, sans-serif;color:#666;}
+        table {border-collapse:collapse;}
+        table, td, th {border: 1px solid #ccc; padding:10px;}
+        th {font-size:14px; background-color:#ff4d4d; border:1px solid #ff4d4d; color:#fff;}
+        p {
+        margin: 0;
+        padding: 0;
+        }
+      </style>
+      <body>
+        <br/>
+        <p>Dear Valued Partner:</p>
+        <br/>
+        <p>
+          Ack # ##ACK_NO##
+        </p>
+        <br/>
+        <p>##NOTES##</p>
+        <br/>
+        <p>
+          <strong>***Please be sure to reply all to e-mail thread to ensure that all necessary parties receive your response***</strong>
+        </p>
+        <br/>
+        <p>Please let us know if you have any other questions.</p>
+        <p>Thank you!</p>
+        <p>##YOURNAME##</p>
+      </body>
+    </html>]]>
+      </body>
+    </EmailTemplate>
+    <EmailTemplate app="lqa" type="request">
+      <subject></subject>
+      <body>
+        <![CDATA[<html>
+            <body>
+            <p><strong>Please do not reply to this email. If you have any questions please direct your email to the requester noted in the form results below.</strong><p>
+            <br/>
+            ##REVISIONTITLE##
+            ##TYPES##
+            <p><strong>Requestor Name</strong></p>
+            ##REQUESTORNAME##
+            <p><strong>Requestor Email</strong></p>
+            ##REQUESTOREMAIL##
+            ##CC1##
+			      ##CC2##
+            <p><strong>Hedberg Project ID</strong></p>
+            ##HEDBERGPROJECTID##
+            ##ORIGINALLABORQUOTE##
+            <p><strong>Customer</strong></p>
+            ##CUSTOMER##
+            <p><strong>Job Address</strong></p>
+            ##STREETADDRESS##
+            <p><strong>Is this a Quote or Order?</strong></p>
+            ##QUOTEORORDER##
+            ##QUOTEORORDERNUMBER##
+            <p><strong>Sales Rep</strong></p>
+            ##SALESREP##
+            <p><strong>Coordinator</strong></p>
+            ##COORDINATOR##
+            ##PROJECTMANAGER##
+            <p><strong>Directory Created?</strong></p>
+            ##DIRECTORYCREATED##
+            ##NODAYSFORINSTALL##
+            <p><strong>Target Install Date</strong></p>
+            ##TARGETDATE##
+            <p><strong>Project Is:</strong></p>
+            ##PROJECTIS##
+            ##UNIONVENDORS##
+            ##SUPPLYREQUESTOREMAIL##
+            <p><strong>Scope of Work</strong></p>
+            ##SCOPEOFWORK##
+            ##ELECTRICALREQ##
+            ##ELECTRICALREQDETS##
+            ##DELIVER##
+            ##DELIVERTIME##
+            ##INSTALLATION##
+            ##INSTALLATIONTIME##
+            ##PRODUCTFORM##
+            ##UNLOADAT##
+            ##TYPEOFSCREENING##
+            ##ELEVATORNEEDED##
+            ##PRODUCTCLEANED##
+            ##SITEIS##
+            ##WALLSARE##
+            ##PROTECTION##
+            ##ELEVATOR##
+            ##CARRYUP##
+            ##POWER##
+            ##SECURITY##
+            ##ELECTRICAL##
+            ##PRODUCT##
+            ##MANUFACTURER##
+            ##SERIES##
+            ##WORKSTATIONS##
+            ##PANELSONLY##
+            ##PRIVATEOFFICES##
+            ##CONFERENCEROOMS##
+            ##EXAMROOMS##
+            ##CLASSROOMS##
+            ##OTHER##
+            ##PRODUCTIS##
+            ##ADDITIONALINFO##
+			      ##REVISIONREASON##
+            </body>
+            </html>]]>
+      </body>
+    </EmailTemplate>
+    <EmailTemplate app="lqa" type="estimation">
+      <subject></subject>
+      <from>noreply@open-sq.com</from>
+      <cc>theestimateteam@oneworkplace.com</cc>
+      <body>
+        <![CDATA[<html>
+            <html>
+            <body>
+            <p><strong>Labor Quote</strong><p>
+            <p style='margin-left: 20px;margin-top: -10px;'>##FullLaborQuoteCode##</p>
+			      <p><strong>Labor Quote Status</strong><p>
+			      <p style='margin-left: 20px;margin-top: -10px;'>##Status##</p>
+            <p><strong>Project/Quote #</strong><p>
+            <p style='margin-left: 20px;margin-top: -10px;'>##QuoteOrOrder####QuoteOrOrderNumber## - P##ProjectID##</p>
+            <p><strong>Quote Date</strong><p>
+            <p style='margin-left: 20px;margin-top: -10px;'>##CreatedOn##</p>
+            <p><strong>Original Quote #</strong><p>
+            <p style='margin-left: 20px;margin-top: -10px;'>##OriginalLaborQuoteCode##</p>
+            <p><strong>Customer Name</strong><p>
+            <p style='margin-left: 20px;margin-top: -10px;'>##CustomerName##</p>
+            <p><strong>Address</strong><p>
+            <p style='margin-left: 20px;margin-top: -10px;'>##AddressLine1##</p>
+            <p><strong>City</strong><p>
+            <p style='margin-left: 20px;margin-top: -10px;'>##AddressCity##</p>
+            <p><strong>Scope</strong><p>
+            <p style='margin-left: 20px;margin-top: -10px;'>##Scope##</p>
+            <p><strong>Equipments/Tools</strong><p>
+            <p style='margin-left: 20px;margin-top: -10px;'>##EquipmentTools##</p>
+            <p><strong>Select Tax</strong><p>
+            <p style='margin-left: 20px;margin-top: -10px;'>##Taxable##</p>
+			      ##FurnitureInstallation##
+			      ##LaborAddOns##
+            <p><strong>Contingencies</strong><p>
+            <p>All work is to be performed during normal business hours unless the scope of work specifies overtime delivery or installation. Normal business hours are from 7:00 AM - 5:00 PM. Any project beginning after 1:00 PM is subject to Overtime. All work is quoted as non-prevailing wage unless otherwise specified. The customer must provide clear and free access to the build area and an adequate staging area. Any work performed in addition to the original scope of work noted above is subject to additional costs to the project. All deliveries on the second floor or higher will require a passenger or freight elevator. Any additional hardware or equipment required to complete the project that is not included in the scope of work noted above will be subject to additional costs.</p>
+            <p><strong>Estimated By</strong><p>
+            <p style='margin-left: 20px;margin-top: -10px;'>##EstimatorName##</p>
+            <p><strong>Date</strong><p>
+            <p style='margin-left: 20px;margin-top: -10px;'>##CreatedOn##</p>
+            <p><strong>Expiration Date</strong><p>
+            <p style='margin-left: 20px;margin-top: -10px;'>##ExpirationDate##</p>
+            <p><strong>This project is quoted for</strong><p>
+            <p style='margin-left: 20px;margin-top: -10px;'>##NumberOfDays## day(s).</p>
+            <p><strong>Labor Total</strong><p>
+            <p style='margin-left: 20px;margin-top: -10px;'>##LaborTotal##</p>                                                                                  
+            </body>
+            </html>]]>
+      </body>
+    </EmailTemplate>
+  </EmailTemplates>
+  <EmailAddresses>
+    <PostOrderPlacementFrom>noreply@open-sq.com</PostOrderPlacementFrom>
+    <LaborQuoteEstimatorEmail>theestimateteam@oneworkplace.com</LaborQuoteEstimatorEmail>
+    <QuoteInquiryFrom>noreply@open-sq.com</QuoteInquiryFrom>
+  </EmailAddresses>
+  <VendorEmails>
+    <VendorEmail app="qi" prefix="" field="Vnd_Email"/>
+    <VendorEmail app="qi" prefix="(A) " field="Vnd_Amz_Email"/>
+    <VendorEmail app="pop" prefix="" field="Vnd_Email"/>
+    <VendorEmail app="pop" prefix="" field="Vnd_Add_Email"/>
+  </VendorEmails>
+  <ExcludedVendorsOnPOP>SUD02,OTM01,1</ExcludedVendorsOnPOP>
+  <CompanyCode>S</CompanyCode>
+  <PagesTemplates>
+    <PagesTemplate app="pop" type="header">
+      <div class="row no-gutters">
+        <div class="col-md-6">
+          <ul class="header-info py-3 pl-0">
+            <li class="d-flex justify-content-between align-items-center">
+              <span class="header-info--label left">Project Id:</span>
+              <span class="header-info--value" id="projectID">##HeaderInfo.ProjectId##</span>
+            </li>
+            <li class="d-flex justify-content-between align-items-center">
+              <span class="header-info--label left">Title:</span>
+              <span class="header-info--value">##HeaderInfo.OrderTitle##</span>
+            </li>
+            <li class="d-flex justify-content-between align-items-center">
+              <span class="header-info--label left">Customer #:</span>
+              <span class="header-info--value">##HeaderInfo.CustomerNo##</span>
+            </li>
+            <li class="d-flex justify-content-between align-items-center">
+              <span class="header-info--label left">Sales IDs (%):</span>
+              <span class="header-info--value">##HeaderInfo.SalesIDs##</span>
+            </li>
+            <li class="d-flex justify-content-between align-items-center">
+              <span class="header-info--label left">Customer PO #:</span>
+              <span class="header-info--value">##HeaderInfo.CustomerPONo##</span>
+            </li>
+            <li class="d-flex justify-content-between align-items-center">
+              <span class="header-info--label left">Ship To Address:</span>
+              <span class="header-info--value">##HeaderInfo.ShipToAddress##</span>
+            </li>
+            <li class="d-flex justify-content-between align-items-center">
+              <span class="header-info--label left">Order Status (U, A, S, H, C):</span>
+              <span class="header-info--value">##HeaderInfo.OrderStatus##</span>
+            </li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <ul class="header-info py-3 pl-0">
+            <li class="d-flex justify-content-between align-items-center">
+              <span class="header-info--label ">Delivery Instructions:</span>
+            </li>
+            <li class="d-flex justify-content-between align-items-center">
+              <span class="header-info--value">##HeaderInfo.DeliveryInstructions##</span>
+            </li>
+            <li class="d-flex justify-content-between align-items-center">
+              <span class="header-info--label ">MFG PO Info:</span>
+            </li>
+            <li class="d-flex justify-content-between align-items-center">
+              <span class="header-info--value">##HeaderInfo.MFG_PO_Info##</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </PagesTemplate>
+    <PagesTemplate app="pop" type="summary_header">
+      <thead>
+        <tr>
+          <th style="width:40px"></th>
+          <th scope="col" class="table-header">PO #</th>
+          <th scope="col" class="table-header">Vendor #</th>
+          <th scope="col" class="table-header">Ordered (Date)</th>
+          <th scope="col" class="table-header">Ack #</th>
+          <th scope="col" class="table-header">Ack Date</th>
+          <th scope="col" class="table-header">Ship Date</th>
+          <th scope="col" class="table-header">Requested Arrival Date</th>
+          <th scope="col" class="table-header">Lastest Received Date</th>
+          <th scope="col" class="table-header">Soft Scheduled Date (Latest)</th>
+          <th scope="col" class="table-header">Estimated Arrival Date</th>
+          <th scope="col" class="table-header">Scheduled Arrival Date</th>
+          <th scope="col" class="table-header">Carrier </th>
+          <th scope="col" class="table-header">Tracking/PRO #/BOL </th>
+          <th scope="col" class="table-header">Tracking Link</th>
+          <th scope="col" class="table-header" style="width:160px">Comments</th>
+        </tr>
+      </thead>
+    </PagesTemplate>
+  </PagesTemplates>
+  <EnabledApps>
+    <EnabledApp app="pop" enabled="true" name="Post Order Placement"/>
+    <EnabledApp app="qi" enabled="true" name="Quote Inquiry"/>
+    <EnabledApp app="lqa" enabled="true" name="Labor Quote Request Form"/>
+    <EnabledApp app="lqd" enabled="true" name="Labor Quote Dashboard"/>
+  </EnabledApps>
+</Root>

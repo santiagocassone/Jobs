@@ -1,0 +1,491 @@
+﻿@{
+    ViewData["Title"] = "Quote Inquiry App";
+    ViewData["NavBarColor"] = "blue";
+    ViewData["ShowNavBar"] = "True";
+    ViewData["Type"] = "Quote";
+}
+@model OWPApplications.Models.QuoteInquiry.QuoteInquiryViewModel;
+
+
+@if (Model.ShowResults)
+{
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="row">
+                <div class="col-9">
+                    <h3>Header Info</h3>
+                </div>
+                @*<div class="col-3 float-right">
+                    <a asp-controller="QIAuditTool" asp-action="Index" asp-route-orderno="@Model.QuoteNo" target="_blank">Open Quote Inquiry Audit Tool</a>
+                </div>*@
+            </div>
+        </div>
+        <div class="card col-12">
+            <div class="row no-gutters">
+                <div class="col-md-6">
+                    <ul class="header-info py-3 pl-0">
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Project Id:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.ProjectId)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Quote #:</span><span class="header-info--value">@Html.Raw(Model.QuoteNo)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Title:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.OrderTitle)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Location Code:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.LocationCode)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Customer #:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.CustomerNo)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Sales IDs (%):</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.SalesIDs)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Terms Code:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.TermsCode)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Customer PO #:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.CustomerPONo)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">STC Invoice Type (STI or DB):</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.STCInvoiceType)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Ship To Address:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.ShipToAddress)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Sold To Address:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.SoldToAddress)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Mail To Address:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.MailToAddress)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Invoice Address:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.InvoiceAddress)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Sales Team (Header Sales Code):</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.SalesTeam)</span></li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="header-info py-3 pl-0">
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">Order Status (U, A, S, H, C):</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.OrderStatus)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">Delivery Instructions:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.DeliveryInstructions)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">MFG PO Info:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.MFG_PO_Info)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">Invoice Instructions:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.InvoiceInstructions)</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4 expanded-table-s1">
+        <h3 class="col-12 lines-header">Lines Info</h3>
+        <div class="card col-12 p-3">
+            <div class="custom-control custom-switch mx-4 mb-4">
+                <input type="checkbox" class="custom-control-input" id="includeBOSwitch" data-from="quoteinquiry" />
+                <label class="custom-control-label" for="includeBOSwitch">Include "BO" lines.</label>
+				<h5 id="totalList" style="float:right;"></h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered text-center inquirytable">
+                    <thead>
+						<tr>
+							<th scope="col" class="table-header" style="width: 4%"></th>
+							<th scope="col" class="table-header" style="width: 7%">Line #</th>
+							<th scope="col" class="table-header" style="width: 8%">Vendor #</th>
+							<th scope="col" class="table-header" style="width: 12%">Catalog #</th>
+							<th scope="col" class="table-header" style="width: 14%">General Tagging</th>
+							<th scope="col" class="table-header">Qty.</th>
+							<th scope="col" class="table-header" style="width:30%;">Description (freeform or EDI)</th>
+							<th scope="col" class="table-header">Cost</th>
+							<th scope="col" class="table-header">GP $</th>
+							<th scope="col" class="table-header" style="width: 9%">GP %</th>
+							<th scope="col" class="table-header">List</th>
+							<th scope="col" class="table-header">Sell</th>
+							<th scope="col" class="table-header">Comments</th>
+						</tr>
+                    </thead>
+                    <tbody>
+						@{ float totalList = 0;}
+                        @foreach (var line in Model.linesInfos)
+                        {
+                            var color = (line.HasColor) ? $"style=background-color:var(--{line.Color})" : "";
+                            var classValue = (line.IsBo) ? "row-isbo" : "";
+                            classValue += $" vend-{line.VendorNo} ";
+							totalList += float.Parse(line.List.Replace("$",""));
+						<tr class="@classValue" @color>
+							<td>
+								<input type="checkbox" class="show-email-options chkline" id="cb-@line.LineNo"
+									   data-line="@line.LineNo" data-vendor="@line.VendorNo.Trim()"
+									   data-catalogno="@line.CatalogNo" data-graltagging="@line.GeneralTagging"
+									   data-qtyordered="@line.QtyOrdered" data-description="@line.Description"
+									   data-gpdlls="@line.GPDlls" data-list="@line.List"
+									   data-linesell="@line.LineSell" data-comment="@line.Comments" data-cost="@line.Cost">
+							</td>
+							<td>@line.LineNo</td>
+							<td>@line.VendorNo</td>
+							<td>@line.CatalogNo</td>
+							<td>@line.GeneralTagging</td>
+							<td style="font-weight:bold">@line.QtyOrdered</td>
+							<td style="word-break: break-all; text-align:justify">@line.Description</td>
+							<td>@line.Cost</td>
+							<td>@line.GPDlls</td>
+							<td>@line.GP</td>
+							<td>@line.List</td>
+							<td>@line.LineSell</td>
+							<td><textarea class="inputComment" data-quoteno="@Model.QuoteNo" data-lineno="@line.LineNo" rows="3"></textarea></td>
+						</tr>
+                        }
+						<input id="totalListInput" value="@totalList" hidden />
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="8" style="text-align: right;padding-right: 1rem;">Total GP %:</th>
+                            <td id="totalGP">@Model.TotalGP</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <h3 class="col-12">Misc Charges</h3>
+        <div class="card col-12 p-3">
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="table-header">Misc Charge #</th>
+                            <th scope="col" class="table-header">Vendor</th>
+                            <th scope="col" class="table-header">Sales Code</th>
+                            <th scope="col" class="table-header">Charge Code</th>
+                            <th scope="col" class="table-header">Sell</th>
+                            <th scope="col" class="table-header">Cost</th>
+                            <th scope="col" class="table-header">Receiving Cost %</th>
+                            <th scope="col" class="table-header">Tax Code</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.MiscLines != null)
+                        {
+                            @foreach (var line in Model.MiscLines)
+                            {
+                                <tr>
+                                    <td>@line.MiscCharge</td>
+                                    <td>@line.VendorNo</td>
+                                    <td>@line.SalesCode</td>
+                                    <td>@line.ChargeCode</td>
+                                    <td>@line.Sell</td>
+                                    <td>@line.Cost</td>
+                                    <td>@line.RaceivingCostPercent</td>
+                                    <td>@line.TaxCode</td>
+                                </tr>
+                            }
+                        }
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div class="card mt-5">
+
+        <div class="card-body">
+
+			<ul class="nav nav-tabs" role="tablist">
+				<li class="nav-item">
+					<a class="nav-link h3 mb-0 active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Vendor Quote Requests</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link h3 mb-0" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Quote Deletion Request</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link h3 mb-0" id="redline-tab" data-toggle="tab" href="#redline" role="tab" aria-controls="redline" aria-selected="false">Quote Redline Request</a>
+				</li>
+			</ul>
+
+			<div class="tab-content">
+				<div id="home" class="tab-pane fade show active">
+					<div class="mt-4">
+						<!--  Validation https://getbootstrap.com/docs/4.3/components/forms/#custom-styles -->
+						@*<h3 class="col-12">Vendor Quote Requests</h3>*@
+						<div class="card offset-2 col-md-8 p-5">
+							<form id="EmailForm" novalidate>
+								<input type="hidden" id="hiddenQuoteNo" value="@Model.QuoteNo" />
+								<input type="hidden" id="hiddenQuoteHeader" value="@Model.HeaderInfo.OrderTitle.Trim()" />
+								<input type="hidden" id="hiddenCustomerName" value="@Model.HeaderInfo.CustomerName.Trim()" />
+
+								<div class="form-group ">
+									<label>Email to Vendors</label>
+									@if (Model.Vendors.Count() > 0)
+									{
+										@foreach (var vendor in Model.Vendors)
+										{
+											var hasAddress = vendor.Addresses?.Count > 0;
+											var hasMultipleAddress = vendor.Addresses?.Count > 1;
+											var formattedZipCode = Model.linesInfos.Where(x => x.VendorNo.Trim() == vendor.VendorNo.Trim() && x.IsOM).Select(x => x.FormattedPostalCode).FirstOrDefault();
+
+											<div class="form-row my-2 align-items-center">
+												<div class="col-md-6">
+													<div class="form-check">
+														<input class="form-check-input vendors-cb" type="checkbox" name="chkQIVendor" id="vendor_@vendor.VendorNo.Replace("&","")" data-vendor="@vendor.VendorNo.Replace("&","")" data-name="@vendor.Name.Replace("&","")" data-fzc="@formattedZipCode" />
+														<label class="form-check-label" for="vendor_@vendor.VendorNo.Replace("&","")">
+															@vendor.VendorNo - @vendor.Name
+														</label>
+													</div>
+												</div>
+												<div class="col-md-6">
+													@if (!hasAddress)
+													{
+														<input type="email" class="form-control toAddress" id="vendorToAddress_@vendor.VendorNo.Replace("&","")" value="" style="display:none;">
+
+													}
+													else
+													{
+														<select class="selectpicker " id="vendorToAddress_@vendor.VendorNo.Replace("&","")"
+																title="Select Emails..."
+																data-style="custom-pickerselect picker_@vendor.VendorNo.Replace("&","")" data-width="75%" style="display:none;" multiple>
+															@foreach (string s in vendor.Addresses)
+															{
+																if (!string.IsNullOrEmpty(s))
+																{
+																	if (s == vendor.Addresses.First())
+																	{
+																		<option value="@s" selected>@s</option>
+																	}
+																	else
+																	{
+																		<option value="@s">@s</option>
+																	}
+																}
+															}
+														</select>
+														<button type="button" class="btn btn-primary" id="btnAdd-@vendor.VendorNo.Replace("&","")" onclick="addFreeForm(this,'@vendor.VendorNo.Replace("&","")')" style="display:none;">+</button>
+
+														<input type="email" class="form-control toAddress vendorToAddressFreeform" id="vendorToAddressFreeform_@vendor.VendorNo.Replace("&","")" value="" style="margin-top:5px; display:none;">
+
+													}
+												</div>
+											</div>
+										}
+									}
+									else
+									{
+										<label style="font-style:italic; color:red;">The vendors are not eligible for quote inquiries through this form.</label>
+									}
+
+								</div>
+								<div class="form-group">
+									<label for="inputSpecifiedAndLocation">Specified by and location</label>
+									<input type="text" class="form-control" id="inputSpecifiedAndLocation" required />
+								</div>
+								<div class="form-row">
+									<div class="form-group col-md-4">
+										<label for="inputZipCode">Ship to Zip Code</label>
+										<input type="text" class="form-control" id="inputZipCode" required />
+									</div>
+
+									<div class="form-group col-md-8">
+										<label for="inputOrderDate">Anticipated Order Date</label>
+										<input type="text" class="form-control" id="inputOrderDate" required />
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="inputYourEmail">Your Email Address</label>
+									<input type="email" class="form-control" id="inputYourEmail" name="inputYourEmail" required>
+								</div>
+								<div class="form-row">
+									<div class="form-group col-md-6">
+										<label for="inputCC1">CC</label>
+										<input type="email" class="form-control" id="inputCC1" />
+									</div>
+									<div class="form-group  col-md-6">
+										<label for="inputCC2">CC</label>
+										<input type="email" class="form-control" id="inputCC2" />
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="inputYourName">Your Name</label>
+									<input type="text" class="form-control" id="inputYourName" name="inputYourName" required>
+								</div>
+								<div class="form-group">
+									<label for="inputNotes">Other Notes <span style="font-style:italic; color:red;">(This will appear on every vendor quote request)</span></label>
+									<textarea class="form-control" id="inputNotes" name="inputNotes" rows="3"></textarea>
+								</div>
+								<div class="form-group">
+									<label>Requested Items from Vendor</label>
+									<div class="col-md-8">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="chkBudgetaryPricing" />
+											<label class="form-check-label" for="chkBudgetaryPricing">
+												Budgetary Pricing
+											</label>
+										</div>
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="chkPricing" checked="checked" />
+											<label class="form-check-label" for="chkPricing">
+												PRICING (list & net)
+											</label>
+										</div>
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="chkFreight" checked="checked" />
+											<label class="form-check-label" for="chkFreight">
+												FREIGHT
+											</label>
+										</div>
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="chkLeadTime" checked="checked" />
+											<label class="form-check-label" for="chkLeadTime">
+												LEAD TIME
+											</label>
+										</div>
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="chkComYardage" checked="checked" />
+											<label class="form-check-label" for="chkComYardage">
+												COM yardage
+											</label>
+										</div>
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="chkComApproval" checked="checked" />
+											<label class="form-check-label" for="chkComApproval">
+												COM approval
+											</label>
+										</div>
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="chkConfirmComShip" checked="checked" />
+											<label class="form-check-label" for="chkConfirmComShip">
+												Confirm COM Ship-To Address
+											</label>
+										</div>
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="chkConfirmComAcrylic" checked="checked" />
+											<label class="form-check-label" for="chkConfirmComAcrylic">
+												Confirm if COM Acrylic Backing is Required
+											</label>
+										</div>
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="fileAttachment">Add attachment</label>
+									<input type="file" class="form-control-file" id="fileAttachment">
+								</div>
+								<div class="form-row align-items-center">
+									<div class="col-md-3">
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="excludeTitle" />
+											<label class="form-check-label" for="excludeTitle">
+												Exclude Title
+											</label>
+										</div>
+										<div class="form-check">
+											<input class="form-check-input" type="checkbox" id="rfp_bid" />
+											<label class="form-check-label" for="rfp_bid">
+												RFP/Bid
+											</label>
+										</div>
+									</div>
+									<div class="col-md-9">
+										<button type="submit" class="btn btn-primary btn-block mb-2" id="SendEmailQouteInquiry">
+											Submit
+										</button>
+									</div>
+								</div>
+
+							</form>
+						</div>
+
+					</div>
+				</div>
+
+				<div id="profile" class="tab-pane fade">
+					<div class="mt-4">
+						@*<h3 class="col-12">Quote Inquiry Deletion Form</h3>*@
+						<div class="card offset-2 col-md-8 p-5">
+							@using (Html.BeginForm("WrikeQuoteInquiryDeletion", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+							{
+								<input type="hidden" id="hiddenToDeleteQuoteNo" name="QuoteNoToDelete" value="@Model.QuoteNo" />
+								<input type="hidden" id="hiddenToDeleteCustomerName" name="OrderCustomerName" value="@Model.HeaderInfo.CustomerName" />
+								<input type="hidden" id="hiddenToDeleteSalespersonID" name="OrderSalespersonID" value="@Model.HeaderInfo.SalesIDs" />
+
+								<div class="row">
+									<div class="form-group col-12">
+										<label for="inputRequestorEmail">Requestor Email</label>
+										<input type="email" class="form-control" id="inputRequestorEmail" name="DeletionRequestorEmail" required>
+									</div>
+								</div>
+								<div class="row">
+									<div class="form-group col-12">
+										<label for="inputRequestorName">Requestor Name</label>
+										<input class="form-control" id="inputRequestorName" name="DeletionRequestorName" required>
+									</div>
+								</div>
+								<div class="row">
+									<div class="form-group col-12">
+										<label for="inputOtherNotes">Other Notes</label>
+										<textarea class="form-control" id="inputOtherNotes" name="OtherNotes" required></textarea>
+									</div>
+								</div>
+
+								<div class="row mt-3">
+									<div class="form-group col-12">
+										<label for="bomsifFileAttachment">Attach BOM SIF file</label>
+										<input type="file" class="form-control-file" id="bomsifFileAttachment" name="BOMSIFFile">
+									</div>
+								</div>
+								<div class="row mt-3">
+									<div class="col-12">
+										<button type="submit" class="float-right btn btn-primary col-4" id="SendQuoteInquiryDeletionRequest">Submit</button>
+									</div>
+								</div>
+							}
+						</div>
+					</div>
+				</div>
+
+				<div id="redline" class="tab-pane fade">
+					<div class="mt-4">
+						<div class="card offset-2 col-md-8 p-5">
+							<form id="EmailFormRedline" novalidate>
+								<input type="hidden" id="hiddenRedlineOrderNo" value="@Model.QuoteNo" />
+								<input type="hidden" id="hiddenRedlineOrderTitle" value="@Model.HeaderInfo.OrderTitle" />
+								<input type="hidden" id="hiddenRedlineCustomerName" value="@Model.HeaderInfo.CustomerName" />
+
+								<div class="form-group">
+									<label for="inputRedlineTo">To</label>
+									<input type="email" class="form-control" id="inputRedlineTo" name="inputRedlineTo" required>
+								</div>
+								<div class="form-group">
+									<label for="inputRedlineYourEmail">Your Email Address</label>
+									<input type="email" class="form-control" id="inputRedlineYourEmail" name="inputRedlineYourEmail" required>
+								</div>
+								<div class="form-row">
+									<div class="form-group col-md-6">
+										<label for="inputRedlineCC1">CC</label>
+										<input type="email" class="form-control" id="inputRedlineCC1" />
+									</div>
+									<div class="form-group  col-md-6">
+										<label for="inputRedlineCC2">CC</label>
+										<input type="email" class="form-control" id="inputRedlineCC2" />
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="inputRedlineAttachment">Add attachment</label>
+									<input type="file" class="form-control-file" id="inputRedlineAttachment">
+								</div>
+								<div class="form-check" style="margin-bottom:15px">
+									<input class="form-check-input" type="checkbox" id="inputRedlineRfpBid" />
+									<label class="form-check-label" for="inputRedlineRfpBid">RFP/Bid</label>
+								</div>
+								<div class="form-row">
+									<div class="offset-1 col-10">
+										<button type="submit" class="btn btn-primary btn-block mb-2" id="SendEmailRedline">Submit</button>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+        </div>
+    </div>
+
+
+
+}
+else
+{
+    <div class="no-results">
+
+        <span id="noresults">No results to show.</span>
+
+        <div class="d-flex justify-content-center">
+            <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+
+    </div>
+
+}
+
+
+<div id="alert"></div>

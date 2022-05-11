@@ -1,0 +1,507 @@
+﻿@using OWPApplications.Utils;
+@model OWPApplications.Models.POPDashboard.POPDashboardViewModel;
+
+@{
+    ViewData["Title"] = "Post Order Portal Dashboard";
+    ViewData["NavBarColor"] = "blue";
+    ViewData["ShowNavBar"] = "True";
+    ViewData["Type"] = "POPDashboard";
+}
+
+<style type="text/css">
+
+    .dateTextInput {
+        width: 140px;
+        text-align: center;
+        /*border: none;*/
+    }
+
+
+        .dateTextInput:hover {
+            border: 1px solid #73f6ff;
+        }
+
+    .fake-button {
+        transition: box-shadow .1s;
+        cursor: pointer;
+    }
+
+        .fake-button:hover {
+            box-shadow: 0 0 11px rgba(33,33,33,.2);
+        }
+
+    .filter-option-inner-inner {
+        max-width: 300px;
+    }
+
+    .highlight-yellow {
+        background-color: yellow;
+    }
+
+    [data-toggle="collapse"] .fas:before {
+        content: "\f103";
+    }
+
+    [data-toggle="collapse"].collapsed .fas:before {
+        content: "\f101";
+    }
+</style>
+
+@functions  {
+    string FormatCurrency(double? v)
+    {
+        return v.HasValue ? v.Value.ToString("C") : (0.0d).ToString("C");
+    }
+
+
+    string FutureCRDHighligthing(string CRD)
+    {
+        var days = DateTimeSupport.GetBusinessDays(DateTime.Now.Date.ToShortDateString(), CRD);
+        if (days >= 1.0 && days <= 7.0)
+        {
+            return "highlight-yellow";
+        }
+
+        return string.Empty;
+    }
+
+    string PastCRDHighligthing(string CRD)
+    {
+        var days = DateTimeSupport.GetBusinessDays(CRD, DateTime.Now.AddDays(-1.0).Date.ToShortDateString());
+        if (days >= 1.0 && days <= 7.0)
+        {
+            return "highlight-yellow";
+        }
+
+        return string.Empty;
+    }
+
+}
+
+@if (Model.Budget.Count() == 0 && @Model.FutureCRDs.Count() == 0 && Model.PastCRDs.Count() == 0 && Model.OpenQuotes.Count() == 0)
+{
+    <div class="no-results">
+
+        <span id="noresults">No results to show.</span>
+
+        <div class="d-flex justify-content-center">
+            <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+
+    </div>
+
+}
+else
+{
+    <input id="regionpopdash" value="@ViewData["Region"].ToString()" hidden />
+    <div class="row mt-4 expanded-table-s1" id="summary-container">
+        <div class="col-12 lines-header">
+            <h3 class="d-inline-block">Summary</h3>
+        </div>
+
+        <div class="card col-12 p-3">
+            @if (Model.Summary != null)
+            {
+                <div class="form form-inline p-3">
+                    <div class="input-group col">
+                        <span class="header-info--label left">Total Open Orders:</span>
+                        <span class="header-info--value">@Model.Summary.TotalOpenOrders</span>
+                    </div>
+                    <div class="input-group col">
+                        <span class="header-info--label left">Total Open Sell:</span>
+                        <span class="header-info--value">@FormatCurrency(@Model.Summary.TotalOpenSell)</span>
+                    </div>
+                    <div class="input-group col">
+                        <span class="header-info--label left">Total Open Cost:</span>
+                        <span class="header-info--value">@FormatCurrency(Model.Summary.TotalOpenCost)</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <p>Summary data missing.</p>
+            }
+        </div>
+    </div>
+
+    @if (ViewData["Region"].ToString() == "OWP")
+    {
+        <div class="row mt-4 expanded-table-s1" id="bucket-nro1-container">
+            @if (Model.Budget.Count() > 0)
+            {
+                <div class="col-10 lines-header fake-button collapsed" data-toggle="collapse" data-target="#bucket1collapse">
+                    <h3 class="d-inline-block">PM/Design Budget vs Actual</h3>
+                    @*<button type="button" class="btn btn-outline-secondary  float-right"><i class="fas"></i></button>*@
+                    <span class="float-right"><i class="fa-2x fas"></i></span>
+                </div>
+
+                <div id="bucket1collapse" class="collapse col-12">
+                    <div class="card col-12 p-3">
+                        <div class="alt-table-responsive table-responsive">
+                            <table class="table table-sm table-bordered text-center sortable">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="table-header" width="90px">Project ID</th>
+                                        <th scope="col" class="table-header" width="200px">Project Title</th>
+                                        <th scope="col" class="table-header" width="200px">Customer Name</th>
+                                        <th scope="col" class="table-header" width="90px">Design Budget</th>
+                                        <th scope="col" class="table-header">Design Actual Cost</th>
+                                        <th scope="col" class="table-header" width="200px">Design Actual Sell</th>
+                                        <th scope="col" class="table-header">PM Budget</th>
+                                        <th scope="col" class="table-header">PM Actual Cost</th>
+                                        <th scope="col" class="table-header">PM Actual Sell</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var budgetline in Model.Budget)
+                                    {
+                                        <tr>
+                                            <td>@budgetline.Project_ID</td>
+                                            <td>@budgetline.Project_Title</td>
+                                            <td>@budgetline.CustomerName</td>
+                                            <td>@budgetline.DesignBudget</td>
+                                            <td>@FormatCurrency(budgetline.DesignCost)</td>
+                                            <td>@FormatCurrency(budgetline.DesignSell)</td>
+                                            <td>@budgetline.PMBudget</td>
+                                            <td>@FormatCurrency(budgetline.PMCost)</td>
+                                            <td>@FormatCurrency(budgetline.PMSell)</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <p>No PM/Design Budget vs Actual data found.</p>
+            }
+        </div>
+    }
+
+
+    <div class="row mt-4 expanded-table-s1" id="bucket-nro4-container">
+        @if (@Model.OpenQuotes.Count() > 0)
+        {
+            @*<div class="col-10 lines-header fake-button collapsed" data-toggle="collapse" data-target="#bucket2collapse">
+                    <div class="col-12 lines-header">
+                        <h3 class="d-inline-block">Open Quotes</h3>
+                        <span class="float-right"><i class="fa-2x fas"></i></span>
+                    </div>
+                </div>*@
+
+            <div class="col-10 lines-header fake-button collapsed" data-toggle="collapse" data-target="#bucket2collapse">
+                <h3 class="d-inline-block">Open Quotes</h3>
+                <span class="float-right"><i class="fa-2x fas"></i></span>
+            </div>
+
+            <div id="bucket2collapse" class="collapse col-12">
+                <div class="card col-12 p-3">
+                    <div class="alt-table-responsive table-responsive">
+                        @*<div class="custom-control custom-switch mx-4 mb-4 float-right">
+                                <input type="checkbox" class="custom-control-input" id="showOnlyOne22Lines">
+                                <label class="custom-control-label" for="showOnlyOne22Lines">Show Only ONE22 Lines</label>
+                            </div>*@
+                        <div class="custom-control custom-switch mx-4 mb-4 float-right">
+                            <input type="checkbox" class="custom-control-input" id="showQuotesWithoutCRD">
+                            <label class="custom-control-label" for="showQuotesWithoutCRD">Show Only Quotes with CRD</label>
+                        </div>
+                        <table class="table table-sm table-bordered text-center sortable openQuotes">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="table-header">Quote Entry Date</th>
+                                    <th scope="col" class="table-header">Quote #</th>
+                                    <th scope="col" class="table-header">PID #</th>
+                                    <th scope="col" class="table-header">Quote Title</th>
+                                    <th scope="col" class="table-header">Sell Amount</th>
+                                    <th scope="col" class="table-header">GP%</th>
+                                    <th scope="col" class="table-header">Customer Request Date</th>
+                                    @*<th scope="col" class="table-header">ONE22 Line</th>*@
+                                    <th scope="col" class="table-header sorttable_nosort">Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var quote in Model.OpenQuotes)
+                                {
+                                    <tr class="breakrow @(!quote.One22Line ? "notOne22Line" : "") @(quote.Last_Cust_Request_Date == new DateTime() ? "notQuoteWithoutCRD" : "")">
+                                        <td>@quote.Date_Entered.ToString("MM/dd/yyyy")</td>
+                                        <td>@quote.QuoteNo</td>
+                                        <td>@quote.PIDNo</td>
+                                        <td>@quote.QuoteTitle</td>
+                                        <td>@quote.SellAmount.GetValueOrDefault().ToString("C2")</td>
+                                        <td>@quote.GP%</td>
+                                        <td>@(quote.Last_Cust_Request_Date != new DateTime() ? quote.Last_Cust_Request_Date.ToString("MM/dd/yyyy") : "")</td>
+                                        @*<td>@(quote.One22Line ? "Yes" : "No")</td>*@
+                                        <td class="text-left">
+                                            <textarea class="values-input"
+                                                      data-upsertlevel="OR"
+                                                      data-ordertype="Q"
+                                                      data-companycode="W"
+                                                      data-source="POD_Q"
+                                                      data-field="Comment"
+                                                      data-orderno="@quote.QuoteNo">@quote.Notes</textarea>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p>No Open Quotes data found.</p>
+        }
+    </div>
+
+    <div class="row mt-4 expanded-table-s1" id="bucket-nro2-container">
+        @if (@Model.FutureCRDs.Count() > 0)
+        {
+            <div class="col-12 lines-header" style="margin-left: 0px;">
+                <h3 class="d-inline-block">Order Statusing</h3>
+                <div class="custom-control custom-switch mx-4 mb-4 float-right">
+                    <input type="checkbox" class="custom-control-input" id="customerViewSwitch">
+                    <label class="custom-control-label" for="customerViewSwitch" style="margin-right:15px">Customer View</label>
+                    <button class="btn btn-sm btn-primary float-right" id="customerViewReport" onclick="GeneratePDF()" style="display:none">Export to PDF</button>
+                </div>
+            </div>
+
+            <div class="card col-12 p-3" id="orderStatusingMainView">
+                <div class="form form-inline mx-4 mb-4">
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Orders Not Fully Acknowledged:</span>
+                        <span class="header-info--value">@Model.FutureCRDs.First().OrdersNotFullyACKed</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Orders Fully Acknowledged But Not Scheduled:</span>
+                        <span class="header-info--value">@Model.FutureCRDs.First().OrdersFullyACKedNotSched</span>
+                    </div>
+                </div>
+
+                <div class="alt-table-responsive table-responsive">
+                    @*<div class="custom-control custom-switch mx-4 mb-4 float-right">
+                            <input type="checkbox" class="custom-control-input" id="showOnlyOne22LinesOS">
+                            <label class="custom-control-label" for="showOnlyOne22LinesOS">Show Only ONE22 Lines</label>
+                        </div>*@
+                    <table class="table table-sm table-bordered text-center sortable orderStatusing">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="table-header">Order #</th>
+                                <th scope="col" class="table-header">Order Date</th>
+                                <th scope="col" class="table-header">PID #</th>
+                                <th scope="col" class="table-header">Customer / Customer Name</th>
+                                <th scope="col" class="table-header">Order Title</th>
+                                <th scope="col" class="table-header">CRD</th>
+                                <th scope="col" class="table-header">Requested Arrival Date</th>
+                                <th scope="col" class="table-header">Scheduled Date</th>
+                                <th scope="col" class="table-header">Fully Acked</th>
+                                <th scope="col" class="table-header">Total Sell</th>
+                                @*<th scope="col" class="table-header">ONE22 Line</th>*@
+                                <th scope="col" class="table-header sorttable_nosort">Comments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var futureline in Model.FutureCRDs)
+                            {
+                                <tr class="breakrow @(!futureline.One22Line ? "notOne22LineOS" : "")">
+                                    @if (ViewData["Region"].ToString() == "OWP")
+                                    {
+                                        <td><a asp-controller="postorderplacementowp" asp-action="index" asp-route-orderno="@futureline.Order_No" asp-route-projectid="@futureline.Project_ID" target="_blank">@futureline.Order_No</a></td>
+                                    }
+                                    else
+                                    {
+                                        <td><a asp-controller="postorderplacementosq" asp-action="index" asp-route-orderno="@futureline.Order_No" asp-route-projectid="@futureline.Project_ID" target="_blank">@futureline.Order_No</a></td>
+                                    }
+
+                                    <td>@(futureline.Order_Date.HasValue ? futureline.Order_Date.Value.ToShortDateString() : "-")</td>
+                                    <td>@futureline.Project_ID</td>
+                                    <td>@futureline.Customer_No / @futureline.Customer_Name</td>
+                                    <td style="overflow-wrap:anywhere">@futureline.Order_Title</td>
+                                    <td class="@FutureCRDHighligthing(@futureline.CRD)">@futureline.CRD</td>
+                                    <td>@futureline.OrderRequestedArrivalDate</td>
+                                    @{
+                                        if (futureline.NotSched == 1)
+                                        {
+                                            <td style="background-color: grey; opacity: .8;">@futureline.Scheduled_Date</td>
+                                        }
+                                        else
+                                        {
+                                            <td>@futureline.Scheduled_Date</td>
+                                        }
+                                    }
+                                    @{
+                                        if (futureline.FullyACKed == "NO")
+                                        {
+                                            <td style="color: red;">@futureline.FullyACKed</td>
+                                        }
+                                        else
+                                        {
+                                            <td>@futureline.FullyACKed</td>
+                                        }
+                                        <td>@futureline.TotalSell.GetValueOrDefault().ToString("C2")</td>
+                                        @*<td>@(futureline.One22Line ? "Yes" : "No")</td>*@
+                                        <td class="text-left">
+                                            <textarea class="values-input"
+                                                      data-upsertlevel="OR"
+                                                      data-ordertype="O"
+                                                      data-companycode="W"
+                                                      data-source="POP_DASH"
+                                                      data-field="FUT_COMM"
+                                                      data-orderno="@futureline.Order_No">@futureline.Comment</textarea>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card col-12 p-3" id="customerView" style="display: none;">
+                <div class="alt-table-responsive table-responsive">
+                    <table class="table table-sm table-bordered text-center sortable">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="table-header">Quote #</th>
+                                <th scope="col" class="table-header">Order #</th>
+                                <th scope="col" class="table-header">Customer PO #</th>
+                                <th scope="col" class="table-header">Order Title</th>
+                                <th scope="col" class="table-header">Estimated Arrival Date</th>
+                                <th scope="col" class="table-header">Install/Delivery Date</th>
+                                <th scope="col" class="table-header sorttable_nosort">Notes 1</th>
+                                <th scope="col" class="table-header sorttable_nosort">Notes 2</th>
+                                <th scope="col" class="table-header sorttable_nosort">Notes 3</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var customerViewLine in Model.CustomerView)
+                            {
+                                <tr>
+                                    <td>@customerViewLine.Quote_No</td>
+                                    <td><a asp-controller="home" asp-action="postorderplacement" asp-route-orderno="@customerViewLine.Order_No" target="_blank">@customerViewLine.Order_No</a></td>
+                                    <td>@customerViewLine.Customer_PO</td>
+                                    <td>@customerViewLine.Order_Title</td>
+                                    <td><input class="form-control datepicker values-input-date" data-upsertlevel="OR" data-ordertype="O" data-companycode="W" data-source="POD_C" data-field="ArrivalDate" data-orderno="@customerViewLine.Order_No" name="estArrDate" type="text" autocomplete="off" value="@customerViewLine.Estimated_Arr_Date" /></td>
+                                    <td>@customerViewLine.Install_Delivery_Date</td>
+                                    <td class="text-left"><textarea class="values-input" data-upsertlevel="OR" data-ordertype="O" data-companycode="W" data-source="POD_C" data-field="Note1" data-orderno="@customerViewLine.Order_No">@customerViewLine.Note1</textarea></td>
+                                    <td class="text-left"><textarea class="values-input" data-upsertlevel="OR" data-ordertype="O" data-companycode="W" data-source="POD_C" data-field="Note2" data-orderno="@customerViewLine.Order_No">@customerViewLine.Note2</textarea></td>
+                                    <td class="text-left"><textarea class="values-input" data-upsertlevel="OR" data-ordertype="O" data-companycode="W" data-source="POD_C" data-field="Note3" data-orderno="@customerViewLine.Order_No">@customerViewLine.Note3</textarea></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p>No Future CRD data found.</p>
+        }
+    </div>
+
+
+
+    <div class="row mt-4 expanded-table-s1" id="bucket-nro3-container">
+        @if (Model.PastCRDs.Count() > 0)
+        {
+            <div class="col-12 lines-header">
+                <h3 class="d-inline-block">Order Closeout/ISR</h3>
+            </div>
+
+            <div class="card col-12 p-3">
+                <div class="form form-inline mx-4 mb-4">
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Open Orders:</span>
+                        <span class="header-info--value">@Model.PastCRDs.First().OpenOrdersCount</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total Open Sell:</span>
+                        <span class="header-info--value">@FormatCurrency(Model.PastCRDs.First().TotalOpenSell)</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total Open Cost:</span>
+                        <span class="header-info--value">@FormatCurrency(Model.PastCRDs.First().TotalOpenCost)</span>
+                    </div>
+                </div>
+
+                <div class="alt-table-responsive table-responsive">
+                    <table class="table table-sm table-bordered text-center sortable">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="table-header">Order #</th>
+                                <th scope="col" class="table-header">Order Date</th>
+                                <th scope="col" class="table-header">PID #</th>
+                                <th scope="col" class="table-header">Customer / Customer Name</th>
+                                <th scope="col" class="table-header">Order Title</th>
+                                <th scope="col" class="table-header">CRD</th>
+                                <th scope="col" class="table-header">Open Lines Count</th>
+                                <th scope="col" class="table-header">Open Lines Sell</th>
+                                <th scope="col" class="table-header">Open Lines Cost</th>
+                                <th scope="col" class="table-header">Sell Eligible for Partial Invoicing</th>
+                                <th scope="col" class="table-header" width="40px">Completion Date</th>
+                                <th scope="col" class="table-header sorttable_nosort text-left">Comments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pastline in Model.PastCRDs)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (ViewData["Region"].ToString() == "OWP")
+                                        {
+                                            <a asp-controller="home"
+                                               asp-action="internalstatusreport"
+                                               asp-route-orderno="@pastline.Order_No"
+                                               asp-route-ordernoisr="@pastline.Order_No"
+                                               asp-route-cutoffdate="@DateTime.Now.AddYears(2).ToShortDateString()"
+                                               asp-route-salesperson="@Model.Salesperson"
+                                               target="_blank">
+                                                @pastline.Order_No
+                                            </a> }
+                                        else
+                                        {
+                                            <a asp-controller="home"
+                                               asp-action="internalstatusreport"
+                                               asp-route-orderno="@pastline.Order_No"
+                                               asp-route-ordernoisr="@pastline.Order_No"
+                                               asp-route-cutoffdate="@DateTime.Now.AddYears(2).ToShortDateString()"
+                                               asp-route-salesperson="@Model.Salesperson"
+                                               asp-route-regionisr="OSQ"
+                                               target="_blank">
+                                                @pastline.Order_No
+                                            </a>}
+
+                                    </td>
+                                    <td>@(pastline.Order_Date.HasValue ? @pastline.Order_Date.Value.ToShortDateString() : "-") </td>
+                                    <td>@pastline.Project_ID</td>
+                                    <td>@pastline.Customer_No / @pastline.Customer_Name</td>
+                                    <td style="overflow-wrap:anywhere">@pastline.Order_Title</td>
+                                    <td class="@PastCRDHighligthing(@pastline.CRD)">@pastline.CRD</td>
+                                    <td>@pastline.OpenLines</td>
+                                    <td>@FormatCurrency(pastline.OpenSell)</td>
+                                    <td>@FormatCurrency(pastline.OpenCost)</td>
+                                    <td>@FormatCurrency(pastline.SellEligibleForPartialInvoicing)</td>
+                                    <td><input data-field="PAST_CMPLDATE" data-ordertype="O" data-companycode="W" data-source="POP_DASH" data-orderno="@pastline.Order_No" data-upsertlevel="OR" class="values-input dateTextInput" value="@pastline.CompletionDate" /></td>
+                                    <td class="text-left"><textarea class="values-input" data-upsertlevel="OR" data-ordertype="O" data-companycode="W" data-source="POP_DASH" data-field="PAST_COMM" data-orderno="@pastline.Order_No">@pastline.Comment</textarea></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p>No Past CRD data found.</p>
+        }
+    </div>
+
+    <input type="hidden" id="salesperson" value="@Model.Salesperson" />
+    <input type="hidden" id="selectedCustomers" value="@String.Join(",", Model.SelectedCustomers)" />
+    <input type="hidden" id="customerNo" value="@Model.CustomerNo" />
+    <input type="hidden" id="projectId" value="@Model.ProjectId" />
+}

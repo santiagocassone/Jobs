@@ -1,0 +1,950 @@
+﻿@{
+    ViewData["Title"] = "Internal Status Report";
+    ViewData["NavBarColor"] = "violet";
+    ViewData["ShowNavBar"] = "True";
+    ViewData["Type"] = "InternalStatusReport";
+}
+@model OWPApplications.Models.InternalStatusReport.InternalStatusReportViewModel;
+@{
+    List<string> selectedCustomersTemp = ViewData["SelectedCustomers"] as List<string>;
+    string selectedCustomers = ViewData["SelectedCustomers"] == null || selectedCustomersTemp.Count() == 0 ? null : String.Join(",", selectedCustomersTemp.ToArray());
+    List<string> salespersonTemp = ViewData["Salesperson"] as List<string>;
+    string salesperson = ViewData["Salesperson"] == null || salespersonTemp.Count() == 0 ? null : String.Join(",", salespersonTemp.ToArray());
+}
+<style type="text/css">
+
+    .table-container {
+        max-height: 800px;
+        overflow-x: hidden;
+    }
+
+        .table-container table {
+            display: flex;
+            flex-flow: column;
+            height: 100%;
+            width: 100%;
+        }
+
+            .table-container table thead {
+                flex: 0 0 auto;
+                width: calc(100% - 0.9em);
+            }
+
+            .table-container table tbody {
+                flex: 1 1 auto;
+                display: block;
+                overflow-y: scroll;
+            }
+
+                .table-container table tbody tr {
+                    width: 100%;
+                }
+
+                .table-container table thead, .table-container table tbody tr {
+                    display: table;
+                    table-layout: fixed;
+                }
+
+    .orderButton {
+        background: none !important;
+        border: none;
+        padding: 0 !important;
+        color: dodgerblue;
+    }
+
+    .reqCRD {
+        width: -webkit-fill-available;
+    }
+
+    .values-input {
+        width: -webkit-fill-available;
+    }
+
+
+    .isrTable {
+        display: flex;
+        flex-flow: column;
+        width: 100%;
+    }
+
+        .isrTable thead {
+            flex: 0 0 auto;
+            width: calc( 100% );
+        }
+
+        .isrTable tbody {
+            flex: 1 1 auto;
+            display: block;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .isrTable tr {
+            width: 100%;
+            display: table;
+            table-layout: fixed;
+        }
+
+
+    .tooltip-inner {
+        min-width: 100%;
+        max-width: 100%;
+        background-color: white;
+    }
+
+    .rTable {
+        display: table;
+        width: 100%;
+    }
+
+    .rTableRow {
+        display: table-row;
+    }
+
+    .rTableCell, .rTableHead {
+        display: table-cell;
+        padding: 3px 10px;
+        border: 1px solid #999999;
+        color: black;
+    }
+
+    .rTableHeading {
+        display: table-header-group;
+        background-color: #ddd;
+        font-weight: bold;
+        color: black;
+    }
+
+    .rTableBody {
+        display: table-row-group;
+    }
+
+    .tooltip-inner {
+        background-color: lightgray !important;
+    }
+
+    .clsBlack {
+        color: black;
+    }
+
+    .clsRed {
+        color: red;
+    }
+
+    .tooltip.top .tooltip-arrow {
+        border-top-color: black;
+    }
+
+    .tooltip.right .tooltip-arrow {
+        border-right-color: black;
+    }
+
+    .tooltip.bottom .tooltip-arrow {
+        border-bottom-color: black;
+    }
+
+    .tooltip.left .tooltip-arrow {
+        border-left-color: black;
+    }
+
+    #tblSummary th {
+        padding: 5px;
+        vertical-align: middle;
+    }
+
+    #tblSummary td {
+        padding: 0;
+        vertical-align: middle;
+    }
+</style>
+
+
+
+@if (Model.ShowSummary)
+{
+    if (Model.SummaryInfo != null && Model.SummaryInfo.Count > 0)
+    {
+        <input id="regionISRFilter" value="@ViewData["Region"]" hidden />
+        //SUMMARY INFO
+        <div class="row mt-4" id="summary-container" style="width: 1850px; margin-left: -370px">
+            <div>
+                <h3 class="d-inline-block" style="margin-left: 50px; margin-bottom: 15px;">Summary Info</h3>
+                @if (Model.ComesFromMV)
+                {
+                    <a id="backToMV" href="/isrmanagerview?@Model.SalespersonType=@Model.SalespersonCode&cuttoffdate=@Model.CutOffDate" style="margin-left: 30px; vertical-align: 2px">Back to Manager View</a>
+                }
+            </div>
+            <div class="card col-12 p-3">
+                <div class="form form-inline mx-4 mb-4">
+                    <div class="input-group mb-2">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">Project ID</div>
+                        </div>
+                        <input type="text" class="form-control" id="projectIDFilter" style="width:100px">
+                    </div>
+                    <div class="input-group mb-2 ml-2">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">Accountability</div>
+                        </div>
+                        <select class="form-control" id="accountabilityFilter" style="width:135px">
+                            <option>All</option>
+                            <option>Sales Support</option>
+                            <option>PM</option>
+                        </select>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total Orders Open:</span>
+                        <span class="header-info--value">@Model.TotalOrdersOpen</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total Open Sell:</span>
+                        <span class="header-info--value">@Model.TotalOpenSell</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total Open Cost:</span>
+                        <span class="header-info--value">@Model.TotalOpenCost</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total Sell Eligible for Partial Invoicing:</span>
+                        <span class="header-info--value">@Model.TotalSellEligibleforPartialInvoicing</span>
+                    </div>
+                </div>
+
+                @foreach (var item in Model.ResultSalespersons)
+                {
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <h4 style="margin-left: 20px">@item</h4>
+                            <p id="@item.Trim().Replace(" ","").Replace("/","")" style="display:none; color:red;">Update Hedberg Cust Req Date to realistic projected billing date</p>
+                        </div>
+                        <div class="col-md-6">
+                            @if (Model.ShowViewClosedOrdersLink)
+                            {
+                                using (Html.BeginForm("index", "isrclosedordersummary", FormMethod.Post))
+                                {
+                                    <input type="hidden" value="@(String.Join(",", (ViewData["SalesPerson"] as List<string>).ToArray()))" name="csvSalesperson" />
+                                    <input type="hidden" value="@(String.Join(",", (ViewData["SelectedCustomers"] as List<string>).ToArray()))" name="csvCustomers" />
+                                    <input type="hidden" value="@ViewData["CutOffDate"]" name="csvCuttOffDate" />
+                                    <input type="hidden" value="@ViewData["SPType"]" name="csvSalespersonType" />
+                                    <input type="hidden" value="@ViewData["Region"]" name="csvRegion" />
+                                    <button type="button" class="orderButton" id="pdfLink" style="margin-left:700px" onclick="printPDFISR(summaryInfoData)">Print in PDF</button>
+
+                                    <button type="submit" class="orderButton" style="margin-left:700px" onclick="clearDateValues()">View Closed Orders</button>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <div class="alt-table-responsive table-responsive table-container" style="overflow-y:hidden">
+                        <table id="tblSummary" class="table table-sm table-bordered text-center tablesorter isrTable">
+                            <thead>
+                                <tr>
+                                    <th style="width:28px"></th>
+                                    <th scope="col" class="table-header" style="width:85px">Project ID</th>
+                                    <th scope="col" class="table-header" style="width:120px">Accountability</th>
+                                    <th scope="col" class="table-header" style="width:70px">Order #</th>
+                                    <th scope="col" class="table-header" style="width:95px">Order Date</th>
+                                    <th scope="col" class="table-header" style="width:105px">Customer</th>
+                                    <th scope="col" class="table-header" style="width:115px">Order Title</th>
+                                    <th scope="col" class="table-header" style="width:95px">Last Estimated Arrival Date</th>
+                                    <th scope="col" class="table-header" style="width:95px">Customer Requested Date</th>
+                                    <th id="sortTh" scope="col" class="table-header" style="width:92px">Percentage of Sell Available for Partial Invoicing</th>
+                                    <th scope="col" class="table-header" style="width:110px">Sell Eligible for Partial Invoicing</th>
+                                    <th scope="col" class="table-header" style="width:110px">Total Open Sell</th>
+                                    <th scope="col" class="table-header" style="width:110px">Total Open Cost</th>
+                                    <th scope="col" class="table-header" style="width:70px">Qty Lines Open</th>
+                                    <th scope="col" class="table-header" style="width:95px">Scheduled Dates</th>
+                                    <th scope="col" class="table-header" style="width:100px">Requested CRD</th>
+                                    <th scope="col" class="table-header">Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.SummaryInfo.Count(); i++)
+                                {
+                                    var line = Model.SummaryInfo.ElementAt(i);
+                                    if (line.SalespersonName == item)
+                                    {
+                                        <tr>
+                                            <td style="width:28px;vertical-align:middle">
+                                                <input type="checkbox" class="projCheck"
+                                                       data-orderno="@line.OrderNo"
+                                                       data-ordertitle="@line.OrderTitle"
+                                                       data-projectid="@line.ProjectID"
+                                                       data-accountability="@line.Accountability"
+                                                       data-customername="@line.CustomerName"
+                                                       data-totalsell="@line.TotalOpenSell"
+                                                       data-totalcost="@line.TotalOpenCost"
+                                                       data-selleligible="@line.SellEligibleforPartialInvoicing"
+                                                       data-companycode="@line.CompanyCode" />
+                                            </td>
+                                            <td class="projId" style="width:85px">@line.ProjectID</td>
+                                            <td style="width:120px">
+                                                <select class="form-control values-input accountability" data-source="ISR_APP"
+                                                        data-orderno="@line.OrderNo"
+                                                        data-field="Accountability"
+                                                        data-companycode="@line.CompanyCode"
+                                                        data-upsertlevel="OR"
+                                                        data-ordertype="O">
+                                                    <option selected="@(line.Accountability.Trim() == "Sales Support")">Sales Support</option>
+                                                    <option selected="@(line.Accountability.Trim() == "PM")">PM</option>
+                                                </select>
+                                            </td>
+                                            <td style="width:70px">
+                                                @Html.ActionLink(
+                                                    line.OrderNo,
+                                                    "InternalStatusReport",
+                                                    "home",
+                                                    new {
+                                                        cutoffdate = Model.CutOffDate,
+                                                        orderno = line.OrderNo,
+                                                        c = selectedCustomers,
+                                                        s = salesperson,
+                                                        regionISR = ViewData["Region"],
+                                                        salespersontype = ViewData["SPType"],
+                                                        o = ViewData["OrderNo"],
+                                                        projfolder = ViewData["ProjectFolder"],
+                                                        view = "det" },
+                                                    new {target="_blank", @class = "ordernocrd" }
+                                                )
+                                            </td>
+                                            <td style="width:95px"><span style="cursor:pointer;" data-orderno="@line.OrderNo" class="showDet">@line.OrderDate</span></td>
+                                            <td style="width:105px"><span class="cust">@line.CustomerName</span></td>
+                                            <td class="emailTooltip" data-html="true" data-toggle="tooltip" title="@line.Tooltip(line.EmailLogs)" style="width:115px">@line.OrderTitle</td>
+                                            <td class="DateTooltip" data-html="true" data-toggle="tooltip" title="@line.DateTooltip(line.EstArrDates)" style="width:95px">@line.EstimatedArrivalDate</td>
+                                            @if (line.CustomerRequestDate == "")
+                                            {
+                                                <td style="width:95px"><span class="crd" data-alertdate="no">@line.CustomerRequestDate</span></td>
+                                            }
+                                            else
+                                            {
+                                                if (DateTime.Parse(line.CustomerRequestDate) < DateTime.Now)
+                                                {
+                                                    <td style="width:95px"><span class="crd" data-alertdate="yes" data-item="@item.Trim().Replace(" ","").Replace("/","")" style="color:red;">@line.CustomerRequestDate</span></td>
+                                                }
+                                                else
+                                                {
+                                                    <td style="width:95px"><span class="crd" data-alertdate="no">@line.CustomerRequestDate</span></td>
+                                                }
+                                            }
+                                            <td style="width:92px" class="sortTd" data-value="@(line.PercentageSellAvailablePartialInvoicing == 0 ? "" : line.PercentageSellAvailablePartialInvoicing.ToString("P"))">@line.PercentageSellAvailablePartialInvoicing</td>
+                                            <td style="width:110px">@line.SellEligibleforPartialInvoicing.ToString("C")</td>
+                                            <td style="width:110px">@line.TotalOpenSell.ToString("C")</td>
+                                            <td style="width:110px">@line.TotalOpenCost.ToString("C")</td>
+                                            <td style="width:70px">@line.QtyOpen</td>
+                                            @if (line.ScheduledDates?.Count == 1)
+                                            {
+                                                <td style="width:95px;color:@line.ScheduledDates[0].Color">@line.ScheduledDates[0].Date</td>
+                                            }
+                                            else if (line.ScheduledDates?.Count > 1)
+                                            {
+                                                string tooltip = @"<div>";
+                                                foreach (var sd in line.ScheduledDates)
+                                                {
+                                                    tooltip += @"<p class='cls" + sd.Color + @"'>" + sd.Date + @"</p>";
+                                                }
+                                                tooltip += @"</div>";
+
+                                                <td class="schedDateTooltip" data-html="true" data-toggle="tooltip" title="@tooltip" style="width:95px">MULTIPLE</td>
+                                            }
+                                            else
+                                            {
+                                                <td style="width:95px"></td>
+                                            }
+                                            <td style="width:100px;padding:5px">
+                                                <input type="text" data-source="ISR_APP"
+                                                       data-orderno="@line.OrderNo"
+                                                       data-field="CRD"
+                                                       data-companycode="@line.CompanyCode"
+                                                       data-upsertlevel="OR"
+                                                       data-ordertype="O"
+                                                       class="values-input-date reqCRD" />
+                                            </td>
+                                            <td style="padding:0 5px 0 5px">
+                                                <textarea class="values-input txtComments" id="comments-@line.OrderNo"
+                                                          data-source="ISR_APP"
+                                                          data-orderno="@line.OrderNo"
+                                                          data-field="Comment"
+                                                          data-companycode="@line.CompanyCode"
+                                                          data-upsertlevel="OR"
+                                                          data-ordertype="O"
+                                                          rows="3">@line.Comment</textarea>
+                                            </td>
+                                        </tr>
+
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+
+            </div>
+        </div>
+
+        <div class="card mt-5" style="width:800px; margin-left:150px;">
+            <div class="card-body">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link h3 mb-0 active" id="inv-tab" data-toggle="tab" href="#inv" role="tab" aria-controls="inv" aria-selected="false">Invoice</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link h3 mb-0" id="crd-tab" data-toggle="tab" href="#crd" role="tab" aria-controls="crd" aria-selected="false">CRD Change Request</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div id="inv" class="tab-pane fade show active">
+                        <div class="mt-4">
+                            <div class="card offset-2 col-md-8 p-5">
+                                <form id="invoiceEmailForm">
+                                    <div class="form-group">
+                                        <label for="invInvoiceType">Invoice Type</label>
+                                        <select class="custom-select mr-sm-2" id="invInvoiceType">
+                                            <option value="Complete">Complete</option>
+                                            <option value="Partial">Partial</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="invInvoiceDate">
+                                        <label for="completiondate">Actual Completion Date</label>
+                                        <input class="form-control datepicker" id="completiondate" name="completiondate" type="text" autocomplete="off" style="text-indent:8px" />
+                                    </div>
+                                    <div class="form-group" id="invInvoiceReceived" style="display:none;">
+                                        <label for="invoice-received_select">Received or Paid</label>
+                                        <select class="custom-select" id="invoice-received_select">
+                                            <option value="Received" selected>Received</option>
+                                            <option value="Paid">Paid (includes received)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputYourName">Your Name</label>
+                                        <input type="text" class="form-control" id="inputYourName" name="inputYourName" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="invYourEmail">Your Email Address</label>
+                                        <input type="email" class="form-control" id="invYourEmail" name="invYourEmail" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="invCC1">CC</label>
+                                            <input type="email" class="form-control" id="invCC1" />
+                                        </div>
+                                        <div class="form-group  col-md-6">
+                                            <label for="invCC2">CC</label>
+                                            <input type="email" class="form-control" id="invCC2" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="invYourEmail">Comments</label>
+                                        <textarea class="form-control" id="invComments" name="invComments" rows="3"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fileAttachment">Add attachment</label>
+                                        <input type="file" class="form-control-file" id="fileAttachment">
+                                    </div>
+                                    <div class="form-row">
+                                        <button type="submit" class="btn btn-primary btn-block mb-2" id="sendInvoiceEmailForm">Submit</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="crd" class="tab-pane fade">
+                        <div class="mt-4">
+                            <div class="card offset-2 col-md-8 p-5">
+                                <form id="EmailFormInternalStatusCRD">
+                                    <div class="alert alert-info" style="display:none" id="msgEmailForm">
+                                        Additional information is needed in order to process your request.
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="crdYourEmail">Your Email Address</label>
+                                        <input type="email" class="form-control" id="crdYourEmail" name="crdYourEmail" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="inputCC1">CC</label>
+                                            <input type="email" class="form-control" id="inputCC1" />
+                                        </div>
+                                        <div class="form-group  col-md-6">
+                                            <label for="inputCC2">CC</label>
+                                            <input type="email" class="form-control" id="inputCC2" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputYourName">Your Name</label>
+                                        <input type="text" class="form-control" id="inputYourName" name="inputYourName" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputComments">Comments</label>
+                                        <textarea class="form-control" id="inputComments" name="inputComments" rows="3"></textarea>
+                                    </div>
+                                    <div class="form-row">
+                                        <button type="submit" class="btn btn-primary btn-block mb-2" id="SendEmailsInternalStatusCRD">Submit</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="no-results">
+            <span id="noresults">No results to show.</span>
+            <div class="d-flex justify-content-center">
+                <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+
+@if (Model.ShowDetails)
+{
+    <input id="regionISRFilter" value="@ViewData["Region"]" hidden />
+    <input id="companyCodeLog" value="@Model.SummaryInfo[Model.ActiveIndex].CompanyCode" hidden />
+    <div class="details-container">
+        @*HEADER INFO*@
+        <div class="row mt-4">
+            <div class="col-12">
+                <h3 style="display:inline-block;float:left">Header Info</h3>
+                @using (Html.BeginForm())
+                {
+                    <form method="post" action="InternalStatusReport">
+                        <input type="text" value="sum" name="view" hidden />
+                        <input type="text" value="@Model.CutOffDate" name="cutoffdate" hidden />
+                        <input type="text" value="@selectedCustomers" class="childCust" name="c" hidden />
+                        <input type="text" value="@salesperson" class="childSales" name="s" hidden />
+                        <input type="text" value="@ViewData["Region"]" name="regionISR" hidden />
+                        <input type="text" value="@ViewData["OrderNo"]" name="orderno" hidden />
+                        <input type="text" value="@ViewData["SPType"]" name="salespersontype" hidden />
+                        <input type="text" value="@ViewData["OrderNo"]" name="o" hidden />
+                        <input type="text" value="@ViewData["ProjectFolder"]" name="projfolder" hidden />
+                        <button type="submit" class="orderButton" style="margin-left:840px">Summary Info</button>
+                    </form>
+                }
+            </div>
+            <div class="card col-12">
+                <div class="row no-gutters">
+                    <div class="col-md-6">
+                        <ul class="header-info py-3 pl-0">
+                            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Project Id:</span><span class="header-info--value">@Html.Raw(Model.SummaryInfo[Model.ActiveIndex].HeaderInfo.ProjectId)</span></li>
+                            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Order #:</span><span class="header-info--value">@Html.Raw(Model.SummaryInfo[Model.ActiveIndex].OrderNo)</span></li>
+                            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Title:</span><span class="header-info--value">@Html.Raw(Model.SummaryInfo[Model.ActiveIndex].HeaderInfo.OrderTitle)</span></li>
+                            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Customer #:</span><span class="header-info--value">@Html.Raw(Model.SummaryInfo[Model.ActiveIndex].HeaderInfo.CustomerNo)</span></li>
+                            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Sales IDs (%):</span><span class="header-info--value">@Html.Raw(Model.SummaryInfo[Model.ActiveIndex].HeaderInfo.SalesIDs)</span></li>
+                            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Customer PO #:</span><span class="header-info--value">@Html.Raw(Model.SummaryInfo[Model.ActiveIndex].HeaderInfo.CustomerPONo)</span></li>
+                            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Ship To Address:</span><span class="header-info--value">@Html.Raw(Model.SummaryInfo[Model.ActiveIndex].HeaderInfo.ShipToAddress)</span></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="header-info py-3 pl-0">
+                            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">Order Status (U, A, S, H, C):</span><span class="header-info--value">@Html.Raw(Model.SummaryInfo[Model.ActiveIndex].HeaderInfo.OrderStatus)</span></li>
+                            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">Delivery Instructions:</span><span class="header-info--value">@Html.Raw(Model.SummaryInfo[Model.ActiveIndex].HeaderInfo.DeliveryInstructions)</span></li>
+                            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">MFG PO Info:</span><span class="header-info--value">@Html.Raw(Model.SummaryInfo[Model.ActiveIndex].HeaderInfo.MFG_PO_Info)</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @*LINES INFO*@
+        <div class="row mt-4" style="margin-left:-380px; margin-right:-380px;">
+            <div class="col-12 lines-header" style="margin-left: 0px;">
+                <h3 class="d-inline-block">Lines Info</h3>
+                <div class="custom-control custom-switch mx-4 mb-4 float-right">
+                    <input type="checkbox" class="custom-control-input" id="includeCVSwitch" data-from="internalStatus" checked>
+                    <label class="custom-control-label" for="includeCVSwitch">Include Open CV Lines</label>
+                </div>
+            </div>
+            <div class="card col-12 p-3">
+                <div class="alt-table-responsive table-responsive table-container" style="overflow-y: hidden;">
+                    <table id="tblLineInfoPage" class="table table-sm table-bordered text-center isrTable tablesorter">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th scope="col" class="table-header">Line</th>
+                                <th scope="col" class="table-header">Process Code</th>
+                                <th scope="col" class="table-header">Sales Code</th>
+                                <th scope="col" class="table-header">Vendor</th>
+                                <th scope="col" class="table-header">Catalog</th>
+                                <th scope="col" class="table-header">Ordered</th>
+                                <th scope="col" class="table-header">Received</th>
+                                <th scope="col" class="table-header">Ticketed</th>
+                                <th scope="col" class="table-header">Delivered</th>
+                                <th scope="col" class="table-header">Invoiced</th>
+                                <th scope="col" class="table-header">Vnd Inv</th>
+                                <th scope="col" class="table-header">Open Sell</th>
+                                <th scope="col" class="table-header">Open Cost</th>
+                                <th scope="col" class="table-header">Last Schedule Dt</th>
+                                <th scope="col" class="table-header">Last Estimated Arrival Dt</th>
+                                <th scope="col" class="table-header">Customer Request Dt</th>
+                                @if (ViewData["Region"].ToString() == "OSQ")
+                                {
+                                    <th scope="col" class="table-header">Notes</th>
+                                }
+
+                            </tr>
+                        </thead>
+                        <tbody style="width:1839px">
+                            @foreach (var line in Model.SummaryInfo[Model.ActiveIndex].Lines.OrderBy(x => x.LineNo))
+                            {
+                                string value = "";
+                                bool hasLocation = Model.SummaryInfo[Model.ActiveIndex].HeaderInfo.Locations.TryGetValue(line.LineNo, out value);
+                                string CatalogContent = string.IsNullOrEmpty(line.Description) ? line.Catalog : "<span data-toggle='tooltip' title='" + line.Description + "'>" + line.Catalog + "</span>";
+                                <input id="warehouse-@line.LineNo" value="@line.WarehouseNo" hidden />
+                                <input id="hardsched-@line.LineNo" value="@line.HasHardSched" hidden />
+                                <tr class="breakrow @(line.CostVerifiedReadyFlag == 1 ? "openCV" : "")">
+                                    <td>
+                                        <input type="checkbox" class="show-email-options chkline" id="cb-@line.LineNo"
+                                               data-line="@line.LineNo" data-vendor="@line.VendorNo.Trim()"
+                                               data-source="ISR_APP" data-salescode="@line.SalesCode"
+                                               data-ack="@line.ACK" data-owpPO="@line.OWP_PO" data-processcode="@line.ProcessingCode"
+                                               data-location="@value" data-sell="@line.OpenSell"
+                                               data-showlink=@line.ShowLink
+                                               data-custname=@Html.Raw(Model.SummaryInfo[Model.ActiveIndex].HeaderInfo.CustomerName)
+                                               data-taxamount="@line.TaxAmount"
+                                               data-taxpct="@line.TaxPercentage">
+                                    </td>
+                                    <td>@line.LineNo</td>
+                                    <td>@line.ProcessingCode</td>
+                                    <td>@line.SalesCode</td>
+                                    <td>@line.Vendor_Name (@line.VendorNo)</td>
+                                    <td>@Html.Raw(CatalogContent)</td>
+                                    <td>@line.Ordered</td>
+                                    <td class="custom-text-@line.ReceivedColor">@line.Received</td>
+                                    <td class="custom-text-@line.TicketedColor">@line.Ticketed</td>
+                                    <td class="custom-text-@line.DeliveredColor">@line.Delivered</td>
+                                    <td class="custom-text-@line.InvoicedColor" style="@(line.Ordered.Trim() == line.Invoiced.Trim() ? "font-weight:bold" : "")">@line.Invoiced</td>
+                                    <td class="costDateTooltip custom-text-@line.VendorInvColor" data-html="true" data-toggle="tooltip" title="@line.CostDateTooltip(line.Cost_Verified_Date)" style="width:115px">@line.VendorInv</td>
+                                    <td class="custom-text-@line.OpenSellColor">@line.OpenSell</td>
+                                    <td class="custom-text-@line.OpenCostColor">@line.OpenCost</td>
+                                    <td> @line.ScheduleDate</td>
+                                    <td> @line.EstimatedArrivalDate</td>
+                                    <td> @line.CustomerRequestDate</td>
+                                    @if (ViewData["Region"].ToString() == "OSQ")
+                                    {
+                                        <td style="padding:0 5px 0 5px">
+                                            <textarea class="values-input txtNotes" id="comments-@line.LineNo"
+                                                      data-source="ISR_APP"
+                                                      data-projectid="@Model.SummaryInfo[Model.ActiveIndex].ProjectID"
+                                                      data-orderno="@Model.SummaryInfo[Model.ActiveIndex].OrderNo"
+                                                      data-line="@line.LineNo"
+                                                      data-field="Note"
+                                                      data-companycode="S"
+                                                      data-linetype="L"
+                                                      data-upsertlevel="LI"
+                                                      rows="3">@line.Notes</textarea>
+                                        </td>
+                                    }
+
+                                </tr>
+                                <tr class="optionrow" style="display:none;">
+                                    <td colspan="17" id="options-@line.LineNo">
+                                        <div class="detail-container" style="margin:10px">
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="invoice-container mt-3" style="margin-left: -345px;" hidden>
+            <div class="form form-inline">
+                <div class="form-group ">
+                    <Label for="cb-invoice" class="ml-sm-2">Invoice</Label>
+                    <input type="checkbox" class="ml-sm-2" id="cb-invoice" @(Model.SummaryInfo[Model.ActiveIndex].TotalOpenSell < 2000 ? "disabled" : "") />
+                </div>
+                <div class="form-group" id="invoice_type" style="display:none;">
+                    <Label for="invoice-type_select" class="ml-sm-2"> Lines to Invoice:</Label>
+                    <select class="custom-select ml-sm-2" id="invoice-type_select">
+                        <option value="BillOrder" selected>Complete</option>
+                        <option value="BillPartial">Partial</option>
+                    </select>
+                </div>
+                <div class="form-group" id="invoice_date" style="display:none;">
+                    <Label for="cb-invoice" class="ml-sm-2">Actual Completion Date:</Label>
+                    <input class="form-control ml-sm-2 datepicker" id="completiondate" name="completiondate" type="text" placeholder="Date" autocomplete="off" />
+                </div>
+                <div class="form-group" id="invoice_received" style="display:none;">
+                    <select class="custom-select ml-sm-2" id="invoice-received_select">
+                        <option value="Received" selected>Received</option>
+                        <option value="Paid">Paid (includes received)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="invoice_linesDetail" style="display:none;">
+                    <button type="button" class="btn btn-primary btn-block" id="btnLinesDetail" style="margin-left:10px">Details</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    @*VENDOR MISC CHARGES INFO*@
+    <div class="row mt-4  expanded-table-s2">
+        <div class="col-12 lines-header" style="margin-left: 0px;">
+            <h3 class="d-inline-block">Vendor Miscellaneous Charge Totals</h3>
+        </div>
+        <div class="card col-12 p-3">
+            @if (Model.VendorMiscCharges != null && Model.VendorMiscCharges.Count > 0)
+            {
+                <div class="alt-table-responsive table-responsive" style="overflow:hidden;">
+                    <table class="table table-sm table-bordered text-center isrTable">
+
+                        <thead>
+                            <tr>
+                                <th scope="col" class="table-header">Vendor ID</th>
+                                <th scope="col" class="table-header">BO/PA Sell</th>
+                                <th scope="col" class="table-header">BO/PA Cost</th>
+                                <th scope="col" class="table-header">Misc Sell</th>
+                                <th scope="col" class="table-header">Misc Cost</th>
+                                <th scope="col" class="table-header">Gross Profit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var charge in Model.VendorMiscCharges)
+                            {
+                                <tr>
+                                    <td>@charge.VendorNo</td>
+                                    <td>@charge.BOPASell.ToString("C")</td>
+                                    <td>@charge.BOPACost.ToString("C")</td>
+                                    <td>@charge.MiscSell.ToString("C")</td>
+                                    <td>@charge.MiscCost.ToString("C")</td>
+                                    <td>@charge.GrossProfit.ToString("C")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="custom-control custom-switch my-4" style="margin-left:-160px">
+        <input type="hidden" id="totalOpenSell" />
+        <input type="checkbox" class="custom-control-input" id="totalOpenSellToggle" data-from="">
+        <label class="custom-control-label float-left" for="totalOpenSellToggle">Total Sell of the Selected Lines:</label>
+        <div id="divTotalOpenSell" style="display:none;margin-left:230px">
+            <strong><span id="spnTotalOpenSellValue">$ 0.00</span></strong>
+        </div>
+    </div>
+
+    @*EMAIL FORM / PROCESS CODE*@
+    <div class="row mt-4">
+        <div class="card col-6 p-5">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link h3 mb-0 active" id="dinv-tab" data-toggle="tab" href="#dinv" role="tab" aria-controls="dinv" aria-selected="false">Email Form</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link h3 mb-0" id="dvendorinv-tab" data-toggle="tab" href="#dvendorinv" role="tab" aria-controls="dvendorinv" aria-selected="true">Vendor Invoice</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div id="dinv" class="tab-pane fade active show">
+                    <div class="mt-4">
+                        <div class="card p-5">
+                            <form id="EmailFormInternalStatus">
+                                <input type="hidden" id="hiddenOrderNo" value="@Model.SummaryInfo[Model.ActiveIndex].OrderNo" />
+                                <input type="hidden" id="hiddenOrderTitle" value="@Model.SummaryInfo[Model.ActiveIndex].HeaderInfo.OrderTitle" />
+                                <input type="hidden" id="hiddenSalesPersonID" value="@Model.SummaryInfo[Model.ActiveIndex].HeaderInfo.SalesPersonID" />
+                                <input type="hidden" id="hiddenAccountability" value="@Model.SummaryInfo[Model.ActiveIndex].Accountability" />
+
+                                <div class="alert alert-info" style="display:none" id="msgEmailForm">
+                                    Additional information is needed in order to process your request. Please provide details
+                                    in the Comments box below. If you are looking to cost verify product, that is <b>not</b> at no charge, please inquire
+                                    about an invoice from the vendor first and then forward that onto the Accounts Payable Team.
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="inputYourName">Your Name</label>
+                                    <input type="text" class="form-control" id="inputYourName" name="inputYourName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputYourEmail">Your Email Address</label>
+                                    <input type="email" class="form-control" id="inputYourEmail" name="inputYourEmail" required>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label for="inputCC1">CC</label>
+                                        <input type="email" class="form-control" id="inputCC1" />
+                                    </div>
+                                    <div class="form-group  col-md-6">
+                                        <label for="inputCC2">CC</label>
+                                        <input type="email" class="form-control" id="inputCC2" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputYourEmail">Comments</label>
+                                    <textarea class="form-control" id="inputComments" name="inputComments" rows="3"></textarea>
+                                </div>
+                                <div class="form-row">
+                                    <button type="submit" class="btn btn-primary btn-block mb-2" id="SendEmailsInternalStatus">Submit</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div id="dvendorinv" class="tab-pane fade">
+                    <div class="mt-4">
+                        <div class="card p-5">
+                            <form id="vendorInvoiceForm">
+                                <div class="form-group">
+                                    <div class="detail-container" style="margin:10px">
+                                        @{ string order = Model.SummaryInfo[Model.ActiveIndex].OrderNo; }
+                                        @{ var vendors = ViewData["Vendors"] as IEnumerable<VendorEmail>; }
+                                        @foreach (var vendor in Model.SummaryInfo[Model.ActiveIndex].Vendors.Where(x => x.Order == order))
+                                        {
+                                            <input id="vndinvorder" value="@order" hidden />
+                                            <div class="form-row my-2">
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input vendCheck vends-@order" id="vendor-@vendor.VendorNo.Trim()-@vendor.Suffix" data-vendorno="@vendor.VendorNo.Trim()-@vendor.Suffix" data-orderno="@order" data-suffix="@vendor.Suffix" name="vendor-@vendor.VendorNo.Trim()-@vendor.Suffix" />
+                                                    <label for="vendor-@vendor.VendorNo.Trim()" class="form-check-label" style="vertical-align:top;">@vendor.VendorNo.Trim()</label>
+                                                    @if (vendors.Where(x => x.VendorNo == vendor.VendorNo).Select(x => x.Addresses).Any())
+                                                    {
+                                                        <select class="form-control vndEmail" id="vndEmail-@vendor.VendorNo.Trim()-@vendor.Suffix" name="vndEmail-@vendor.VendorNo.Trim()-@vendor.Suffix">
+                                                            @foreach (var email in vendors.Where(x => x.VendorNo == vendor.VendorNo).Select(x => x.Addresses).ToList()[0])
+                                                            {
+                                                                <option value="@email">@email</option>
+                                                            }
+                                                        </select>
+                                                    }
+                                                    else
+                                                    {
+                                                        <input type="email" class="form-control vndEmail" id="vndEmail-@vendor.VendorNo.Trim()-@vendor.Suffix" name="vndEmail-@vendor.VendorNo.Trim()-@vendor.Suffix" />
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="vndInvYourName">Your Name</label>
+                                    <input type="text" class="form-control" id="vndInvYourName" name="vndInvYourName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="vndInvYourEmail">Your Email Address</label>
+                                    <input type="email" class="form-control" id="vndInvYourEmail" name="vndInvYourEmail" required>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label for="vndInvinputCC1">CC</label>
+                                        <input type="email" class="form-control" id="vndInvinputCC1" />
+                                    </div>
+                                    <div class="form-group  col-md-6">
+                                        <label for="vndInvinputCC2">CC</label>
+                                        <input type="email" class="form-control" id="vndInvinputCC2" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="vndInvComments">Comments</label>
+                                    <textarea class="form-control" id="vndInvComments" name="vndInvComments" rows="3"></textarea>
+                                </div>
+                                <div class="form-row">
+                                    <button type="submit" class="btn btn-primary btn-block mb-2" id="SendEmailsInternalStatusVndInv">Submit</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <h3 style="padding-left: 55px;">Process Code</h3>
+            <div class="card p-5" style="max-width: 100%;margin-left: 40px;">
+                <div class="alt-table-responsive table-responsive">
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="table-header">Process Code Group</th>
+                                <th scope="col" class="table-header">% Eligible for Partial Invoice</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pc in Model.SummaryInfo[Model.ActiveIndex].ProcessCodes)
+                            {
+                                <tr>
+                                    <td>@pc.ProcessCodeGroup</td>
+                                    <td>@pc.PctEligibleForPartialInvoice.ToString("P")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+
+    </div>
+}
+
+@if (!Model.ShowDetails && !Model.ShowSummary)
+{
+    <div class="no-results">
+        <span id="noresults">No results to show.</span>
+        <div class="d-flex justify-content-center">
+            <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    </div>
+}
+
+<div id="alert"></div>
+
+<!-- Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="max-width: 85%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailsModalTitle"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table id="isrTableDetails" class="table table-sm table-bordered text-center sortable">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="table-header">Line</th>
+                            <th scope="col" class="table-header">Process Code</th>
+                            <th scope="col" class="table-header">Sales Code</th>
+                            <th scope="col" class="table-header">Vendor</th>
+                            <th scope="col" class="table-header">Catalog</th>
+                            <th scope="col" class="table-header">Ordered</th>
+                            <th scope="col" class="table-header">Received</th>
+                            <th scope="col" class="table-header">Ticketed</th>
+                            <th scope="col" class="table-header">Delivered</th>
+                            <th scope="col" class="table-header">Invoiced</th>
+                            <th scope="col" class="table-header">Vnd Inv</th>
+                            <th scope="col" class="table-header">Open Sell</th>
+                            <th scope="col" class="table-header">Open Cost</th>
+                            <th scope="col" class="table-header">Last Schedule Dt</th>
+                            <th scope="col" class="table-header">Last Estimated Arrival Dt</th>
+                            <th scope="col" class="table-header">Customer Request Dt</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    var summaryInfoData = @Html.Raw(Model.SummaryInfoJson());
+</script>
+@if (!string.IsNullOrEmpty(Model.OrderNo))
+{
+    <script>
+
+    var summaryInfo = @Html.Raw(Model.SummaryInfoJson(Model.OrderNo));
+    </script>
+}

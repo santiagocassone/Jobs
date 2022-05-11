@@ -1,0 +1,464 @@
+﻿
+					<html>
+<head>
+				
+					<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css'>
+					<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js'></script>
+</head>
+
+					<body>
+
+					<h4 style='margin-top:15px;margin-left:15px'>Estimator Project Totals</h4>				
+					<hr />
+					<div style='margin-top:5px; padding: 5px;'>
+						<h5 class='ml-4'>Project Summary</h5>					
+						<table style='margin-left:auto;margin-right:auto'>	 
+							<tr>	 
+								<td><label class='control-label mt-2 mr-2'>Project ID: </label></td>
+								<td><input class='form-control form-rounded mt-2' type='text' id='projectId' value='32456' /></td>
+								<td><label class='control-label mt-2 ml-4 mr-2'>Status: </label></td>						
+								<td><input class='form-control form-rounded mt-2' type='text' id='laborQuoteStatus' value='Canceled' /></td>
+								<td><label class='control-label mt-2 ml-4 mr-2'>Labor Quote: </label></td>
+								<td><input class='form-control form-rounded mt-2' type='text' name='laborQuoteNo' value='20070060T' style='font-weight:500' readonly /></td>
+							</tr>
+							<tr>
+								<td><label class='control-label mt-2 mr-2'>Quote #: </label></td>
+								<td><input class='form-control form-rounded mt-2' type='text' id='quoteOrOrderNo' value='321232' @(ViewData['AllReadonly'] == 'y' ? 'readonly' : '') /></td>
+								<td><label class='control-label mt-2 ml-3 mr-2'>Requested Date: </label></td>
+								<td><input class='form-control form-rounded mt-2' type='text' name='quoteDate' value='07/27/2020' readonly /></td>
+								<td><label class='control-label mt-2 ml-4 mr-2'>Original Labor Quote: </label></td>
+								<td><input class='form-control form-rounded mt-2' type='text' name='origQuoteNo' value='' readonly /></td>
+							</tr>
+							<tr>
+								<td><label class='control-label mt-2 mr-2'>Customer Name: </label></td>
+								<td colspan ='6'><input class='form-control form-rounded mt-2' type='text' id='customerName' value='GOODBY SILVERSTEIN & PARTNERS ' @(Model.IsReadOnly? 'readonly' : '') /></td>
+							</tr>
+							<tr>
+								<td><label class='control-label mt-2 mr-2'>Address: </label></td>
+								<td colspan='6'><input class='form-control form-rounded mt-2' type='text' name='address' value='111 Street' @(Model.IsReadOnly? 'readonly' : '') /></td>
+							</tr>
+							<tr>
+								<td><label class='control-label mt-2 mr-2'>City: </label></td>
+								<td><input class='form-control form-rounded mt-2' type='text' name='city' value='Annapolis' @(Model.IsReadOnly? 'readonly' : '') /></td>
+								<td><label class='control-label mt-2 ml-4 mr-2'>State: </label></td>
+								<td><input class='form-control form-rounded mt-2' type='text' name='state' @(Model.IsReadOnly? 'readonly' : '') /></td>
+								<td><label class='control-label mt-2 ml-4 mr-2'>Zip: </label></td>
+								<td><input class='form-control form-rounded mt-2' type='text' name='zip' @(Model.IsReadOnly? 'readonly' : '') /></td>
+							</tr>
+						</table>
+					</div>				
+					<hr />
+					<div style='margin-top:5px; padding: 5px;'>
+						<h5 class='ml-4'>Scope</h5>
+						<table style='margin-left:auto;margin-right:auto'>
+							<tr>
+								<td colspan='2'><p></p></td>
+							</tr>
+							<tr>
+								<td><label class='control-label mt-2 mr-2'>Equipments/Tools: </label></td>
+								<td><input class='form-control form-rounded mt-2' type='text' id='equipments' value='' /></td>
+							</tr>
+							<tr>
+								<td><label class='control-label mt-2 mr-2'>Vendor #: </label></td>
+								<td><input class='form-control form-rounded mt-2' type='text' id='vendorNo' value='ONE22 Installation' /></td>
+							</tr>
+							<tr>
+								<td><label class='control-label mt-2 mr-2'>Select Tax: </label></td>
+								<td><input class='form-control form-rounded mt-2' type='text' id='taxable' value='Taxable' /></td>
+							</tr>
+						</table>
+					</div>
+					<p style='page-break-before: always;'>
+					<table>
+						<tr>
+							<td valign='top' style='padding-right:15px'>
+								<hr />
+								<div style='margin-top:5px; padding: 5px;'>
+									<h5 class='ml-4'>Furniture Installation</h5>
+				
+						<table style='margin-left:auto;margin-right:auto;overflow-y:auto;display:block'> 
+							<tr> 
+								<td width='400px'></td>  
+								<td width='150px'><label class='control-label mt-2 mr-2'>Qty.</label></td>
+								<td width='150px'><label class='control-label mt-2 mr-2'>Hours per Qty.</label></td>
+								<td width='150px'><label class='control-label mt-2 mr-2'>Hours</label></td>
+							</tr>
+							<tr>
+								<td width='400px'><label class='control-label mt-2 mr-2'>System</label></td>
+								<td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+								<td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+								<td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+							</tr>
+							<tr>
+								<td width='400px'><label class='control-label mt-2 mr-2'>Casegoods: Desks and Tables</label></td>
+								<td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+								<td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+								<td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+							</tr>
+							<tr>
+								<td width='400px'><label class='control-label mt-2 mr-2'>Casegoods: Storage and Misc</label></td>
+								<td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+								<td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+								<td width='150px'><input class='form-control form-rounded mt-2 furtureHs' type='text' value='' /></td>
+							</tr>
+							<tr>
+								<td width='400px'><label class='control-label mt-2 mr-2'>Seating</label></td>
+								<td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+								<td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+								<td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+							</tr>
+				
+						<tr> 
+							<td width='400px' colspan='2'></td>					  
+							<td width='150px'><center><label class='control-label mt-2 mr-2'>Total Hours: </label></center></td>								
+							<td width='150px'><input class='form-control form-rounded mt-2 totalHs' type='text' value='' /></td>
+						</tr>										  
+					</table>										  
+					</div>
+					
+				</td>
+				<td valign='top' style='padding-left:15px'>
+					<hr />
+					<div style='margin-top:5px; padding: 5px;'>
+					<h5 class='ml-4'>Labor Add Ons</h5>
+					<table style='margin-left:auto;margin-right:auto'> 
+						<tr> 
+							<td width='400px'></td>  
+							<td width='150px'><label class='control-label mt-2 mr-2'>Qty.</label></td>
+                            <td width='150px'><label class='control-label mt-2 mr-2'>Hours</label></td>
+                        </tr>
+                        <tr>
+                            <td width='400px'><label class='control-label mt-2 mr-2'>Stair Carry/Distance/Add'l Staging </label></td>
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                            <td width='150px'><input class='form-control form-rounded mt-2 ' type='text' value=''  /></td>
+
+                        </tr>
+                        <tr>
+                            <td width='400px'><label class='control-label mt-2 mr-2'>Wall Strip/Channel/Start Drywall</label></td>
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                        </tr>
+                        <tr>
+                            <td width='400px'><label class='control-label mt-2 mr-2'>Wall Strip/Channel/Start Concrete</label></td>
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                        </tr>
+                        <tr>
+                            <td width='400px'><label class='control-label mt-2 mr-2'>Grommet Hole Cuts</label></td>
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                        </tr>
+                        <tr>
+                            <td width='400px'><label class='control-label mt-2 mr-2'>Worksurface Cuts</label></td>
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                        </tr>
+                        <tr>
+                            <td width='400px'><label class='control-label mt-2 mr-2'>Delivery Time</label></td>
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                        </tr>
+                        <tr>
+                            <td width='400px'><label class='control-label mt-2 mr-2'>Warehouse</label></td>
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                        </tr>
+                        <tr>
+                            <td width='400px'><input class='form-control form-rounded mt-2' type='text' style='width:90%' value='' /></td>
+
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                        </tr>
+                        <tr>
+                            <td width='400px'><input class='form-control form-rounded mt-2' type='text' style='width:90%' value='' /></td>
+
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                        </tr>
+                        <tr>
+                            <td width='400px'><input class='form-control form-rounded mt-2' type='text' style='width:90%' value='' /></td>
+
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                        </tr>
+                        <tr>
+                            <td width='400px'><input class='form-control form-rounded mt-2' type='text' style='width:90%' value='' /></td>
+
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                        </tr>
+                        <tr>
+                            <td width='400px'></td>
+							<td width='150px'><center><label class='control-label mt-2 mr-2'>Total Hours: </label></center></td>
+                            <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+
+                        </tr>
+                    </table>
+				</div>
+				</td>
+				</tr>
+				</table>
+				<p style='page-break-before: always;'>
+				<table>
+                <tr>
+                    <td style='padding-right:15px'>
+                        <hr />
+						<div style='margin-top:5px;padding:5px;'>
+                            <h5 class='ml-4'>Misc Installation Charges</h5>
+                            <table style='margin-left:auto;margin-right:auto'>
+								<tr>
+									<td width='213px'></td>
+                                    <td width='150px'><label class='control-label mt-2 mr-2'>Qty.</label></td>
+                                    <td width='150px'><label class='control-label mt-2 mr-2'>Rate</label></td>
+                                    <td width='150px'><label class='control-label mt-2 mr-2'>Cost($)</label></td>
+                                </tr>
+                                <tr>
+                                    <td width='213px'><label class='control-label mt-2 mr-2'>Truck</label></td>
+                                    <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+                                    <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+                                    <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+                                </tr>
+                                <tr>
+                                    <td width='213px' colspan='3'><label class='control-label mt-2 mr-2'>Mileage / Parking</label></td>
+                                    <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+                                </tr>
+                                <tr>
+                                    <td width='213px' colspan='3'><label class='control-label mt-2 mr-2'>Supplies</label></td>
+                                    <td width='150px'><input class='form-control form-rounded mt-2 ' type='text' value='' /></td>
+                                </tr>
+                                <tr>
+                                    <td width='213px'><label class='control-label mt-2 mr-2'>Load Crew</label></td>
+                                    <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+                                    <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+                                    <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+                                </tr>
+                                <tr>
+                                    <td width='213px' colspan='3'><label class='control-label mt-2 mr-2'>Disposal</label></td>
+                                    <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+                                </tr>
+                                <tr>
+                                    <td width='213px' colspan='3'><input class='form-control form-rounded mt-2' type='text' style='width:90%' value='' /></td>
+                                    <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+                                </tr>
+                                <tr>
+                                    <td width='213px' colspan='3'><input class='form-control form-rounded mt-2' type='text' style='width:90%' value='' /></td>
+                                    <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+                                </tr>
+                                <tr>
+                                    <td width='213px' colspan='3'><input class='form-control form-rounded mt-2' type='text' style='width:90%' value='' /></td>
+                                    <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+                                </tr>
+                                <tr>
+                                    <td width='213px' colspan='3'><input class='form-control form-rounded mt-2' type='text' style='width:90%' value='' /></td>
+                                    <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+                                </tr>
+                                <tr>
+                                    <td width='213px' colspan='3'><input class='form-control form-rounded mt-2' type='text' style='width:90%' value='' /></td>
+                                    <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+                                </tr>
+                                <tr>
+                                    <td width='213px' colspan='3'><input class='form-control form-rounded mt-2' type='text' style='width:90%' value='' /></td>
+                                    <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+                                </tr>
+                                <tr>
+                                    <td width='213px' colspan='3' style='text-align:right;padding-right:12px'>Total $:</td>
+                                    <td width='150px'><input class='form-control form-rounded mt-2' type='text' value='' /></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                    <td valign='top' style='padding-left:15px'>
+                        <hr />
+                        <div style='margin-top:5px;padding:5px;padding-bottom:5px;padding-left:5px'>
+                            <h5 class='ml-4'>Notes</h5>
+                            <table style='margin-left:auto;margin-right:auto'>
+								<tr>
+									<td><p></p></td>
+                                </tr>                                
+							</table>
+						</div>
+					</td>
+				</tr>
+			</table>
+			<p style='page-break-before: always;'>
+			<hr />
+			<div style='margin-top:5px; padding: 5px;'>
+				<table style='margin-left:auto;margin-right:auto'>	 
+					<tr>	 
+						<td colspan='5'></td>	  
+						<td style='width:85px;'></td>	   
+						<td style='width:85px;'>Surcharge</td><td style='width:85px;'><input class='form-control form-rounded mt-2' style='text-align:center' type='text' value='12,00%' /></td>
+                    </tr>
+                    <tr>
+                        <td><label class='control-label mt-2 mr-2'>Estimated By:</label></td>
+                        <td>
+							<input class='form-control form-rounded mt-2' type='text' value='test' />
+                        </td>
+                        <td><label class='control-label mt-2 ml-4 mr-2'>Reg Hrs: </label></td>
+                        <td><input class='form-control form-rounded mt-2 hs' type='text' id='regHs' style='width:65px' value='0,00' /></td>
+						<td><label class='control-label mt-2 ml-4 mr-2'>Reg Hourly Rate: </label></td>
+                        <td><input class='form-control form-rounded mt-2' type='text' id='regHourlyRate' value='47,00'  /></td>
+                        <td><input class='form-control form-rounded mt-2' type='text' name='surchargeReg' value='5,64' /></td>
+                        <td><input class='form-control form-rounded mt-2' type='text' name='surchargeRegDlls' value='265' /></td>
+					</tr>
+                    <tr>
+                        <td><label class='control-label mt-2 mr-2'>Estimate Date: </label></td>
+                        <td><input class='form-control form-rounded mt-2' type='text' value='08/31/2020' /></td>
+                        <td><label class='control-label mt-2 ml-4 mr-2'>OT Hours: </label></td>
+                        <td><input class='form-control form-rounded mt-2 hs' type='text' id='otHs' style='width:65px' value='0,00' /></td>
+                        <td><label class='control-label mt-2 ml-4 mr-2'>OT Hourly Rate: </label></td>
+                        <td><input class='form-control form-rounded mt-2' type='text' id='otHourlyRate' value='70,50'  /></td>
+                        <td><input class='form-control form-rounded mt-2' type='text' name='surchargeOt' value='8,46' /></td>
+						<td><input class='form-control form-rounded mt-2' type='text' name='surchargeOtDlls' value='596' /></td>
+					</tr>
+                    <tr>
+                        <td><label class='control-label mt-2 mr-2'>Expiration Date: </label></td>
+                        <td><input class='form-control form-rounded mt-2' type='text' value='10/27/2020' /></td>
+                        <td><label class='control-label mt-2 ml-4 mr-2'>DT Hours: </label></td>
+                        <td><input class='form-control form-rounded mt-2 hs' type='text' id='dtHs' style='width:65px' value='0,00' /></td>
+                        <td><label class='control-label mt-2 ml-4 mr-2'>DT Hourly Rate</label></td>
+                        <td><input class='form-control form-rounded mt-2' type='text' id='dtHourlyRate' value='94,00' /></td>
+                        <td><input class='form-control form-rounded mt-2' type='text' name='surchargeDt' value='11,28' /></td>
+                        <td><input class='form-control form-rounded mt-2' type='text' name='surchargeDtDlls' value='1060' /></td>
+                    </tr>
+                    <tr>
+                        <td><label class='control-label mt-2 mr-2'>Project Total Hours: </label></td>
+                        <td><input class='form-control form-rounded mt-2' type='text' name='projTotalHs' style='width:110px' value='' /></td>
+                        <td><label class='control-label mt-2 ml-4 mr-2'>Total: </label></td>
+                        <td><input class='form-control form-rounded mt-2' type='text' name='totalHs' style='width:65px' value='0' /></td>
+                        <td><label class='control-label mt-2 ml-4 mr-2'>Total Labor Costs: </label></td>
+                        <td colspan='3'><input class='form-control form-rounded mt-2' type='text' name='totalLaborCosts' value='0' /></td>
+                    </tr>
+                    <tr>
+                        <td><label class='control-label mt-2 mr-2'>Hours Validation: </label></td>
+                        <td><input class='form-control form-rounded mt-2' type='text' name='hsValidation' style='width:110px' value='' /></td>
+                        <td colspan='3' style='text-align:right'><label class='control-label mt-2 ml-4 mr-2'>Install Total(includes Add On's and Misc Charges):</label></td>
+                        <td colspan='3'><input class='form-control form-rounded mt-2' type='text' id='installTotal' value='' /></td>
+                    </tr>
+                    <tr>
+                        <td colspan='2'></td>
+
+						<td colspan='3' style='text-align:right'><label class='control-label mt-2 ml-4 mr-2'>Health & Safety Surcharge:</label></td>
+                        <td colspan='3'><input class='form-control form-rounded mt-2' type='text' id='hsSurcharge' value='0' /></td>
+                    </tr>
+                    <tr>
+                        <td><label class='control-label mt-2 mr-2'>Complex Project: </label></td>
+                        <td>
+                            <select class='form-control form-rounded custom-select mt-2' style='width:80px' id='complexProject'>
+                                <option value='1' selected='False'>Yes</option>
+								<option value='0' selected= 'True' > No</option>
+                            </select>
+                        </td>
+                        <td colspan='3' style='text-align:right'><label class='control-label mt-2 ml-4 mr-2'># of Days: </label></td>
+                        <td><input class='form-control form-rounded mt-2' type='text' value='0' /></td>
+                        <td><label class='control-label mt-2 ml-4 mr-2'>Truck Capacity: </label></td>
+						<td>
+							<select class='form-control form-rounded custom-select mt-2' style='width:80px' id='truckCap'>
+                                <option value='0' selected='True'>0%</option>
+                                <option value='25' selected='False'>25%</option>
+								<option value='50' selected='False'>50%</option> 
+								<option value='75' selected='False'>75%</option> 
+								<option value='100' selected='False'>100%</option> 
+							</select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+			<hr />
+			<div style='margin-top:5px; padding:5px;'>
+			<h5 class='ml-4'>Labor Breakdown</h5>
+						<table class='table table-sm table-bordered text-center' style='margin-left:auto;margin-right:auto'>
+                        <thead>
+                            <tr>
+                                <th>Labor Breakdown</th>
+                                <th>Labor Total $</th>
+                                <th>Hourly Rate</th>
+                                <th>Total Labor Hours</th>
+                                <th>Number Days in Project</th>
+                                <th>Total Man Hours Per/Day</th>
+                                <th>Number of Men Per Day</th>
+                            </tr>
+                        </thead>
+						
+                        <tbody>
+                            <tr>
+                                <td style='text-align:left;width:260px'>Labor Hours (Regular)</td>
+                                <td><input class='form-control border-0 text-center' type='text' name='commonTotalDlls' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='regularHourlyRate' value='$47.00' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='regularTotalHs' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='commonTotalNoDays' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='regularTotalManHs' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='regularTotalNoOfMen' value='0' /></td>
+                            </tr>
+                            <tr>
+                                <td style='text-align:left;width:260px'>Labor Hours(Overtime)</td>
+                                <td><input class='form-control border-0 text-center' type='text' name='commonTotalDlls' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='overtimeHourlyRate' value='$73.50' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='overtimeTotalHs' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='commonTotalNoDays' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='overtimeTotalManHs' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='overtimeTotalNoOfMen' value='0' /></td>
+                            </tr>
+                            <tr>
+                                <td style='text-align:left;width:260px'>Labor Hours(Doubletime)</td>
+                                <td><input class='form-control border-0 text-center' type='text' name='commonTotalDlls' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='doubletimeHourlyRate' value='$98.00' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='doubletimeTotalHs' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='commonTotalNoDays' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='doubletimeTotalManHs' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='doubletimeTotalNoOfMen' value='0' /></td>
+                            </tr>
+                            <tr>
+                                <td style='text-align:left;width:260px'>Labor Hours(Prevailing Wage)</td>
+                                <td><input class='form-control border-0 text-center' type='text' name='commonTotalDlls' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='pwHourlyRate' value='$70.00' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='pwTotalHs' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='commonTotalNoDays' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='pwTotalManHs' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='pwTotalNoOfMen' value='0' /></td>
+                            </tr>
+                            <tr>
+                                <td style='text-align:left;width:260px'>Labor Hours(Prevailing Wage  O.T.)</td>
+                                <td><input class='form-control border-0 text-center' type='text' name='commonTotalDlls' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='pwOtHourlyRate' value='$105.00' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='pwOtTotalHs' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='commonTotalNoDays' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='pwOtTotalManHs' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='pwOtTotalNoOfMen' value='0' /></td>
+                            </tr>
+                            <tr>
+                                <td style='text-align:left;width:260px'>Labor Hours(Prevailing Wage  D.T.)</td>
+                                <td><input class='form-control border-0 text-center' type='text' name='commonTotalDlls' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='pwDtHourlyRate' value='$140.00' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='pwDtTotalHs' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='commonTotalNoDays' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='pwDtTotalManHs' value='0' /></td>
+                                <td><input class='form-control border-0 text-center' type='text' name='pwDtTotalNoOfMen' value='0' /></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+				
+</body>
+</html>

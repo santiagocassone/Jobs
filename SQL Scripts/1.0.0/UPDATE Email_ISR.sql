@@ -1,0 +1,22 @@
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-SO-PEN07', 'clowensen@pbifurniture.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-SO-UNI08', 'deannaw@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-SO-SL', 'assets@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-SO-SM', 'assets@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-SO-AM', 'jtsutumi@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-SO-AV', 'jtsutumi@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-SO-IN', 'operationsbillingteam@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-SO-IO', 'operationsbillingteam@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-SO-DL', 'operationsbillingteam@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-SO-DM', 'operationsbillingteam@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-SO-RF', 'refurbdept@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-SO-RM', 'refurbdept@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-SO-SV', 'serviceteam@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-SO-SW', 'serviceteam@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-SO-WH', 'lrodriguez@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-SO-WI', 'lrodriguez@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-NOTSO', 'operationsbillingteam@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-NOTSO', 'fstout@oneworkplace.com', 'SYSTEM', GETDATE())
+INSERT INTO dbo.Email_ISR (Email_Type, Email, CreatedBy, CreatedOn) VALUES ('Delivered-NOTSO', 'lrodriguez@oneworkplace.com', 'SYSTEM', GETDATE())
+
+DELETE FROM dbo.Email_ISR WHERE Email_Type = 'Invoice Partial and Complete'
+UPDATE dbo.Email_ISR SET Email_Type = 'Invoice' WHERE Email_Type = 'Invoice Complete'

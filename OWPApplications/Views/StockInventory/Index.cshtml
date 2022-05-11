@@ -1,0 +1,137 @@
+﻿@using OWPApplications.Utils;
+@model OWPApplications.Models.StockInventory.StockInventoryViewModel
+
+@{
+    ViewData["Title"] = "Stock Inventory";
+    ViewData["NavBarColor"] = "blue";
+    ViewData["ShowNavBar"] = "True";
+    ViewData["Type"] = "StockInventory";
+}
+
+<div class="row mt-4 expanded-table-s1">
+    @if (Model.ShowResults)
+    {
+        @if (Model.Inventory.Count() > 0)
+        {
+            <div class="col-12 lines-header">
+                <h3 class="d-inline-block">Stock Inventory</h3>
+            </div>
+            <div class="card col-12 p-3">
+                <div class="alt-table-responsive table-responsive">
+                    <table class="table table-sm table-bordered text-center sortable orderStatusing">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="table-header" width="120px">Item #</th>
+                                <th scope="col" class="table-header">Vendor</th>
+                                <th scope="col" class="table-header">Product ID</th>
+                                <th scope="col" class="table-header">Catalog #</th>
+                                <th scope="col" class="table-header">Description</th>
+                                <th scope="col" class="table-header">Available QTY</th>
+                                <th scope="col" class="table-header">Committed QTY</th>
+                                <th scope="col" class="table-header">On Order QTY</th>
+                                <th scope="col" class="table-header">On Quote QTY</th>
+                                <th scope="col" class="table-header">Cost per QTY from "Pricing Information"</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ var count = 0; }
+                            @foreach (var inv in Model.Inventory)
+                            {
+                                <tr>
+                                    <td>@inv.Item_No</td>
+                                    <td>@inv.Vendor_Name</td>
+                                    <td>@inv.Product_ID</td>
+                                    <td>@inv.Catalog_No</td>
+                                    <td>@inv.Item_Desc</td>
+                                    <td>@inv.On_Hand</td>
+                                    <td>@inv.Qty_commited</td>
+                                    <td>@inv.Qty_On_Order</td>
+                                    <td><a class="link-quoteInfo" style="cursor:pointer;" data-index="@count">@inv.Qty_On_Quote</a></td>
+                                    <td>@inv.Item_Cost.ToString("C")</td>
+                                </tr>
+                                count++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="no-results">
+                <span id="noresults">No Stock Inventory data found.</span>
+                <div class="d-flex justify-content-center">
+                    <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="no-results">
+            <span id="noresults">No results to show.</span>
+        </div>
+    }
+</div>
+@if (Model.Inventory != null && Model.Inventory.Count() > 0)
+{
+    var countQuote = 0;
+    foreach (var item in Model.Inventory)
+    {
+        <!-- Modal -->
+        <div class="modal fade" id="detailsModal-@countQuote" tabindex="-1" role="dialog" aria-labelledby="detailsModalTitle" aria-hidden="true">
+            <div class="modal-dialog" role="document" style="max-width: 85%;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        @*<div class="flex-grow-1">
+                                <h5 class="modal-title text-center" id="detailsModalTitle">@(item.QuoteInfos.FirstOrDefault()?.Title ?? "-")</h5>
+                            </div>*@
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <table id="quoteInfoTableDetails" class="table table-sm table-bordered text-center sortable">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="table-header" style="width: 5%;">Quote No</th>
+                                    @if (ViewData["Region"] as string == "OSQ")
+                                    {
+                                        <th scope="col" class="table-header" style="width: 5%;">Quote Title</th>
+                                    }
+                                    <th scope="col" class="table-header" style="width: 5%;">Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (item.QuoteInfos != null && item.QuoteInfos.Count() > 0)
+                                {
+                                    foreach (var quoteInfo in item.QuoteInfos)
+                                    {
+                                        <tr>
+                                            <td>@quoteInfo.Order_No</td>
+                                            @if (ViewData["Region"] as string == "OSQ")
+                                            {
+                                                <td>@quoteInfo.Title</td>
+                                            }
+                                            <td>@quoteInfo.Qty_Ordered</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        countQuote++;
+    }
+}
+
+
+
+<script>
+	var QuoteInfo = @Html.Raw(Model.QuoteInfoJson());
+</script>
+

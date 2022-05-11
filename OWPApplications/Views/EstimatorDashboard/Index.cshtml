@@ -1,0 +1,235 @@
+﻿@model OWPApplications.Models.LaborQuoteAutomation.LaborQuoteAutomationViewModel;
+
+@{
+	ViewData["Title"] = "Estimator Dashboard";
+	ViewData["NavBarColor"] = "white";
+	ViewData["ShowNavBar"] = "True";
+	ViewData["Type"] = "EstimatorDashboard";
+}
+
+<style type="text/css">
+	.fake-button {
+		transition: box-shadow .1s;
+		cursor: pointer;
+	}
+
+		.fake-button:hover {
+			box-shadow: 0 0 11px rgba(33,33,33,.2);
+		}
+
+	[data-toggle="collapse"] .fas:before {
+		content: "\f103";
+	}
+
+	[data-toggle="collapse"].collapsed .fas:before {
+		content: "\f101";
+	}
+
+	.linkEstimator {
+		background: none !important;
+		border: none;
+		padding: 0 !important;
+		color: dodgerblue;
+	}
+
+	.linkSummary {
+		margin-left: 801px;
+		margin-top: 16px;
+	}
+</style>
+
+<div class="linkSummary row">
+    @using (Html.BeginForm("Index", "estimatorstatsreport", FormMethod.Post))
+        {
+            <input type="text" value="@ViewData["RequestedDateFrom"]" name="dateFrom" hidden />
+            <input type="text" value="@ViewData["RequestedDateTo"]" name="dateTo" hidden />
+            <input type="text" value="@ViewData["Region"]" name="region" hidden />
+			<input name="type" type="text" value="dash" hidden/>
+            <button type="submit" class="linkEstimator">Stats Report</button>
+        }
+    <span style="color:dodgerblue">&nbsp;│&nbsp;</span>
+    @using (Html.BeginForm("Index", "LaborQuoteDashboard", FormMethod.Post))
+    {
+        <input type="text" value="@ViewData["Region"]" name="region" hidden />
+        <button type="submit" class="linkEstimator">Labor Quote Dashboard</button>
+    }
+</div>
+
+<div class="row mt-3 expanded-table-s1" id="estimatorSummary" style="text-align:center;justify-content:center">
+	<div class="col-12 lines-header">
+		<h3 class="d-inline-block">Labor Quote Summary</h3>
+	</div>
+	<div class="card col-6 p-3 align-items-center" style="justify-content:center">
+		@if (Model.EstimatorSummary != null)
+		{
+			<div class="form p-3">
+				<div class="input-group col" style="margin-bottom:5px">
+					<span style="font-weight:bold;margin-right:10px"># of Pending Quotes:</span>
+					<span style="font-weight:bold">@Model.EstimatorSummary.PendingQuotes_Qty</span>
+				</div>
+				<div class="input-group col" style="margin-bottom:5px">
+					<span style="font-weight:bold;margin-right:10px"># of Completed Quotes:</span>
+					<span style="font-weight:bold">@Model.EstimatorSummary.CompletedQuotes_Qty</span>
+				</div>
+				<div class="input-group col" style="margin-bottom:5px">
+					<span style="font-weight:bold;margin-right:10px">$ Amount for Completed Quotes (MTD):</span>
+					<span style="font-weight:bold">@Model.EstimatorSummary.MTD_CompletedQuotes_Amount.ToString("C")</span>
+				</div>
+				<div class="input-group col" style="margin-bottom:5px">
+					<span style="font-weight:bold;margin-right:10px">$ Amount for Completed Quotes (YTD):</span>
+					<span style="font-weight:bold">@Model.EstimatorSummary.YTD_CompletedQuotes_Amount.ToString("C")</span>
+				</div>
+			</div>
+		}
+		else
+		{
+			<p>Summary data missing.</p>
+		}
+	</div>
+</div>
+
+<div class="row mt-5 expanded-table-s1" id="estimatorPendingQuotes">
+	@if (@Model.EstimatorPendingLaborQuotes?.Count() > 0)
+	{
+		<div class="col-10 lines-header fake-button" data-toggle="collapse" data-target="#bucket1collapse">
+			<h3 class="d-inline-block">Pending Labor Quotes</h3>
+			<span class="float-right"><i class="fa-2x fas"></i></span>
+		</div>
+		<div id="bucket1collapse" class="collapse col-12 show">
+			<div class="card col-12 p-3">
+				<div class="alt-table-responsive table-responsive">
+					<table class="table table-sm table-bordered text-center sortable">
+						<thead>
+							<tr>
+								<th scope="col" class="table-header">Labor Quote #</th>
+								<th scope="col" class="table-header">Original Labor Quote #</th>
+								<th scope="col" class="table-header">Customer Name</th>
+								<th scope="col" class="table-header">Date Requested</th>
+								<th scope="col" class="table-header">Time Requested</th>
+								<th scope="col" class="table-header">Status</th>
+								<th scope="col" class="table-header">Requested By</th>
+								<th scope="col" class="table-header">Assigned To</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var plq in Model.EstimatorPendingLaborQuotes)
+							{
+								string estimatorName = plq.EstimatorName ?? "";
+								<tr>
+                                    <td>
+                                        @using (Html.BeginForm("Index", "EstimatorProjectTotals", FormMethod.Post))
+                                        {
+                                            <input type="text" value="Search" name="submit" hidden />
+                                            <input type="text" value="@plq.LaborQuoteCode" name="lqCode" hidden />
+                                            <input type="text" value="true" name="fromDashboard" hidden />
+                                            <input type="text" value="@ViewData["LaborQuoteNo"]" name="paramlqno" hidden />
+                                            <input type="text" value="@ViewData["OriginalLaborQuoteNo"]" name="paramoriglqno" hidden />
+                                            <input type="text" value="@ViewData["Customer"]" name="paramcust" hidden />
+                                            <input type="text" value="@ViewData["RequestedBy"]" name="paramreqby" hidden />
+                                            <input type="text" value="@ViewData["AssignedTo"]" name="paramassignto" hidden />
+                                            <input type="text" value="@ViewData["ProjectID"]" name="paramprojectid" hidden />
+                                            <input type="text" value="@ViewData["Region"]" name="region" hidden />
+                                            <button type="submit" class="linkEstimator">@(ViewData["Region"].ToString() == "OWP" ? plq.LaborQuoteCode : plq.LaborQuoteCode + "S")</button>
+                                        }
+                                    </td>
+                                    <td>@(ViewData["Region"].ToString() == "OWP" ? plq.OriginalLaborQuoteCode : (plq.OriginalLaborQuoteCode != "" ? plq.OriginalLaborQuoteCode + "S" : ""))</td>
+									<td>@plq.CustomerName</td>
+									<td>@plq.CreatedOn.ToString("MM/dd/yyyy")</td>
+									<td>@plq.CreatedOn.ToString("HH:mm")</td>
+									<td>@plq.Status</td>
+									<td>@plq.RequestorName</td>
+									<td>
+										<select class="custom-select form-control" name="selEstimatedBy">
+											<option value="">Choose Estimator</option>
+											@foreach (var eb in Model.EstimatedByList)
+											{
+												<option value="@eb.Label" selected="@(estimatorName.Trim() == eb.Label.Trim() ? true : false)" data-lqcode="@plq.LaborQuoteCode">@eb.Label</option>
+											}
+										</select>
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	}
+	else
+	{
+		<p>No Pending Quotes data found.</p>
+	}
+</div>
+
+<div class="row mt-5 expanded-table-s1" id="estimatorCompletedQuotes">
+	@if (@Model.EstimatorCompletedLaborQuotes?.Count() > 0)
+	{
+		<div class="col-10 lines-header fake-button collapsed" data-toggle="collapse" data-target="#bucket2collapse">
+			<h3 class="d-inline-block">Completed Labor Quotes</h3>
+			<span class="float-right"><i class="fa-2x fas"></i></span>
+		</div>
+		<div id="bucket2collapse" class="collapse col-12">
+			<div class="card col-12 p-3">
+				<div class="alt-table-responsive table-responsive">
+					<div style="text-align: right;">
+						<label class="control-label mr-2 mb-4">Status</label>
+						<select id="selStatus" class="custom-select form-control" style="width:150px">
+							<option value="all" class="w-100">All</option>
+							<option value="complete" class="w-100">Complete</option>
+							<option value="canceled" class="w-100">Canceled</option>
+						</select>
+					</div>
+					<table class="table table-sm table-bordered text-center sortable">
+						<thead>
+							<tr>
+								<th scope="col" class="table-header">Labor Quote #</th>
+								<th scope="col" class="table-header">Original Labor Quote #</th>
+								<th scope="col" class="table-header">Customer Name</th>
+								<th scope="col" class="table-header">Date Requested</th>
+								<th scope="col" class="table-header">Date Completed</th>
+								<th scope="col" class="table-header">$ Amount</th>
+								<th scope="col" class="table-header">Status</th>
+								<th scope="col" class="table-header">Requested By</th>
+								<th scope="col" class="table-header">Completed By</th>
+							</tr>
+						</thead>
+						<tbody id="tbodyCompletedLQs">
+							@foreach (var plq in Model.EstimatorCompletedLaborQuotes)
+							{
+								<tr class="@plq.Status">
+                                    <td>
+                                        @using (Html.BeginForm("Index", "EstimatorProjectTotals", FormMethod.Post))
+                                        {
+                                            <input type="text" value="Search" name="submit" hidden />
+                                            <input type="text" value="@plq.LaborQuoteCode" name="lqCode" hidden />
+                                            <input type="text" value="@ViewData["LaborQuoteNo"]" name="paramlqno" hidden />
+                                            <input type="text" value="@ViewData["OriginalLaborQuoteNo"]" name="paramoriglqno" hidden />
+                                            <input type="text" value="@ViewData["Customer"]" name="paramcust" hidden />
+                                            <input type="text" value="@ViewData["RequestedBy"]" name="paramreqby" hidden />
+                                            <input type="text" value="@ViewData["AssignedTo"]" name="paramassignto" hidden />
+                                            <input type="text" value="@ViewData["ProjectID"]" name="paramprojectid" hidden />
+                                            <input type="text" value="@ViewData["Region"]" name="region" hidden />
+                                            <button type="submit" class="linkEstimator">@(ViewData["Region"].ToString() == "OWP" ? plq.LaborQuoteCode : plq.LaborQuoteCode + "S")</button>
+                                        }
+                                    </td>
+									<td>@plq.OriginalLaborQuoteCode</td>
+									<td>@plq.CustomerName</td>
+									<td>@plq.CreatedOn.ToString("MM/dd/yyyy")</td>
+									<td>@(plq.ModifiedOn != null ? (((DateTime)(plq.ModifiedOn)).ToString("MM/dd/yyyy")) : "")</td>
+									<td>@plq.InstallTotal.ToString("C")</td>
+									<td>@plq.Status</td>
+									<td>@plq.RequestorName</td>
+									<td>@plq.EstimatorName</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	}
+	else
+	{
+		<p>No Completed Quotes data found.</p>
+	}
+</div>

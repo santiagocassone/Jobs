@@ -1,0 +1,160 @@
+﻿@model OWPApplications.Models.VendorDepositRequest.VDRViewModel;
+@{
+    ViewData["Title"] = "Vendor Deposit Request";
+    ViewData["NavBarColor"] = "blue";
+    ViewData["ShowNavBar"] = "True";
+    ViewData["Type"] = "VendorDepositRequest";
+}
+
+@if (Model.VDRCost != null)
+{
+    if (Model.VDRCost.Any())
+    {
+        <div class="row mt-4 expanded-table-s2">
+            <div class="col-12 lines-header">
+                <h3 class="d-inline-block">Summary Info</h3>
+            </div>
+            <div class="card col-12 p-3">
+                <div class="alt-table-responsive table-responsive">
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="table-header" style="width: 50px;">ORDER # - PO #</th>
+                                <th scope="col" class="table-header" style="width: 100px;">Vendor Name - #</th>
+                                <th scope="col" class="table-header" style="width: 40px;">Total Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.VDRCost)
+                            {
+							<tr>
+								<td id="orderPO">@item.Order_No - @item.PO_Suffix</td>
+								<td id="vendorName">@item.Vendor_Name - @item.Vnd_No</td>
+								<td id="totalCost">$ @Convert.ToDecimal(item.Total_Cost).ToString("#,##0.00")</td>
+								<td id="previouslyPaid" style="display:none;">$ @Convert.ToDecimal(item.Previously_Paid).ToString("#,##0.00")</td>
+								<td id="costVerified" style="display:none;">$ @Convert.ToDecimal(item.Cost_Verified).ToString("#,##0.00")</td>
+								<td id="totalCostWithPA" style="display:none;">$ @Convert.ToDecimal(item.Total_Cost_Including_PA).ToString("#,##0.00")</td>
+							</tr>
+                            }
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <!--  Validation https://getbootstrap.com/docs/4.3/components/forms/#custom-styles -->
+            <h3 class="col-12">Email Form</h3>
+            <div class="card col-md-6 p-5">
+                <form id="EmailForm">
+                    <div class="form-group">
+                        <label for="depositTerms">Deposit Terms</label>
+						<select class="custom-select mr-sm-2" id="depositTerms" required>
+							<option value="">Select an option</option>
+							<option value="0">100%</option>
+							<option value="1">50%</option>
+							<option value="2">40%</option>
+							<option value="3">33%</option>
+							<option value="4">Balance Due</option>
+						</select>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-sm-6">
+                            <label for="depositAmt">Deposit Amt</label>
+                            <input type="text" class="form-control" id="depositAmt" name="depositAmt" readonly>
+                        </div>
+                        <div class="form-group col-sm-6">
+                            <label for="depositDueDate">Deposit Due Date</label>
+                            <input type="text" class="form-control" id="depositDueDate" name="depositDueDate" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-6">
+                            <label for="depositTerms">Payment Type</label>
+                            <select class="custom-select mr-sm-2" id="paymentType" required>
+                                <option value="">Select an option</option>
+                                <option value="1">Check</option>
+                                <option value="2">ACH</option>
+                                <option value="3">Wire</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="depositTerms">Currency Type</label>
+                            <select class="custom-select mr-sm-2" id="currencyType" required>
+                                <option value="">Select an option</option>
+                                <option value="1">USD</option>
+                                <option value="2">EU</option>
+                                <option value="3">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row" id="customCurrencyDiv" style="display: none;">
+                        <div class="form-group offset-6 col-6">
+                            <label for="inputYourName">Custom Currency Type</label>
+                            <input type="text" class="form-control" id="inputCustomCurrency" name="inputCustomCurrency" required >
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputYourName">Your Name</label>
+                        <input type="text" class="form-control" id="inputYourName" name="inputYourName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputYourEmail">Your Email Address</label>
+                        <input type="email" class="form-control" id="inputYourEmail" name="inputYourEmail" required>
+                    </div>
+                    <div class="form-group">
+						<label for="inputCC1">CC</label>
+                        <input type="email" class="form-control" id="inputCC1" multiple />
+                    </div>
+                    <div class="form-group">
+                        <label for="inputNotes">Notes:</label>
+                        <textarea class="form-control" id="inputNotes" name="inputNotes" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="fileAttachment">Add attachment</label>
+                        <input type="file" class="form-control-file" id="fileAttachment">
+                    </div>
+                    <div class="form-row">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary btn-block mb-2" id="SendEmailVDR">Submit</button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="no-results">
+
+        <span id="noresults">No results to show.</span>
+
+        <div class="d-flex justify-content-center">
+            <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+
+    </div>
+    }
+
+
+}
+else
+{
+    <div class="no-results">
+
+        <span id="noresults">No results to show.</span>
+
+        <div class="d-flex justify-content-center">
+            <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+
+    </div>
+}
+
+<div id="alert"></div>

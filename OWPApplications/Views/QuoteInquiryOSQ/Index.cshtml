@@ -1,0 +1,460 @@
+﻿@{
+    ViewData["Title"] = "Quote Inquiry OSQ";
+    ViewData["NavBarColor"] = "blue";
+    ViewData["ShowNavBar"] = "True";
+    ViewData["Type"] = "QuoteInquiryOSQ";
+}
+@model OWPApplications.Models.QuoteInquiry.QuoteInquiryOSQViewModel;
+
+
+@if (Model.ShowResults)
+{
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="row">
+                <div class="col-9">
+                    <h3>Header Info</h3>
+                </div>
+            </div>
+        </div>
+        <div class="card col-12">
+            <div class="row no-gutters">
+                <div class="col-md-6">
+                    <ul class="header-info py-3 pl-0">
+                        <input id="projectid" value="@Html.Raw(Model.HeaderInfo.ProjectId)" hidden />
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Project Id:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.ProjectId)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Quote #:</span><span class="header-info--value">@Html.Raw(Model.QuoteNo)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Title:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.OrderTitle)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Location Code:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.LocationCode)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Customer #:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.CustomerNo)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Sales IDs (%):</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.SalesIDs)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Terms Code:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.TermsCode)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Customer PO #:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.CustomerPONo)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">STC Invoice Type (STI or DB):</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.STCInvoiceType)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Ship To Address:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.ShipToAddress)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Sold To Address:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.SoldToAddress)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Mail To Address:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.MailToAddress)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Invoice Address:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.InvoiceAddress)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Sales Team (Header Sales Code):</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.SalesTeam)</span></li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="header-info py-3 pl-0">
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">Order Status (U, A, S, H, C):</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.OrderStatus)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">Delivery Instructions:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.DeliveryInstructions)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">MFG PO Info:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.MFG_PO_Info)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">Invoice Instructions:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.InvoiceInstructions)</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4 expanded-table-s1">
+        <h3 class="col-12 lines-header">Lines Info</h3>
+        <div class="card col-12 p-3">
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered text-center inquirytable">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="table-header" style="width: 5%">Line #</th>
+                            <th scope="col" class="table-header" style="width: 8%">Vendor #</th>
+                            <th scope="col" class="table-header" style="width: 8%">Catalog #</th>
+                            <th scope="col" class="table-header" style="width: 10%">General Tagging</th>
+                            <th scope="col" class="table-header">Qty.</th>
+                            <th scope="col" class="table-header" style="width:30%;">Description (freeform or EDI)</th>
+                            <th scope="col" class="table-header" style="width:8%">Cost</th>
+                            <th scope="col" class="table-header" style="width:8%">GP $</th>
+                            <th scope="col" class="table-header" style="width:9%">GP %</th>
+                            <th scope="col" class="table-header" style="width:8%">List</th>
+                            <th scope="col" class="table-header" style="width:10%">Sell</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.linesInfos?.Count() > 0)
+                        {
+                            foreach (var line in Model.linesInfos)
+                            {
+                                var classValue = (line.IsBo) ? "row-isbo" : "";
+                                classValue += $" vend-{line.VendorNo} ";
+                                <tr class="@classValue">
+                                    <td>@line.LineNo</td>
+                                    <td>@line.VendorNo</td>
+                                    <td>@line.CatalogNo</td>
+                                    <td>@line.GeneralTagging</td>
+                                    <td style="font-weight:bold">@line.QtyOrdered</td>
+                                    <td style="word-break: break-all; text-align:justify">@line.Description</td>
+                                    <td>@line.Cost</td>
+                                    <td>@line.GPDlls</td>
+                                    <td>@line.GP</td>
+                                    <td>@line.List</td>
+                                    <td>@line.LineSell</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="8" style="text-align: right;padding-right: 1rem;">Total GP %:</th>
+                            <td id="totalGP">@Model.TotalGP</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <h3 class="col-12">Misc Charges</h3>
+        <div class="card col-12 p-3">
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered text-center">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="table-header">Misc Charge #</th>
+                            <th scope="col" class="table-header">Vendor</th>
+                            <th scope="col" class="table-header">Sales Code</th>
+                            <th scope="col" class="table-header">Charge Code</th>
+                            <th scope="col" class="table-header">Sell</th>
+                            <th scope="col" class="table-header">Cost</th>
+                            <th scope="col" class="table-header">Tax Code</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.MiscLines?.Count() > 0)
+                        {
+                            foreach (var line in Model.MiscLines)
+                            {
+                                <tr>
+                                    <td>@line.MiscCharge</td>
+                                    <td>@line.VendorNo</td>
+                                    <td>@line.SalesCode</td>
+                                    <td>@line.ChargeCode</td>
+                                    <td>@line.Sell</td>
+                                    <td>@line.Cost</td>
+                                    <td>@line.TaxCode</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!--  Validation https://getbootstrap.com/docs/4.3/components/forms/#custom-styles -->
+        <div id="VendorQuoteRequestSection" class="col-6">
+            <h3 style="margin-left:192px">Vendor Quote Requests</h3>
+        </div>
+        <div class="card offset-2 col-md-8 p-5">
+            <form id="EmailForm" novalidate>
+                <input type="hidden" id="hiddenQuoteNo" value="@Model.QuoteNo" />
+                <input type="hidden" id="hiddenQuoteHeader" value="@Model.HeaderInfo.OrderTitle.Trim()" />
+                <input type="hidden" id="hiddenCustomerName" value="@Model.HeaderInfo.CustomerName.Trim()" />
+
+                <div class="form-group ">
+                    <label>Email to Vendors</label>
+                    @if (Model.Vendors?.Count() > 0)
+                    {
+                        foreach (var vendor in Model.Vendors)
+                        {
+                            var hasAddress = vendor.Addresses?.Count > 0;
+                            var hasMultipleAddress = vendor.Addresses?.Count > 1;
+                            var formattedZipCode = Model.linesInfos?.Where(x => x.VendorNo.Trim() == vendor.VendorNo.Trim() && x.IsOM).Select(x => x.FormattedPostalCode).FirstOrDefault();
+
+                            <div class="form-row my-2 align-items-center">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input vendors-cb" type="checkbox" name="chkQIVendorOSQ" id="vendor_@vendor.VendorNo.Replace("&","")" data-vendor="@vendor.VendorNo.Replace("&","")" data-name="@(vendor.Name == null ? "" : vendor.Name.Replace("&",""))" data-fzc="@formattedZipCode" />
+                                        <label class="form-check-label" for="vendor_@vendor.VendorNo.Replace("&","")">
+                                            @vendor.VendorNo - @vendor.Name
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    @if (!hasAddress)
+                                    {
+                                        <input type="email" class="form-control toAddress" id="vendorToAddressSingleFreeform_@vendor.VendorNo.Replace("&", "")" value="" style="display:none;">
+                                    }
+                                    else
+                                    {
+                                        <select class="selectpicker selVendorAddresses" id="vendorToAddress_@vendor.VendorNo.Replace("&", "")"
+                                                title="Select Emails..."
+                                                data-style="custom-pickerselect picker_@vendor.VendorNo.Replace("&", "")" data-width="75%" style="display:none;" multiple>
+
+                                            @foreach (var s in vendor.Addresses?.Where(s => !string.IsNullOrEmpty(s)))
+                                            {
+                                                if (ViewData["Is61"]?.ToString() == "no")
+                                                {
+                                                    if (s == vendor.Addresses.First())
+                                                    {
+                                                        <option value="@s" selected>@s</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@s">@s</option>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (s.StartsWith("(A)"))
+                                                    {
+                                                        if (s == vendor.Addresses.First())
+                                                        {
+                                                            <option value="@s" selected>@s</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@s">@s</option>
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        </select>
+
+                                        <button type="button" class="btn btn-primary" id="btnAdd-@vendor.VendorNo.Replace("&","")" onclick="addFreeForm(this,'@vendor.VendorNo.Replace("&","")')" style="display:none;">+</button>
+
+                                        <input type="email" class="form-control toAddress vendorToAddressFreeform" id="vendorToAddressFreeform_@vendor.VendorNo.Replace("&","")" value="" style="margin-top:5px; display:none;">
+
+                                    }
+                                    <div id="vendor-@vendor.VendorNo.Replace("&","")-missing-email-text" class="custom-text-Red" style="display:none">Please enter an email address.</div>
+                                </div>
+                            </div>
+                            <div class="form-group" id="fileAttachmentDiv_@vendor.VendorNo.Replace("&","")" style="display:none;">
+                                <input type="file" class="form-control-file vendorAtt" data-vendor="@vendor.VendorNo.Replace("&","")" id="fileAttachment_@vendor.VendorNo.Replace("&","")">
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <label style="font-style:italic; color:red;">The vendors are not eligible for quote inquiries through this form.</label>
+                    }
+
+                </div>
+                <div class="form-group">
+                    <label for="inputProjectNameAndLocation">Project Name and Location</label>
+                    <input type="text" class="form-control" id="inputProjectNameAndLocation" required />
+                </div>
+                <div class="form-group">
+                    <label for="inputSpecifiedAndLocation">Specified by and Location</label>
+                    <input type="text" class="form-control" id="inputSpecifiedAndLocation" required />
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="inputZipCode">Ship to Zip Code</label>
+                        <input type="text" class="form-control" id="inputZipCode" required />
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="inputOrderDate">Anticipated Order Date</label>
+                        <input type="text" class="form-control" id="inputOrderDate" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="inputYourEmail">Your Email Address</label>
+                        <input type="email" class="form-control" id="inputYourEmail" name="inputYourEmail" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="inputReturnInfoBy">Return Info By</label>
+                        <input type="text" class="form-control" id="inputReturnInfoBy" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="inputCC1">CC</label>
+                        <input type="email" class="form-control" id="inputCC1" />
+                    </div>
+                    <div class="form-group  col-md-6">
+                        <label for="inputCC2">CC</label>
+                        <input type="email" class="form-control" id="inputCC2" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="inputYourName">Your Name</label>
+                        <input type="text" class="form-control" id="inputYourName" name="inputYourName" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="inputCompany">Company</label>
+                        <input type="text" class="form-control" id="inputCompany" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="inputTitle">Title</label>
+                        <input type="text" class="form-control" id="inputTitle" name="inputTitle">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="inputPhoneNo">Phone #</label>
+                        <input type="text" class="form-control" id="inputPhoneNo" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputNotes">Other Notes <span style="font-style:italic; color:red;">(This will appear on every vendor quote request)</span></label>
+                    <textarea class="form-control" id="inputNotes" name="inputNotes" rows="3"></textarea>
+                </div>
+                <div class="form-group reqItemsFromVendors">
+                    <label>Requested Items from Vendor</label>
+                    <div class="col-md-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkListPrice" checked="checked" />
+                            <label class="form-check-label" for="chkListPrice">
+                                List Price
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkNetOrDiscountOffList" checked="checked" />
+                            <label class="form-check-label" for="chkNetOrDiscountOffList">
+                                Net or discount off List
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkFreightEstimate" checked="checked" />
+                            <label class="form-check-label" for="chkFreightEstimate">
+                                Freight Estimate
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkCOMApproval" checked="checked" />
+                            <label class="form-check-label" for="chkCOMApproval">
+                                COM approval
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkQuoteAsCOM" checked="checked" />
+                            <label class="form-check-label" for="chkQuoteAsCOM">
+                                Quote as COM
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkQuoteAsGradedIn" />
+                            <label class="form-check-label" for="chkQuoteAsGradedIn">
+                                Quote as Graded in, when available
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkCOMYardageRequirements" checked="checked" />
+                            <label class="form-check-label" for="chkCOMYardageRequirements">
+                                COM yardage requirements, based on the repeat of the fabric specified
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkAnyAdditionalCharges" checked="checked" />
+                            <label class="form-check-label" for="chkAnyAdditionalCharges">
+                                Any additional charges for shipping & handling, cartoning / crating, call before delivery, etc.
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkCurrentLeadTime" checked="checked" />
+                            <label class="form-check-label" for="chkCurrentLeadTime">
+                                Current Lead-time and estimated transit time from origin
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkWarrantyInfo" checked="checked" />
+                            <label class="form-check-label" for="chkWarrantyInfo">
+                                Warranty info
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkUpcomingPriceChangesAnticipated" checked="checked" />
+                            <label class="form-check-label" for="chkUpcomingPriceChangesAnticipated">
+                                Upcoming Price Changes anticipated?
+                            </label>
+                        </div>
+                        <div class="form-check standardReqItems" style="display:none">
+                            <input class="form-check-input" type="checkbox" id="chkWhatIsMissingForACompleteSpec" checked="checked" />
+                            <label class="form-check-label" for="chkWhatIsMissingForACompleteSpec">
+                                What is missing for a complete spec?
+                            </label>
+                        </div>
+                        <div class="form-check standardReqItems" style="display:none">
+                            <input class="form-check-input" type="checkbox" id="chkFabricTestingRequired" checked="checked" />
+                            <label class="form-check-label" for="chkFabricTestingRequired">
+                                Fabric testing required, please include testing instructions
+                            </label>
+                        </div>
+                        <div class="form-check standardReqItems" style="display:none">
+                            <input class="form-check-input" type="checkbox" id="chkShipToForCOM" checked="checked" />
+                            <label class="form-check-label" for="chkShipToForCOM">
+                                Ship to for COM
+                            </label>
+                        </div>
+                        <div class="form-check standardReqItems" style="display:none">
+                            <input class="form-check-input" type="checkbox" id="chkConfirmComShip" checked="checked" />
+                            <label class="form-check-label" for="chkConfirmComShip">
+                                If finishes not standard please provide upcharge
+                            </label>
+                        </div>
+                        <div class="form-check standardReqItems" style="display:none">
+                            <input class="form-check-input" type="checkbox" id="chkEnvironmentalDataOrCertifications" checked="checked" />
+                            <label class="form-check-label" for="chkEnvironmentalDataOrCertifications">
+                                Environmental data or certifications
+                            </label>
+                        </div>
+                        <div class="form-check standardReqItems" style="display:none">
+                            <input class="form-check-input" type="checkbox" id="chkCostsAndLeadTimeForAirFreight" checked="checked" />
+                            <label class="form-check-label" for="chkCostsAndLeadTimeForAirFreight">
+                                Costs and lead time for air freight and sea freight
+                            </label>
+                        </div>
+                        <div class="form-check standardReqItems" style="display:none">
+                            <input class="form-check-input" type="checkbox" id="chkDepositRequirements" checked="checked" />
+                            <label class="form-check-label" for="chkDepositRequirements">
+                                Deposit requirements
+                            </label>
+                        </div>
+                        <div class="form-check standardReqItems" style="display:none">
+                            <input class="form-check-input" type="checkbox" id="chkPaymentTerms" checked="checked" />
+                            <label class="form-check-label" for="chkPaymentTerms">
+                                Payment terms
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row align-items-center">
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="excludeCustomerName" />
+                            <label class="form-check-label" for="excludeCustomerName">
+                                Exclude Customer Name
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="excludeTitle" />
+                            <label class="form-check-label" for="excludeTitle">
+                                Exclude Title
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="rfp_bid" />
+                            <label class="form-check-label" for="rfp_bid">
+                                RFP/Bid
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <button type="submit" class="btn btn-primary btn-block mb-2" id="SendEmailQouteInquiryOSQ">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+}
+else
+{
+    <div class="no-results">
+        <span id="noresults">No results to show.</span>
+        <div class="d-flex justify-content-center">
+            <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    </div>
+}
+
+<div id="alert"></div>

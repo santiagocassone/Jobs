@@ -1,0 +1,1065 @@
+﻿@using OWPApplications.Models.LaborQuoteAutomationCommons;
+@model OWPApplications.Models.LaborQuoteAutomation.LaborQuoteAutomationViewModel;
+
+@{
+    ViewData["Title"] = "Estimator Project Totals";
+    ViewData["NavBarColor"] = "white";
+    ViewData["ShowNavBar"] = "True";
+    ViewData["Type"] = "EstimatorProjectTotals";
+}
+
+<style type="text/css">
+    input[type='number'] {
+        -moz-appearance: textfield;
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+    }
+
+    .linkEstimator {
+        background: none !important;
+        border: none;
+        padding: 0 !important;
+        color: dodgerblue;
+    }
+
+    .linkSummary {
+        margin-left: 730px;
+        margin-top: 16px;
+    }
+
+    .fake-button {
+        transition: box-shadow .1s;
+        cursor: pointer;
+    }
+
+        .fake-button:hover {
+            box-shadow: 0 0 11px rgba(33,33,33,.2);
+        }
+
+    .filter-option-inner-inner {
+        max-width: 300px;
+    }
+
+    .highlight-yellow {
+        background-color: yellow;
+    }
+
+    [data-toggle="collapse"] .fas:before {
+        content: "\f103";
+    }
+
+    [data-toggle="collapse"].collapsed .fas:before {
+        content: "\f101";
+    }
+
+    /* The Modal (background) */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 100px; /* Location of the box */
+        padding-left: 400px;
+        padding-right: 400px;
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    /* Modal Content */
+    .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+    }
+
+    /* The Close Button */
+    .close {
+        color: #aaaaaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    #addFurnitureItem {
+        cursor: pointer;
+        color: blue;
+    }
+
+        #addFurnitureItem:hover {
+            text-decoration: none;
+            text-shadow: 1px 1px 1px #555;
+        }
+
+    .remFurnitureItem {
+        cursor: pointer;
+        color: red;
+        margin-left: 10px;
+    }
+
+        .remFurnitureItem:hover {
+            text-decoration: none;
+            text-shadow: 1px 1px 1px #555;
+        }
+</style>
+<input id="regionFiltered" value="@ViewData["Region"]" hidden />
+<div class="linkSummary">
+    <button class="btn btn-sm btn-primary float-right" type="button" id="pdfButton" disabled="@Convert.ToBoolean(ViewData["DisableGeneratePDF"])" onclick="GenerateEstTot()">Generate PDF</button>
+    <input type="text" value="@ViewData["LaborQuoteCode"]" name="labqcode" hidden />
+
+    @if (Model.FromDashboard)
+    {
+        using (Html.BeginForm("Index", "EstimatorDashboard", FormMethod.Post))
+        {
+            <input type="text" value="@ViewData["ParamLaborQuoteNo"]" name="code" hidden />
+            <input type="text" value="@ViewData["ParamOriginalLaborQuoteNo"]" name="originalCode" hidden />
+            <input type="text" value="@ViewData["ParamCustomer"]" name="customer" hidden />
+            <input type="text" value="@ViewData["ParamRequestedBy"]" name="requestedBy" hidden />
+            <input type="text" value="@ViewData["ParamAssignedTo"]" name="assignedTo" hidden />
+            <input type="text" value="@ViewData["ParamProjectID"]" name="projectId" hidden />
+            <input type="text" value="@ViewData["Region"]" name="region" hidden />
+            <button type="submit" class="linkEstimator">Back to Dashboard</button>
+            <span style="color:dodgerblue">&nbsp;│&nbsp;</span>
+            <a href="/estimatorstatsreport" style="text-decoration: none;color:dodgerblue">Stats Report</a>
+        }
+    }
+    else if (Model.IsReadOnly)
+    {
+        using (Html.BeginForm("Index", "LaborQuoteDashboard", FormMethod.Post))
+        {
+            <input type="text" value="@ViewData["ParamDateFrom"]" name="dateFrom" hidden />
+            <input type="text" value="@ViewData["ParamDateTo"]" name="dateTo" hidden />
+            <input type="text" value="@ViewData["ParamStatus"]" name="status" hidden />
+            <input type="text" value="@ViewData["ParamCustomer"]" name="customer" hidden />
+            <input type="text" value="@ViewData["ParamLaborQuoteNo"]" name="code" hidden />
+            <input type="text" value="@ViewData["ParamRequestedBy"]" name="requestor" hidden />
+            <input type="text" value="@ViewData["ParamProjectID"]" name="projectId" hidden />
+            <input type="text" value="@ViewData["ParamOriginalLaborQuoteNo"]" name="originalCode" hidden />
+            <input type="text" value="@ViewData["Region"]" name="region" hidden />
+            <button type="submit" class="linkEstimator">Back to Dashboard</button>
+        }
+    }
+    else
+    {
+        <a href="/estimatordashboard">Dashboard</a>
+        <span style="color:dodgerblue">&nbsp;│&nbsp;</span>
+        <a href="/estimatorstatsreport">Stats Report</a>
+    }
+</div>
+
+<fieldset class="canceledFieldset" @(Model.LaborQuote?.Status.Trim() == "Canceled" ? "disabled='disabled'" : "")>
+    @if (Model.ShowForm)
+    {
+
+        <form method="post" enctype="multipart/form-data" class="canceledFieldset">
+            <input id="lqHeaderID" value="@Model.LaborQuote.LaborQuoteHeaderID" hidden />
+            <div class="card" style="margin-top:45px;padding:25px;">
+                <h2 class="ml-4">Project Summary</h2>
+                <hr />
+
+                <table style="margin-left:auto;margin-right:auto">
+
+                <tr>
+                    <td><label class="control-label mt-2 mr-2">Project ID: </label></td>
+                    <td><input class="form-control form-rounded mt-2" type="text" id="projectId" value="@Model.LaborQuote.ProjectID" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                    <td><label class="control-label mt-2 ml-4 mr-2">Status: </label></td>
+
+                    <td>
+                        <select class="custom-select form-control" id="laborQuoteStatus" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "")>
+                            @foreach (var st in Model.LaborQuoteStatuses)
+                            {
+                                if (!String.IsNullOrEmpty(st.ID))
+                                {
+                                    <option value="@st.ID" selected="@(Model.LaborQuote.Status.Trim() == st.Label.Trim() ? true : false)">@st.Label</option>
+                                }
+                            }
+                        </select>
+
+                        </td>
+
+                    <td><label class="control-label mt-2 ml-4 mr-2">Labor Quote: </label></td>
+                    <td><input class="form-control form-rounded mt-2" type="text" name="laborQuoteNo" value="@Model.LaborQuote.FullLaborQuoteCode" style="font-weight:500" readonly /></td>
+                </tr>
+                <tr>
+                    <td><label class="control-label mt-2 mr-2">Quote #: </label></td>
+                    <td><input class="form-control form-rounded mt-2" type="text" id="quoteOrOrderNo" value="@Model.LaborQuote.QuoteOrOrderNumber" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                    <td><label class="control-label mt-2 ml-3 mr-2">Requested Date: </label></td>
+                    <td><input class="form-control form-rounded mt-2" type="text" name="quoteDate" value="@Model.LaborQuote.CreatedOn.ToString("MM/dd/yyyy")" readonly /></td>
+                    <td><label class="control-label mt-2 ml-4 mr-2">Original Labor Quote: </label></td>
+                    <td><input class="form-control form-rounded mt-2" type="text" name="origQuoteNo" value="@Model.LaborQuote.OriginalLaborQuoteCode" readonly /></td>
+                </tr>
+                <tr>
+                    <td><label class="control-label mt-2 mr-2">Customer Name: </label></td>
+                    <td colspan="6"><input class="form-control form-rounded mt-2" type="text" id="customerName" value="@Model.LaborQuote.CustomerName" @(Model.IsReadOnly ? "readonly" : "") @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                </tr>
+                <tr>
+                    <td><label class="control-label mt-2 mr-2">Address: </label></td>
+                    <td colspan="6"><input class="form-control form-rounded mt-2" type="text" name="address" value="@Model.LaborQuote.AddressLine1" @(Model.IsReadOnly ? "readonly" : "") @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                </tr>
+                <tr>
+                    <td><label class="control-label mt-2 mr-2">City: </label></td>
+                    <td><input class="form-control form-rounded mt-2" type="text" name="city" value="@Model.LaborQuote.AddressCity" @(Model.IsReadOnly ? "readonly" : "") @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                    <td><label class="control-label mt-2 ml-4 mr-2">State: </label></td>
+                    <td><input class="form-control form-rounded mt-2" type="text" name="state" value="@Model.LaborQuote.AddressState" @(Model.IsReadOnly ? "readonly" : "") @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                    <td><label class="control-label mt-2 ml-4 mr-2">Zip: </label></td>
+                    <td><input class="form-control form-rounded mt-2" type="text" name="zip" value="@Model.LaborQuote.AddressZIP" @(Model.IsReadOnly ? "readonly" : "") @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                </tr>
+
+                </table>
+
+        </div>
+        <fieldset @(Model.IsReadOnly ? "disabled='disabled'" : "")>
+            <div class="card" style="margin-top:30px;padding:25px">
+                <h2 class="ml-4">Scope</h2>
+                <hr />
+                <table style="margin-left:auto;margin-right:auto">
+                    <tr>
+                        <td colspan="2"><textarea class="form-control form-rounded mt-2" rows="6" cols="100" id="scope" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "")>@Model.LaborQuote.Scope</textarea></td>
+                    </tr>
+                    <tr>
+                        <td><label class="control-label mt-2 mr-2">Equipments/Tools: </label></td>
+                        <td><input class="form-control form-rounded mt-2" type="text" id="equipments" value="@Model.LaborQuote.EquipmentTools" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                    </tr>
+                    <tr>
+                        <td><label class="control-label mt-2 mr-2">Vendor #: </label></td>
+                        <td>
+                            <select class="form-control form-rounded custom-select mt-2" id="vendorNo" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "")>
+                                @{ string vendorValue = Model.LaborQuote.VendorNumberLookupID.Trim() == "0" ? "88" : Model.LaborQuote.VendorNumberLookupID.Trim(); }
+                                @foreach (var vendor in Model.LaborQuoteVendors)
+                                {
+                                    <option value="@vendor.LookupGeneralID" selected="@(vendorValue == vendor.LookupGeneralID.Trim() ? true : false)">@vendor.Value</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label class="control-label mt-2 mr-2">Select Tax: </label></td>
+                        <td>
+                            <select class="form-control form-rounded custom-select mt-2" id="taxable" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "")>
+                                <option value="1" selected="@(Model.LaborQuote.Taxable)">Taxable</option>
+                                <option value="0" selected="@(!Model.LaborQuote.Taxable)">Non-Taxable</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </fieldset>
+        @if (!Model.IsReadOnly)
+        {
+            <table>
+                <tr>
+                    <td valign="top" style="padding-right:15px">
+                        <div class="card" style="margin-top:30px;padding:25px;height:820px">
+                            <h2 class="ml-4">Furniture Installation</h2>
+                            <hr />
+                            @{
+                                var fiList = Model.LaborQuote.FurnitureInstallationList?.ToList();
+                                string systemValueQty = fiList?.Where(x => x.Description.Trim() == "SYS").Select(x => x.Quantity).FirstOrDefault().ToString();
+                                string deskTablesValueQty = fiList?.Where(x => x.Description.Trim() == "DAT").Select(x => x.Quantity).FirstOrDefault().ToString();
+                                string storageMiscValueQty = fiList?.Where(x => x.Description.Trim() == "SAM").Select(x => x.Quantity).FirstOrDefault().ToString();
+                                string seatingValueQty = fiList?.Where(x => x.Description.Trim() == "SEA").Select(x => x.Quantity).FirstOrDefault().ToString();
+                                string systemValueHsXQty = fiList?.Where(x => x.Description.Trim() == "SYS").Select(x => x.HoursPerQty).FirstOrDefault().ToString().Replace(',', '.');
+                                string deskTablesValueHsXQty = fiList?.Where(x => x.Description.Trim() == "DAT").Select(x => x.HoursPerQty).FirstOrDefault().ToString().Replace(',', '.');
+                                string storageMiscValueHsXQty = fiList?.Where(x => x.Description.Trim() == "SAM").Select(x => x.HoursPerQty).FirstOrDefault().ToString().Replace(',', '.');
+                                string seatingValueHsXQty = fiList?.Where(x => x.Description.Trim() == "SEA").Select(x => x.HoursPerQty).FirstOrDefault().ToString().Replace(',', '.');
+                                string systemValueHs = fiList?.Where(x => x.Description.Trim() == "SYS").Select(x => x.Hours).FirstOrDefault().ToString().Replace(',', '.');
+                                string deskTablesValueHs = fiList?.Where(x => x.Description.Trim() == "DAT").Select(x => x.Hours).FirstOrDefault().ToString().Replace(',', '.');
+                                string storageMiscValueHs = fiList?.Where(x => x.Description.Trim() == "SAM").Select(x => x.Hours).FirstOrDefault().ToString().Replace(',', '.');
+                                string seatingValueHs = fiList?.Where(x => x.Description.Trim() == "SEA").Select(x => x.Hours).FirstOrDefault().ToString().Replace(',', '.');
+                            }
+                            <table style="margin-left:auto;margin-right:auto;overflow-y:auto;height:617px;display:block">
+                                <tr>
+                                    <td width="400px"></td>
+                                    <td width="150px"><center><label class="control-label mt-2 mr-2">Qty.</label></center></td>
+                                    <td width="150px"><center><label class="control-label mt-2 mr-2">Hours per Qty.</label></center></td>
+                                    <td width="150px"><center><label class="control-label mt-2 mr-2">Hours</label></center></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td width="400px"><label class="control-label mt-2 mr-2">System </label></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 furnitureQty" type="number" step="0.01" name="systemQty" value="@(systemValueQty == "0" ? "" : systemValueQty)" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 furnitureHsXQty" type="number" step="0.01" name="systemHsXQty" value="@(systemValueHsXQty == "0" ? "" : systemValueHsXQty)" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 furnitureHs" type="number" step="0.01" name="systemHs" value="@(systemValueHs == "0" ? "" : systemValueHs)" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td width="400px"><label class="control-label mt-2 mr-2">Casegoods: Desks and Tables </label></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 furnitureQty" type="number" step="0.01" name="deskAndTablesQty" value="@(deskTablesValueQty == "0" ? "" : deskTablesValueQty)" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 furnitureHsXQty" type="number" step="0.01" name="deskAndTablesHsXQty" value="@(deskTablesValueHsXQty == "0" ? "" : deskTablesValueHsXQty)" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 furnitureHs" type="number" step="0.01" name="deskAndTablesHs" value="@(deskTablesValueHs == "0" ? "" : deskTablesValueHs)" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td width="400px"><label class="control-label mt-2 mr-2">Casegoods: Storage and Misc </label></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 furnitureQty" type="number" step="0.01" name="storageAndMiscQty" value="@(storageMiscValueQty == "0" ? "" : storageMiscValueQty)" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 furnitureHsXQty" type="number" step="0.01" name="storageAndMiscHsXQty" value="@(storageMiscValueHsXQty == "0" ? "" : storageMiscValueHsXQty)" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 furnitureHs" type="number" step="0.01" name="storageAndMiscHs" value="@(storageMiscValueHs == "0" ? "" : storageMiscValueHs)" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td width="400px"><label class="control-label mt-2 mr-2">Seating </label></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 furnitureQty" type="number" step="0.01" name="seatingQty" value="@(seatingValueQty == "0" ? "" : seatingValueQty)" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 furnitureHsXQty" type="number" step="0.01" name="seatingHsXQty" value="@(seatingValueHsXQty == "0" ? "" : seatingValueHsXQty)" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 furnitureHs" type="number" step="0.01" name="seatingHs" value="@(seatingValueHs == "0" ? "" : seatingValueHs)" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                                    <td></td>
+                                </tr>
+                                @{
+                                    if (Model.LaborQuote?.CustomFurnitureInstallationList?.Count() > 0)
+                                    {
+                                        int numm = 0;
+                                        foreach (var furn in Model.LaborQuote.CustomFurnitureInstallationList)
+                                        {
+                                            <tr id="@(numm + 1)">
+                                                <td width="400px"><input class="form-control form-rounded mt-2 newfurns" type="text" onblur="saveFurnsValues(this)" name="newfurndesc" style="width:90%" value="@furn.Description" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                                                <td width="150px"><input class="form-control form-rounded mt-2 newfurns furnitureQty" type="number" step="0.01" onblur="saveFurnsValues(this)" name="newfurnqty" value="@furn.Quantity" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                                                <td width="150px"><input class="form-control form-rounded mt-2 newfurns furnitureHsXQty" type="number" step="0.01" onblur="saveFurnsValues(this)" name="newfurnhsxqty" value="@furn.HoursPerQty" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                                                <td width="150px"><input class="form-control form-rounded mt-2 newfurns furnitureHs" type="number" step="0.01" onblur="saveFurnsValues(this)" name="newfurnhs" value="@furn.Hours" @(ViewData["PDFReport"].ToString() == "y" ? "readonly" : "") /></td>
+                                                <td><span class="remFurnitureItem" data-row="@(numm + 1)" onclick="removeFurn(this)" style="display:@(Model.LaborQuote?.Status.Trim() != "Canceled" ? "block" : "none")">[x]</span></td>
+                                            </tr>
+                                            numm++;
+                                        }
+                                    }
+                                }
+                                <tr id="lastFurnTr">
+                                    @if (ViewData["PDFReport"] == "y")
+                                    {
+                                    }
+                                    else
+                                    {
+                                        <td width="400px" colspan="2"><span id="addFurnitureItem" style="margin-left:6px;float:left;display:@(Model.LaborQuote?.Status.Trim() != "Canceled" ? "block" : "none")">[+]</span></td>
+                                    }
+                                    <td width="150px"><center><label class="control-label mt-2 mr-2">Total Hours: </label></center></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 totalHs" type="text" name="furnitureTotalHs" readonly /></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                    <td style="padding-left:15px">
+                        <div class="card" style="margin-top:30px;padding:25px">
+                            <h2 class="ml-4">Labor Add Ons</h2>
+                            <hr />
+                            @{
+                                var aoList = Model.LaborQuote.AddonsList?.ToList();
+                                string stairCarryValueQty = aoList?.Where(x => x.Description.Trim() == "SCDAS").Select(x => x.Quantity).FirstOrDefault().ToString();
+                                string startDrywallValueQty = aoList?.Where(x => x.Description.Trim() == "WSCSD").Select(x => x.Quantity).FirstOrDefault().ToString();
+                                string startConcreteValueQty = aoList?.Where(x => x.Description.Trim() == "WSCSC").Select(x => x.Quantity).FirstOrDefault().ToString();
+                                string grommetValueQty = aoList?.Where(x => x.Description.Trim() == "GHCUT").Select(x => x.Quantity).FirstOrDefault().ToString();
+                                string workSurfaceValueQty = aoList?.Where(x => x.Description.Trim() == "WSCUT").Select(x => x.Quantity).FirstOrDefault().ToString();
+                                string deliveryValueQty = aoList?.Where(x => x.Description.Trim() == "DTIME").Select(x => x.Quantity).FirstOrDefault().ToString();
+                                string warehouseValueQty = aoList?.Where(x => x.Description.Trim() == "WAREH").Select(x => x.Quantity).FirstOrDefault().ToString();
+                                string stairCarryValueHs = aoList?.Where(x => x.Description.Trim() == "SCDAS").Select(x => x.Hours).FirstOrDefault().ToString().Replace(',', '.');
+                                string startDrywallValueHs = aoList?.Where(x => x.Description.Trim() == "WSCSD").Select(x => x.Hours).FirstOrDefault().ToString().Replace(',', '.');
+                                string startConcreteValueHs = aoList?.Where(x => x.Description.Trim() == "WSCSC").Select(x => x.Hours).FirstOrDefault().ToString().Replace(',', '.');
+                                string grommetValueHs = aoList?.Where(x => x.Description.Trim() == "GHCUT").Select(x => x.Hours).FirstOrDefault().ToString().Replace(',', '.');
+                                string workSurfaceValueHs = aoList?.Where(x => x.Description.Trim() == "WSCUT").Select(x => x.Hours).FirstOrDefault().ToString().Replace(',', '.');
+                                string deliveryValueHs = aoList?.Where(x => x.Description.Trim() == "DTIME").Select(x => x.Hours).FirstOrDefault().ToString().Replace(',', '.');
+                                string warehouseValueHs = aoList?.Where(x => x.Description.Trim() == "WAREH").Select(x => x.Hours).FirstOrDefault().ToString().Replace(',', '.');
+                            }
+                            <table style="margin-left:auto;margin-right:auto">
+                                <tr>
+                                    <td width="400px"></td>
+                                    <td width="150px"><center><label class="control-label mt-2 mr-2">Qty.</label></center></td>
+                                    <td width="150px"><center><label class="control-label mt-2 mr-2">Hours</label></center></td>
+                                </tr>
+                                <tr>
+                                    <td width="400px"><label class="control-label mt-2 mr-2">Stair Carry/Distance/Add'l Staging </label></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2" type="number" step="0.01" name="stairDistStagingQty" value="@(stairCarryValueQty == "0" ? "" : stairCarryValueQty)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 addOnsHs" type="number" step="0.01" name="stairDistStagingHs" value="@(stairCarryValueHs == "0" ? "" : stairCarryValueHs)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                </tr>
+                                <tr>
+                                    <td width="400px"><label class="control-label mt-2 mr-2">Wall Strip/Channel/Start Drywall </label></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2" type="number" step="0.01" name="wallChannelDrywallQty" value="@(startDrywallValueQty == "0" ? "" : startDrywallValueQty)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 addOnsHs" type="number" step="0.01" name="wallChannelDrywallHs" value="@(startDrywallValueHs == "0" ? "" : startDrywallValueHs)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                </tr>
+                                <tr>
+                                    <td width="400px"><label class="control-label mt-2 mr-2">Wall Strip/Channel/Start Concrete </label></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2" type="number" step="0.01" name="wallChannelConcreteQty" value="@(startConcreteValueQty == "0" ? "" : startConcreteValueQty)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 addOnsHs" type="number" step="0.01" name="wallChannelConcreteHs" value="@(startConcreteValueHs == "0" ? "" : startConcreteValueHs)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                </tr>
+                                <tr>
+                                    <td width="400px"><label class="control-label mt-2 mr-2">Grommet Hole Cuts </label></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2" type="number" step="0.01" name="grommetHoleCutsQty" value="@(grommetValueQty == "0" ? "" : grommetValueQty)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 addOnsHs" type="number" step="0.01" name="grommetHoleCutsHs" value="@(grommetValueHs == "0" ? "" : grommetValueHs)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                </tr>
+                                <tr>
+                                    <td width="400px"><label class="control-label mt-2 mr-2">Worksurface Cuts </label></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2" type="number" step="0.01" name="worksurfaceCutsQty" value="@(workSurfaceValueQty == "0" ? "" : workSurfaceValueQty)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 addOnsHs" type="number" step="0.01" name="worksurfaceCutsHs" value="@(workSurfaceValueHs == "0" ? "" : workSurfaceValueHs)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                </tr>
+                                <tr>
+                                    <td width="400px"><label class="control-label mt-2 mr-2">Delivery Time </label></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2" type="number" step="0.01" name="deliveryTimeQty" value="@(deliveryValueQty == "0" ? "" : deliveryValueQty)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 addOnsHs" type="number" step="0.01" name="deliveryTimeHs" value="@(deliveryValueHs == "0" ? "" : deliveryValueHs)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                </tr>
+                                <tr>
+                                    <td width="400px"><label class="control-label mt-2 mr-2">Warehouse </label></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2" type="number" step="0.01" name="warehouseQty" value="@(warehouseValueQty == "0" ? "" : warehouseValueQty)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 addOnsHs" type="number" step="0.01" name="warehouseHs" value="@(warehouseValueHs == "0" ? "" : warehouseValueHs)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                </tr>
+                                <tr>
+                                    <td width="400px"><input class="form-control form-rounded mt-2" type="text" name="newLabor1" style="width:90%" value="@(Model.LaborQuote.CustomAddonsList != null && Model.LaborQuote.CustomAddonsList.Any() ? Model.LaborQuote.CustomAddonsList.ToList()[0].Description : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2" type="number" step="0.01" name="newLabor1Qty" value="@(Model.LaborQuote.CustomAddonsList != null && Model.LaborQuote.CustomAddonsList.Any() ? Model.LaborQuote.CustomAddonsList.ToList()[0].Quantity.ToString() : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 addOnsHs" type="number" step="0.01" name="newLabor1Hs" value="@(Model.LaborQuote.CustomAddonsList != null && Model.LaborQuote.CustomAddonsList.Any() ? Model.LaborQuote.CustomAddonsList.ToList()[0].Hours.ToString().Replace(',', '.') : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                </tr>
+                                <tr>
+                                    <td width="400px"><input class="form-control form-rounded mt-2" type="text" name="newLabor2" style="width:90%" value="@(Model.LaborQuote.CustomAddonsList != null && Model.LaborQuote.CustomAddonsList.Any() && Model.LaborQuote.CustomAddonsList.Count() > 1 ? Model.LaborQuote.CustomAddonsList.ToList()[1].Description : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2" type="number" step="0.01" name="newLabor2Qty" value="@(Model.LaborQuote.CustomAddonsList != null && Model.LaborQuote.CustomAddonsList.Any() && Model.LaborQuote.CustomAddonsList.Count() > 1 ? Model.LaborQuote.CustomAddonsList.ToList()[1].Quantity.ToString() : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 addOnsHs" type="number" step="0.01" name="newLabor2Hs" value="@(Model.LaborQuote.CustomAddonsList != null && Model.LaborQuote.CustomAddonsList.Any() && Model.LaborQuote.CustomAddonsList.Count() > 1 ? Model.LaborQuote.CustomAddonsList.ToList()[1].Hours.ToString().Replace(',', '.') : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                </tr>
+                                <tr>
+                                    <td width="400px"><input class="form-control form-rounded mt-2" type="text" name="newLabor3" style="width:90%" value="@(Model.LaborQuote.CustomAddonsList != null && Model.LaborQuote.CustomAddonsList.Any() && Model.LaborQuote.CustomAddonsList.Count() > 2 ? Model.LaborQuote.CustomAddonsList.ToList()[2].Description : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2" type="number" step="0.01" name="newLabor3Qty" value="@(Model.LaborQuote.CustomAddonsList != null && Model.LaborQuote.CustomAddonsList.Any() && Model.LaborQuote.CustomAddonsList.Count() > 2 ? Model.LaborQuote.CustomAddonsList.ToList()[2].Quantity.ToString() : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 addOnsHs" type="number" step="0.01" name="newLabor3Hs" value="@(Model.LaborQuote.CustomAddonsList != null && Model.LaborQuote.CustomAddonsList.Any() && Model.LaborQuote.CustomAddonsList.Count() > 2 ? Model.LaborQuote.CustomAddonsList.ToList()[2].Hours.ToString().Replace(',', '.') : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                </tr>
+                                <tr>
+                                    <td width="400px"><input class="form-control form-rounded mt-2" type="text" name="newLabor4" style="width:90%" value="@(Model.LaborQuote.CustomAddonsList != null && Model.LaborQuote.CustomAddonsList.Any() && Model.LaborQuote.CustomAddonsList.Count() > 3 ? Model.LaborQuote.CustomAddonsList.ToList()[3].Description : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2" type="number" step="0.01" name="newLabor4Qty" value="@(Model.LaborQuote.CustomAddonsList != null && Model.LaborQuote.CustomAddonsList.Any() && Model.LaborQuote.CustomAddonsList.Count() > 3 ? Model.LaborQuote.CustomAddonsList.ToList()[3].Quantity.ToString() : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 addOnsHs" type="number" step="0.01" name="newLabor4Hs" value="@(Model.LaborQuote.CustomAddonsList != null && Model.LaborQuote.CustomAddonsList.Any() && Model.LaborQuote.CustomAddonsList.Count() > 3 ? Model.LaborQuote.CustomAddonsList.ToList()[3].Hours.ToString().Replace(',', '.') : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                </tr>
+                                <tr>
+                                    <td width="400px"></td>
+                                    <td width="150px"><center><label class="control-label mt-2 mr-2">Total Hours: </label></center></td>
+                                    <td width="150px"><input class="form-control form-rounded mt-2 totalHs" type="text" name="addOnsTotalHs" readonly /></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        }
+        else
+        {
+            bool showFurnitureInstallation = Model.LaborQuote.FurnitureInstallationList != null;
+            bool showAddons = Model.LaborQuote.AddonsList != null;
+            <fieldset disabled="disabled">
+                <table>
+                    <tr>
+                        <td valign="top" style="padding-right:15px">
+                            <div class="card" style="margin-top:30px;padding:25px">
+                                <h2 class="ml-4">Furniture Installation</h2>
+                                <hr />
+                                <table style="margin-left:auto;margin-right:auto">
+                                    @if (showFurnitureInstallation)
+                                    {
+                                        <tr>
+                                            <td width="400px"></td>
+                                            <td width="150px"><center><label class="control-label mt-2 mr-2">Qty.</label></center></td>
+                                        </tr>
+                                        @foreach (var fi in Model.LaborQuote.FurnitureInstallationList)
+                                        {
+                                            string description = "";
+                                            switch (fi.Description)
+                                            {
+                                                case "CON":
+                                                    description = "Context";
+                                                    break;
+                                                case "SYS":
+                                                    description = "System";
+                                                    break;
+                                                case "DAT":
+                                                    description = "Casegoods: Desks and Tables";
+                                                    break;
+                                                case "SAM":
+                                                    description = "Casegoods: Storage and Misc";
+                                                    break;
+                                                case "SEA":
+                                                    description = "Seating";
+                                                    break;
+                                            }
+                                            <tr>
+                                                <td width="400px"><label class="control-label mt-2 mr-2">@description</label></td>
+                                                <td width="150px"><input class="form-control form-rounded mt-2" type="number" step="0.01" value="@fi.Quantity" readonly /></td>
+                                            </tr>
+                                        }
+                                        @if (Model.LaborQuote.CustomFurnitureInstallationList?.Count() > 0)
+                                        {
+                                            var totalCustomFurnQty = Model.LaborQuote.CustomFurnitureInstallationList.Select(x => x.Quantity).Sum();
+                                            <tr>
+                                                <td width="400px"><label class="control-label mt-2 mr-2">Other</label></td>
+                                                <td width="150px"><input class="form-control form-rounded mt-2" type="number" step="0.01" value="@totalCustomFurnQty" readonly /></td>
+                                            </tr>
+                                        }
+                                    }
+                                </table>
+                            </div>
+                        </td>
+                        <td style="padding-left:15px">
+                            <div class="card" style="margin-top:30px;padding:25px">
+                                <h2 class="ml-4">Labor Add Ons</h2>
+                                <hr />
+                                <table style="margin-left:auto;margin-right:auto">
+                                    @if (showAddons)
+                                    {
+                                        <tr>
+                                            <td width="400px"></td>
+                                            <td width="150px"><center><label class="control-label mt-2 mr-2">Qty.</label></center></td>
+                                        </tr>
+                                        @foreach (var ao in Model.LaborQuote.AddonsList)
+                                        {
+                                            string description = "";
+                                            switch (ao.Description)
+                                            {
+                                                case "SCDAS":
+                                                    description = "Stair Carry/Distance/Add'l Staging";
+                                                    break;
+                                                case "WSCSD":
+                                                    description = "Wall Strip/Channel/Start Drywall";
+                                                    break;
+                                                case "WSCSC":
+                                                    description = "Wall Strip/Channel/Start Concrete";
+                                                    break;
+                                                case "GHCUT":
+                                                    description = "Grommet Hole Cuts";
+                                                    break;
+                                                case "WSCUT":
+                                                    description = "Worksurface Cuts";
+                                                    break;
+                                                case "DTIME":
+                                                    description = "Delivery Time";
+                                                    break;
+                                                case "WAREH":
+                                                    description = "Warehouse";
+                                                    break;
+                                                default:
+                                                    description = ao.Description;
+                                                    break;
+                                            }
+                                            <tr>
+                                                <td width="400px"><label class="control-label mt-2 mr-2">@description</label></td>
+                                                <td width="150px"><input class="form-control form-rounded mt-2" type="number" step="0.01" value="@ao.Quantity" readonly /></td>
+                                            </tr>
+                                        }
+                                    }
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </fieldset>
+        }
+
+
+            @if (Model.IsReadOnly)
+            {
+                <div class="card" style="margin-top:30px;padding:25px">
+                    <h2 class="ml-4">Contingencies</h2>
+                    <hr />
+                    <table style="margin-left:auto;margin-right:auto">
+                        <tr>
+                            <td colspan="2"><p>All work is to be performed during normal business hours unless the scope of work specifies overtime delivery or installation.  Normal business hours are from 7:00 AM - 5:00 PM.  Any project beginning after 1:00 PM is subject to Overtime.  All work is quoted as non-prevailing wage unless otherwise specified.  The customer must provide clear and free access to the build area and an adequate staging area.  Any work performed in addition to the original scope of work noted above is subject to additional costs to the project.  All deliveries on the second floor or higher will require a passenger or freight elevator.  Any additional hardware or equipment required to complete the project that is not included in the scope of work noted above will be subject to additional costs. </p></td>
+                        </tr>
+                    </table>
+                </div>
+            }
+
+            @if (!Model.IsReadOnly)
+            {
+                <table>
+                    <tr>
+                        <td style="padding-right:15px">
+                            <div class="card" style="margin-top:30px;padding:25px">
+                                <h2 class="ml-4">Misc Installation Charges</h2>
+                                <hr />
+                                @{
+                                    var mcList = Model.LaborQuote.MiscChargesList?.ToList();
+                                    string truckValue = mcList?.Where(x => x.Description.Trim() == "TR").Select(x => x.Cost).FirstOrDefault().ToString();
+                                    string truckQty = mcList?.Where(x => x.Description.Trim() == "TR").Select(x => x.Quantity).FirstOrDefault().ToString();
+                                    string truckRate = mcList?.Where(x => x.Description.Trim() == "TR").Select(x => x.Rate).FirstOrDefault().ToString();
+                                    string mileageParkValue = mcList?.Where(x => x.Description.Trim() == "MP").Select(x => x.Cost).FirstOrDefault().ToString();
+                                    string suppliesValue = mcList?.Where(x => x.Description.Trim() == "SP").Select(x => x.Cost).FirstOrDefault().ToString();
+                                    string loadCrewValue = mcList?.Where(x => x.Description.Trim() == "LC").Select(x => x.Cost).FirstOrDefault().ToString();
+                                    string loadCrewQty = mcList?.Where(x => x.Description.Trim() == "LC").Select(x => x.Quantity).FirstOrDefault().ToString();
+                                    string loadCrewRate = mcList?.Where(x => x.Description.Trim() == "LC").Select(x => x.Rate).FirstOrDefault().ToString();
+                                    string disposalValue = mcList?.Where(x => x.Description.Trim() == "DP").Select(x => x.Cost).FirstOrDefault().ToString();
+                                }
+                                <table style="margin-left:auto;margin-right:auto">
+                                    <tr>
+                                        <td width="213px"></td>
+                                        <td width="150px"><center><label class="control-label mt-2 mr-2">Qty.</label></center></td>
+                                        <td width="150px"><center><label class="control-label mt-2 mr-2">Rate</label></center></td>
+                                        <td width="150px"><center><label class="control-label mt-2 mr-2">Cost ($)</label></center></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="213px"><label class="control-label mt-2 mr-2">Truck</label></td>
+                                        <td width="150px"><input class="form-control form-rounded mt-2 miscChargesQty" type="text" name="truckQty" value="@(truckQty == "0" ? "" : truckQty)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                        <td width="150px"><input class="form-control form-rounded mt-2 miscChargesRate" type="text" name="truckRate" value="@(truckRate == "0" ? "" : truckRate)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                        <td width="150px"><input class="form-control form-rounded mt-2 miscChargesDlls" type="text" name="truck" value="@(truckValue == "0" ? "" : truckValue)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="213px" colspan="3"><label class="control-label mt-2 mr-2">Mileage / Parking</label></td>
+                                        <td width="150px"><input class="form-control form-rounded mt-2 miscChargesDlls" type="text" name="mileageParking" value="@(mileageParkValue == "0" ? "" : mileageParkValue)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="213px" colspan="3"><label class="control-label mt-2 mr-2">Supplies</label></td>
+                                        <td width="150px"><input class="form-control form-rounded mt-2 miscChargesDlls" type="text" name="supplies" value="@(suppliesValue == "0" ? "" : suppliesValue)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="213px"><label class="control-label mt-2 mr-2">Load Crew</label></td>
+                                        <td width="150px"><input class="form-control form-rounded mt-2 miscChargesQty" type="text" name="loadCrewQty" value="@(loadCrewQty == "0" ? "" : loadCrewQty)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                        <td width="150px"><input class="form-control form-rounded mt-2 miscChargesRate" type="text" name="loadCrewRate" value="@(loadCrewRate == "0" ? "" : loadCrewRate)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                        <td width="150px"><input class="form-control form-rounded mt-2 miscChargesDlls" type="text" name="loadCrew" value="@(loadCrewValue == "0" ? "" : loadCrewValue)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="213px" colspan="3"><label class="control-label mt-2 mr-2">Disposal</label></td>
+                                        <td width="150px"><input class="form-control form-rounded mt-2 miscChargesDlls" type="text" name="disposal" value="@(disposalValue == "0" ? "" : disposalValue)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="213px" colspan="3"><input class="form-control form-rounded mt-2" type="text" name="newMisc1" style="width:90%" value="@(Model.LaborQuote.CustomMiscChargesList != null && Model.LaborQuote.CustomMiscChargesList.Any() ? Model.LaborQuote.CustomMiscChargesList.ToList()[0].Description : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                        <td width="150px"><input class="form-control form-rounded mt-2 miscChargesDlls" type="number" step="0.01" name="newMisc1Dollars" value="@(Model.LaborQuote.CustomMiscChargesList != null && Model.LaborQuote.CustomMiscChargesList.Any() ? Model.LaborQuote.CustomMiscChargesList.ToList()[0].Cost.ToString() : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="213px" colspan="3"><input class="form-control form-rounded mt-2" type="text" name="newMisc2" style="width:90%" value="@(Model.LaborQuote.CustomMiscChargesList != null && Model.LaborQuote.CustomMiscChargesList.Any() && Model.LaborQuote.CustomMiscChargesList.Count() > 1 ? Model.LaborQuote.CustomMiscChargesList.ToList()[1].Description : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                        <td width="150px"><input class="form-control form-rounded mt-2 miscChargesDlls" type="number" step="0.01" name="newMisc2Dollars" value="@(Model.LaborQuote.CustomMiscChargesList != null && Model.LaborQuote.CustomMiscChargesList.Any() && Model.LaborQuote.CustomMiscChargesList.Count() > 1 ? Model.LaborQuote.CustomMiscChargesList.ToList()[1].Cost.ToString() : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="213px" colspan="3"><input class="form-control form-rounded mt-2" type="text" name="newMisc3" style="width:90%" value="@(Model.LaborQuote.CustomMiscChargesList != null && Model.LaborQuote.CustomMiscChargesList.Any() && Model.LaborQuote.CustomMiscChargesList.Count() > 2 ? Model.LaborQuote.CustomMiscChargesList.ToList()[2].Description : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                        <td width="150px"><input class="form-control form-rounded mt-2 miscChargesDlls" type="number" step="0.01" name="newMisc3Dollars" value="@(Model.LaborQuote.CustomMiscChargesList != null && Model.LaborQuote.CustomMiscChargesList.Any() && Model.LaborQuote.CustomMiscChargesList.Count() > 2 ? Model.LaborQuote.CustomMiscChargesList.ToList()[2].Cost.ToString() : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="213px" colspan="3"><input class="form-control form-rounded mt-2" type="text" name="newMisc4" style="width:90%" value="@(Model.LaborQuote.CustomMiscChargesList != null && Model.LaborQuote.CustomMiscChargesList.Any() && Model.LaborQuote.CustomMiscChargesList.Count() > 3 ? Model.LaborQuote.CustomMiscChargesList.ToList()[3].Description : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                        <td width="150px"><input class="form-control form-rounded mt-2 miscChargesDlls" type="number" step="0.01" name="newMisc4Dollars" value="@(Model.LaborQuote.CustomMiscChargesList != null && Model.LaborQuote.CustomMiscChargesList.Any() && Model.LaborQuote.CustomMiscChargesList.Count() > 3 ? Model.LaborQuote.CustomMiscChargesList.ToList()[3].Cost.ToString() : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="213px" colspan="3"><input class="form-control form-rounded mt-2" type="text" name="newMisc5" style="width:90%" value="@(Model.LaborQuote.CustomMiscChargesList != null && Model.LaborQuote.CustomMiscChargesList.Any() && Model.LaborQuote.CustomMiscChargesList.Count() > 4 ? Model.LaborQuote.CustomMiscChargesList.ToList()[4].Description : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                        <td width="150px"><input class="form-control form-rounded mt-2 miscChargesDlls" type="number" step="0.01" name="newMisc5Dollars" value="@(Model.LaborQuote.CustomMiscChargesList != null && Model.LaborQuote.CustomMiscChargesList.Any() && Model.LaborQuote.CustomMiscChargesList.Count() > 4 ? Model.LaborQuote.CustomMiscChargesList.ToList()[4].Cost.ToString() : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="213px" colspan="3"><input class="form-control form-rounded mt-2" type="text" name="newMisc6" style="width:90%" value="@(Model.LaborQuote.CustomMiscChargesList != null && Model.LaborQuote.CustomMiscChargesList.Any() && Model.LaborQuote.CustomMiscChargesList.Count() > 5 ? Model.LaborQuote.CustomMiscChargesList.ToList()[5].Description : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                        <td width="150px"><input class="form-control form-rounded mt-2 miscChargesDlls" type="number" step="0.01" name="newMisc6Dollars" value="@(Model.LaborQuote.CustomMiscChargesList != null && Model.LaborQuote.CustomMiscChargesList.Any() && Model.LaborQuote.CustomMiscChargesList.Count() > 5 ? Model.LaborQuote.CustomMiscChargesList.ToList()[5].Cost.ToString() : "")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="213px" colspan="3" style="text-align:right;padding-right:12px">Total $:</td>
+                                        <td width="150px"><input class="form-control form-rounded mt-2" type="text" name="miscTotalDollars" readonly /></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                        <td valign="top" style="padding-left:15px">
+                            <div class="card" style="margin-top:30px;padding:25px;padding-bottom:25px;padding-left:29px">
+                                <h2 class="ml-4">Notes</h2>
+                                <hr />
+                                <table style="margin-left:auto;margin-right:auto">
+                                    <tr>
+                                        <td><textarea id="notes" class="form-control form-rounded mt-2" rows="20" cols="70" @(ViewData["PDFReport"] == "y" ? "readonly" : "")>@Model.LaborQuote.Notes</textarea></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="form-group mt-2">
+                                                <h4>Attachments</h4>
+                                                <div class="input-group fileAttDiv" id="fileAttDiv-0">
+                                                    <input class="form-control form-rounded mt-2" type="file" name="fileAttachment" @(ViewData["PDFReport"] == "y" ? "readonly" : "") />
+                                                </div>
+                                                <div>
+                                                    <button type="button" class="btn btn-primary" onclick="addAttFile()" id="btnAddAttFile" @(ViewData["PDFReport"] == "y" ? "readonly" : "")>+</button>
+                                                </div>
+                                                @*<input class="form-control form-rounded mt-2" style="height:44px;border:0" type="file" id="notesAttachment" multiple @(ViewData["PDFReport"] == "y" ? "readonly" : "") />*@
+                                            </div>
+                                            @if (Model.LaborQuote.AttachedFiles?.Count > 0)
+                                            {
+                                                <div id="divAttchs" class="form-group row col-12 mt-2 pre-scrollable">
+                                                    <div class="form-control-file" style="width:399px">
+                                                        @foreach (var attFile in Model.LaborQuote.AttachedFiles)
+                                                        {
+                                                            @Html.ActionLink(attFile.FileName, "Download", "EstimatorProjectTotals", new { filename = attFile.FullFileName })
+                                                            <a href="" class="deleteAttachment" data-delatt="@attFile.FullFileName" data-lqcode="@Model.LaborQuote.LaborQuoteCode.Trim()" style="color:red" @(ViewData["PDFReport"] == "y" ? "readonly" : "")> [x]</a>
+                                                            <br />
+                                                        }
+                                                    </div>
+                                                </div>
+                                            }
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            }
+
+            @if (!Model.IsReadOnly)
+            {
+                @if (Model.HourTypesValues != null)
+                {
+                    foreach (var item in Model.HourTypesValues)
+                    {
+                        <input type="text" class="hourTypes" value="@item.TranslateValue" id="typevalue-@item.Value" hidden />
+                    }
+                }
+
+
+                <div class="card" style="margin-top:30px;padding:25px;">
+                    <table>
+                        <tr>
+                            <td colspan="6"></td>
+                            <td>Surcharge</td>
+                            <td><input class="form-control form-rounded mt-2" style="text-align:center" type="text" id="surchargePct" value="@(Model.LaborQuote.SurchargePct ?? "0%")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                        </tr>
+                        <tr>
+                            <td><label class="control-label mr-2">Estimated By:</label></td>
+                            <td>
+                                <select class="custom-select form-control" id="estimatedBy" required @(ViewData["PDFReport"] == "y" ? "readonly" : "")>
+                                    <option value="">Choose Estimator</option>
+                                    @foreach (var eb in Model.EstimatedByList)
+                                    {
+                                        <option value="@eb.Label" selected="@(Model.LaborQuote.EstimatorName.Trim() == eb.Label.Trim() ? true : false)">@eb.Label</option>
+                                    }
+                                </select>
+                            </td>
+                            <td></td>
+                            <td><label class="control-label mr-2">Estimate Date: </label></td>
+                            <td><input class="form-control form-rounded datepicker" name="date" type="text" autocomplete="off" value="@(Model.LaborQuote.ModifiedOn != null ? ((DateTime)Model.LaborQuote.ModifiedOn).ToString("MM/dd/yyyy") : DateTime.Now.ToString("MM/dd/yyyy"))" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                            <td></td>
+                            <td><label class="control-label mr-2">Expiration Date: </label></td>
+                            <td><input class="form-control form-rounded datepicker" name="expirationDate" type="text" autocomplete="off" value="@Model.LaborQuote.CreatedOn.AddMonths(3).ToString("MM/dd/yyyy")" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                        </tr>
+                    </table>
+                    <table style="width:100%; margin-top:4px;">
+                        @{
+                            HourAndRate harOT = Model.LaborQuote.HourAndRates.Where(x => x.RateTypeLookupID.ToString() == Model.HourTypes.Where(y => y.Value == "OT").Select(y => y.LookupGeneralID).FirstOrDefault()).FirstOrDefault();
+                            HourAndRate harPWR = Model.LaborQuote.HourAndRates.Where(x => x.RateTypeLookupID.ToString() == Model.HourTypes.Where(y => y.Value == "PWR").Select(y => y.LookupGeneralID).FirstOrDefault()).FirstOrDefault();
+                            HourAndRate harPWOT = Model.LaborQuote.HourAndRates.Where(x => x.RateTypeLookupID.ToString() == Model.HourTypes.Where(y => y.Value == "PWOT").Select(y => y.LookupGeneralID).FirstOrDefault()).FirstOrDefault();
+                            HourAndRate harReg = Model.LaborQuote.HourAndRates.Where(x => x.RateTypeLookupID.ToString() == Model.HourTypes.Where(y => y.Value == "Reg").Select(y => y.LookupGeneralID).FirstOrDefault()).FirstOrDefault();
+                            HourAndRate harDT = Model.LaborQuote.HourAndRates.Where(x => x.RateTypeLookupID.ToString() == Model.HourTypes.Where(y => y.Value == "DT").Select(y => y.LookupGeneralID).FirstOrDefault()).FirstOrDefault();
+                            HourAndRate harPWDT = Model.LaborQuote.HourAndRates.Where(x => x.RateTypeLookupID.ToString() == Model.HourTypes.Where(y => y.Value == "PWDT").Select(y => y.LookupGeneralID).FirstOrDefault()).FirstOrDefault();
+
+                            bool showPW = (harPWR != null && harPWR.Hours > 0) || (harPWOT != null && harPWOT.Hours > 0) || (harPWDT != null && harPWDT.Hours > 0);
+                        }
+                        <tr>
+                            <input id="hsType-0" value="Reg" hidden />
+                            <td style="width:25%"></td>
+                            <td style="width:10%"><label class="control-label ml-4 mr-2">Reg</label></td>
+                            <td style="width:7%"><input class="form-control form-rounded hs" type="text" id="Hs-0" value="@(harReg == null ? "0.00" : harReg.Hours.ToString("N2"))" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                            <td style="width:20%"><label class="control-label mr-2 ml-5">Reg Hourly Rate: </label></td>
+                            <td style="width:10%"><input class="form-control form-rounded rates" type="text" id="HourlyRate-0" value="@(harReg == null ? Model.HourTypesValues.Where(x => x.Value == "Reg").Select(x => x.TranslateValue).FirstOrDefault() : harReg.RateValue.ToString())" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                            <td style="width:10%"><input class="form-control form-rounded" type="text" name="surcharge-0" readonly /></td>
+                            <td style="width:10%"><input class="form-control form-rounded" type="text" name="surchargeDlls-0" readonly /></td>
+                        </tr>
+                        <tr>
+                            <input id="hsType-1" value="OT" hidden />
+                            <td></td>
+                            <td style="width:10%"><label class="control-label ml-4 mr-2">OT</label></td>
+                            <td style="width:7%"><input class="form-control form-rounded hs" type="text" id="Hs-1" value="@(harOT == null ? "0.00" : harOT.Hours.ToString("N2"))" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                            <td style="width:20%"><label class="control-label mr-2 ml-5">OT Hourly Rate: </label></td>
+                            <td><input class="form-control form-rounded rates" type="text" id="HourlyRate-1" value="@(harOT == null ? Model.HourTypesValues.Where(x => x.Value == "OT").Select(x => x.TranslateValue).FirstOrDefault() : harOT.RateValue.ToString("N2"))" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                            <td><input class="form-control form-rounded" type="text" name="surcharge-1" readonly /></td>
+                            <td><input class="form-control form-rounded" type="text" name="surchargeDlls-1" readonly /></td>
+                        </tr>
+                        <tr>
+                            <input id="hsType-2" value="DT" hidden />
+                            <td></td>
+                            <td style="width:10%"><label class="control-label ml-4 mr-2">DT</label></td>
+                            <td style="width:7%"><input class="form-control form-rounded hs" type="text" id="Hs-2" value="@(harDT == null ? "0.00" : harDT.Hours.ToString("N2"))" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                            <td style="width:20%"><label class="control-label mr-2 ml-5">DT Hourly Rate: </label></td>
+                            <td><input class="form-control form-rounded rates" type="text" id="HourlyRate-2" value="@(harDT == null ? Model.HourTypesValues.Where(x => x.Value == "DT").Select(x => x.TranslateValue).FirstOrDefault() : harDT.RateValue.ToString())" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                            <td><input class="form-control form-rounded" type="text" name="surcharge-2" readonly /></td>
+                            <td><input class="form-control form-rounded" type="text" name="surchargeDlls-2" readonly /></td>
+                        </tr>
+                        <input id="hrCount" value="@(ViewData["Region"].ToString() == "OWP" ? "6" : "5")" hidden />
+
+                    </table>
+                    @if (!showPW)
+                    {
+                        <div class="lines-header fake-button collapsed" data-toggle="collapse" data-target="#ratescollapse" aria-expanded="false">
+                            <h4 class="d-inline-block">PW Rates</h4>
+                            <span class="float-right"><i class="fa fas"></i></span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="lines-header fake-button" data-toggle="collapse" data-target="#ratescollapse" arie-expanded="true">
+                            <h4 class="d-inline-block">PW Rates</h4>
+                            <span class="float-right"><i class="fa fas"></i></span>
+                        </div>
+                    }
+
+                    <div id="ratescollapse" class="collapse @(!showPW ? "" : "show")">
+                        <table style="width:100%;">
+                            <tr>
+                                <input id="hsType-3" value="PWR" hidden />
+                                <td style="width:25%"></td>
+                                <td style="width:10%"><label class="control-label ml-4 mr-2">PW Reg</label></td>
+                                <td style="width:7%"><input class="form-control form-rounded hs mr-2" type="text" id="Hs-3" value="@(harPWR == null ? "0.00" : harPWR.Hours.ToString("N2"))" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                <td style="width:20%"><label class="control-label mr-2 ml-5">PW Reg Hourly Rate: </label></td>
+                                <td style="width:10%"><input class="form-control form-rounded rates" type="text" id="HourlyRate-3" value="@(harPWR == null ? Model.HourTypesValues.Where(x => x.Value == "PWR").Select(x => x.TranslateValue).FirstOrDefault() : harPWR.RateValue.ToString("N2"))" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                <td style="width:10%"><input class="form-control form-rounded" type="text" name="surcharge-3" readonly /></td>
+                                <td style="width:10%"><input class="form-control form-rounded" type="text" name="surchargeDlls-3" readonly /></td>
+                            </tr>
+                            <tr>
+                                <input id="hsType-4" value="PWOT" hidden />
+                                <td style="width:25%"></td>
+                                <td style="width:10%"><label class="control-label ml-4 mr-2">PW OT</label></td>
+                                <td style="width:7%"><input class="form-control form-rounded hs" type="text" id="Hs-4" value="@(harPWOT == null ? "0.00" : harPWOT.Hours.ToString("N2"))" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                <td style="width:20%"><label class="control-label mr-2 ml-5">PW OT Hourly Rate: </label></td>
+                                <td><input class="form-control form-rounded rates" type="text" id="HourlyRate-4" value="@(harPWOT == null ? Model.HourTypesValues.Where(x => x.Value == "PWOT").Select(x => x.TranslateValue).FirstOrDefault() : harPWOT.RateValue.ToString("N2"))" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                                <td><input class="form-control form-rounded" type="text" name="surcharge-4" readonly /></td>
+                                <td><input class="form-control form-rounded" type="text" name="surchargeDlls-4" readonly /></td>
+                            </tr>
+                            @if (ViewData["Region"].ToString() == "OWP")
+                            {
+                        <tr>
+                            <input id="hsType-5" value="PWDT" hidden />
+                            <td style="width:25%"></td>
+                            <td style="width:10%"><label class="control-label ml-4 mr-2">PW DT</label></td>
+                            <td style="width:7%"><input class="form-control form-rounded hs" type="text" id="Hs-5" value="@(harPWDT == null ? "0.00" : harPWDT.Hours.ToString("N2"))" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                            <td style="width:20%"><label class="control-label mr-2 ml-5">PW DT Hourly Rate: </label></td>
+                            <td><input class="form-control form-rounded rates" type="text" id="HourlyRate-5" value="@(harPWDT == null ? Model.HourTypesValues.Where(x => x.Value == "PWDT").Select(x => x.TranslateValue).FirstOrDefault() : harPWDT.RateValue.ToString("N2"))" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                            <td><input class="form-control form-rounded" type="text" name="surcharge-5" readonly /></td>
+                            <td><input class="form-control form-rounded" type="text" name="surchargeDlls-5" readonly /></td>
+                        </tr>
+                            }
+                        </table>
+                    </div>
+                    <table>
+                        <tr>
+                            <td style="width:15%"><label class="control-label mt-2">Project Total Hs: </label></td>
+                            <td style="width:10%"><input class="form-control form-rounded mt-2" type="text" name="projTotalHs" readonly /></td>
+                            <td style="width:10%"><label class="control-label mt-2 ml-4 mr-2">Total: </label></td>
+                            <td style="width:7%"><input class="form-control form-rounded mt-2" type="text" name="totalHs" readonly /></td>
+                            <td style="width:20%"><label class="control-label mt-2 ml-5 mr-2">Total Labor Costs: </label></td>
+                            <td style="width:10%"><input class="form-control form-rounded mt-2" type="text" name="totalLaborCosts" readonly /></td>
+                            <td style="width:20%"></td>
+                        </tr>
+                        <tr>
+                            <td><label class="control-label mt-2 mr-2">Hours Validation: </label></td>
+                            <td><input class="form-control form-rounded mt-2" type="text" name="hsValidation" readonly /></td>
+                            <td colspan="3" style="text-align:right"><label class="control-label mt-2 ml-4 mr-2">Install Total (includes Add On's and Misc Charges):</label></td>
+                            <td><input class="form-control form-rounded mt-2" type="text" id="installTotal" readonly required /></td>
+                            <td>
+                                <label class="control-label ml-5 mt-2 mr-2">Is Scheduled</label>
+                                <input class="ml-5" type="radio" name="IsScheduled" value="True" @(Model.LaborQuote.IsScheduled == "True" ? "checked" : "")> Yes
+                                <input class="ml-2" type="radio" name="IsScheduled" value="False" @(Model.LaborQuote.IsScheduled == "False" ? "checked" : "")> No
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"></td>
+                            <td colspan="3" style="text-align:right"><label class="control-label mt-2 ml-4 mr-2">Health & Safety Surcharge:</label></td>
+                            <td><input class="form-control form-rounded mt-2" type="text" id="hsSurcharge" readonly required /></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td><label class="control-label mt-2 mr-2">Complex Project: </label></td>
+                            <td>
+                                <select class="form-control form-rounded custom-select mt-2" id="complexProject" @(ViewData["PDFReport"] == "y" ? "readonly" : "")>
+                                    <option value="1" selected="@(Model.LaborQuote.ComplexProject)">Yes</option>
+                                    <option value="0" selected="@(!Model.LaborQuote.ComplexProject)">No</option>
+                                </select>
+                            </td>
+                            <td colspan="2" style="text-align:right"><label class="control-label mt-2 ml-4 mr-2"># of Days: </label></td>
+                            <td><input class="form-control form-rounded mt-2" type="number" step="0.01" id="noOfDays" required value="@(Model.LaborQuote.NumberOfDays ?? 1)" @(ViewData["PDFReport"] == "y" ? "readonly" : "") /></td>
+                            <td style="@(Model.IsReadOnly ? "display:none" : "")"><label class="control-label mt-2 ml-4 mr-2">Truck Capacity: </label></td>
+                            <td style="@(Model.IsReadOnly ? "display:none" : "")">
+                                <select class="form-control form-rounded custom-select mt-2" id="truckCap" @(ViewData["PDFReport"] == "y" ? "readonly" : "")>
+                                    <option value="0" selected="@(Model.LaborQuote.TruckCapacity == 0)">0%</option>
+                                    <option value="25" selected="@(Model.LaborQuote.TruckCapacity == 25)">25%</option>
+                                    <option value="50" selected="@(Model.LaborQuote.TruckCapacity == 50)">50%</option>
+                                    <option value="75" selected="@(Model.LaborQuote.TruckCapacity == 75)">75%</option>
+                                    <option value="100" selected="@(Model.LaborQuote.TruckCapacity == 100)">100%</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="col-10 lines-header fake-button collapsed" data-toggle="collapse" data-target="#bucket1collapse" style="margin-top:20px">
+                    <h3 class="d-inline-block">Labor Breakdown</h3>
+                    <span class="float-right"><i class="fa-2x fas"></i></span>
+                </div>
+                <div id="bucket1collapse" class="collapse col-12" style="padding:0">
+                    <div class="card" style="margin-top:30px;padding:25px">
+                        <table class="table table-sm table-bordered text-center" style="margin-left:auto;margin-right:auto">
+                            <thead>
+                                <tr>
+                                    <th>Labor Breakdown</th>
+                                    <th>Labor Total</th>
+                                    <th>Hourly Rate</th>
+                                    <th>Total  Labor Hours</th>
+                                    <th>Number Days in Project</th>
+                                    <th>Total Man Hours Per/Day</th>
+                                    <th>Number of Men Per Day</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Breakdown != null)
+                                {
+                                    float rate;
+                                    foreach (var item in Model.Breakdown)
+                                    {
+                                        rate = Model.LaborQuote.HourAndRates.Where(x => x.RateTypeLookupID.ToString() == Model.HourTypes.Where(y => y.Value == item.Value).Select(y => y.LookupGeneralID).FirstOrDefault()).Select(x => x.RateValue).FirstOrDefault();
+                                        <tr>
+                                            <input class="brkType" value="@item.Value" hidden />
+                                            <td style="text-align:left;width:260px">@item.TranslateValue</td>
+                                            <td><input class="form-control border-0 text-center" type="text" name="commonTotalDlls" readonly /></td>
+                                            <td><input class="form-control border-0 text-center" type="text" name="HourlyRate-@item.Value" value="@(rate == 0 ? Model.HourTypesValues.Where(x => x.Value == item.Value).Select(x => x.TranslateValue).FirstOrDefault() : rate.ToString("N2"))" readonly /></td>
+                                            <td><input class="form-control border-0 text-center" type="text" name="TotalHs-@item.Value" readonly /></td>
+                                            <td><input class="form-control border-0 text-center" type="text" name="commonTotalNoDays" readonly /></td>
+                                            <td><input class="form-control border-0 text-center" type="text" name="TotalManHs-@item.Value" readonly /></td>
+                                            <td><input class="form-control border-0 text-center" type="text" name="TotalNoOfMen-@item.Value" readonly /></td>
+                                        </tr>
+                                    }
+                                }
+
+                                @*<tr>
+                                        <td style="text-align:left;width:260px">Labor Hours (Regular)</td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="commonTotalDlls" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="regularHourlyRate" value="$47.00" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="regularTotalHs" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="commonTotalNoDays" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="regularTotalManHs" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="regularTotalNoOfMen" readonly /></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align:left;width:260px">Labor Hours (Overtime)</td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="commonTotalDlls" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="overtimeHourlyRate" value="$73.50" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="overtimeTotalHs" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="commonTotalNoDays" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="overtimeTotalManHs" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="overtimeTotalNoOfMen" readonly /></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align:left;width:260px">Labor Hours (Doubletime)</td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="commonTotalDlls" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="doubletimeHourlyRate" value="$98.00" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="doubletimeTotalHs" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="commonTotalNoDays" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="doubletimeTotalManHs" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="doubletimeTotalNoOfMen" readonly /></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align:left;width:260px">Labor Hours (Prevailing Wage)</td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="commonTotalDlls" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="pwHourlyRate" value="$70.00" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="pwTotalHs" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="commonTotalNoDays" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="pwTotalManHs" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="pwTotalNoOfMen" readonly /></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align:left;width:260px">Labor Hours (Prevailing Wage  O.T.)</td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="commonTotalDlls" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="pwOtHourlyRate" value="$105.00" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="pwOtTotalHs" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="commonTotalNoDays" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="pwOtTotalManHs" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="pwOtTotalNoOfMen" readonly /></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align:left;width:260px">Labor Hours (Prevailing Wage  D.T.)</td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="commonTotalDlls" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="pwDtHourlyRate" value="$140.00" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="pwDtTotalHs" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="commonTotalNoDays" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="pwDtTotalManHs" readonly /></td>
+                                        <td><input class="form-control border-0 text-center" type="text" name="pwDtTotalNoOfMen" readonly /></td>
+                                    </tr>*@
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @if (ViewData["PDFReport"] == "y")
+                {
+                }
+                else
+                {
+                    <div class="row my-3" style="padding:25px">
+                        <button id="btnSave" type="submit" name="submit" class="btn btn-primary btn-block" value="Save" style="width:200px">Save</button>
+                        <button id="btnEstimate" type="submit" name="submit" class="btn btn-primary btn-block" value="Estimate" style="width:200px;margin-left:5px;margin-top:0">Complete Estimate</button>
+                        <button id="btnCancel" type="submit" class="btn btn-primary btn-block" style="width:200px;margin-left:787px;margin-top:-38px;background-color:red;border-color:red">Cancel Quote</button>
+                    </div>
+                }
+            }
+
+            <input type="hidden" id="laborQuoteNo_" value="@ViewData["LaborQuoteNo"]" />
+            <input type="hidden" id="quoteNo" value="@Model.LaborQuote.LaborQuoteCode" />
+            <input type="hidden" id="currLaborQuoteStatus" value="@Model.CurrentStatus" />
+        </form>
+
+        @if (Model.IsReadOnly)
+        {
+            <fieldset disabled="disabled">
+                <div class="card" style="margin-top:30px;padding:25px">
+                    <table style="margin-left:auto;margin-right:auto">
+                        <tr>
+                            <td><label class="control-label mt-2 mr-2">Estimated By:</label></td>
+                            <td><input class="form-control form-rounded mt-2" type="text" value="@Model.LaborQuote.EstimatorName" readonly /></td>
+                            <td><label class="control-label mt-2 ml-4 mr-2">This project is quoted for</label></td>
+                            <td><input class="form-control form-rounded mt-2 hs" type="number" step="0.01" style="width:95px" value="@Model.LaborQuote.NumberOfDays" readonly /></td>
+                            <td class="pl-1"> day(s).</td>
+                        </tr>
+                        <tr>
+                            <td><label class="control-label mt-2 mr-2">Date:</label></td>
+                            <td><input class="form-control form-rounded datepicker mt-2" style="text-indent:8px;width:110px" type="text" autocomplete="off" value="@Model.LaborQuote.CreatedOn.ToString("MM/dd/yyyy")" readonly /></td>
+                            <td><label class="control-label mt-2 ml-4 mr-2">Labor Total:</label></td>
+                            <td colspan="2"><input class="form-control form-rounded mt-2 hs" type="text" style="width:95px" value="@("$" + (Model.LaborQuote.InstallTotal + Model.LaborQuote.HealthAndSafetySurcharge).ToString())" readonly /></td>
+                        </tr>
+                        <tr>
+                            <td><label class="control-label mt-2 mr-2">Expiration Date:</label></td>
+                            <td><input class="form-control form-rounded datepicker mt-2" style="text-indent:8px;width:110px" type="text" autocomplete="off" value="@(Model.LaborQuote.ExpirationDate == null ? "" : ((DateTime)Model.LaborQuote.ExpirationDate).ToString("MM/dd/yyyy"))" readonly /></td>
+                            <td colspan="3"></td>
+                        </tr>
+                    </table>
+                </div>
+            </fieldset>
+        }
+    }
+    else if (Model.NoLaborQuoteFound)
+    {
+        <div class="no-results">
+            <span id="noresults">No Labor Quote found.</span>
+            <div class="d-flex justify-content-center">
+                <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
+    }
+
+    <input id="hdnEstimSuccess" type="hidden" value="@Model.Success" />
+    <input id="hdnEstimSaved" type="hidden" value="@Model.Saved" />
+</fieldset>
+
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span class="close" style="text-align:end">&times;</span>
+        <p style="text-align:center">Are you sure you want to cancel this quote?</p>
+        <div class="row my-3" style="padding:25px;align-self:center">
+            <button type="button" id="btnCancelYes" class="btn btn-primary btn-block" value="1" style="width:200px">Yes</button>
+            <button type="button" id="btnCancelNo" class="btn btn-primary btn-block" value="0" style="width:200px;margin-left:5px;margin-top:0">No</button>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="hdnIsAttached" value="@ViewData["IsAttached"]" />
+<input type="hidden" id="hdnNumNewFurns" value="@Model.LaborQuote?.CustomFurnitureInstallationList?.Count()" />
+<input id="hdnIsReadOnly" type="hidden" value="@Model.IsReadOnly.ToString()" />
+
+<div id="hdnFurnsContainer">
+    @{
+        if (Model.LaborQuote?.CustomFurnitureInstallationList?.Count() > 0)
+        {
+            int num = 1;
+            foreach (var furn in Model.LaborQuote.CustomFurnitureInstallationList)
+            {
+                string id = "hdnfurnval" + num.ToString();
+                string value = furn.Description + "|" + furn.Quantity + "|" + furn.HoursPerQty + "|" + furn.Hours;
+                <input type="hidden" id="@id" class="hdnfurnval" value="@value" />
+                num++;
+            }
+        }
+    }
+</div>

@@ -1,0 +1,187 @@
+﻿@model OWPApplications.Models.JobCostingLeadership.JobCostingLeadershipViewModel;
+@{
+    ViewData["Title"] = "Job Costing Leadership";
+    ViewData["NavBarColor"] = "blue";
+    ViewData["ShowNavBar"] = "True";
+    ViewData["Type"] = "JobCostingLeadership";
+}
+<style>
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .container {
+        width: 100%;
+        margin-left: 50px;
+        margin-right: 50px;
+        max-width: -webkit-fill-available;
+    }
+</style>
+@if (Model.Summaries != null)
+{
+    if (Model.Summaries.Count() > 0)
+    {
+        <div class="row">
+            <div class="lines-header">
+                <br />
+                <h3 class="d-inline-block">Summary</h3>
+                <br />
+            </div>
+        </div>
+        <div class="row" style="justify-content:end; align-content:center; margin-bottom:5px;">
+            <button class="btn btn-sm btn-primary" id="export-excel" data-type="summary">Download Excel</button>
+        </div>
+        <div class="card p-3">
+            <table class="cell-border" id="jobCostingLeadershipTable" style="width:100%">
+                <thead>
+                    <tr>
+                        <th class="table-header">Company</th>
+                        <th class="table-header">Customer</th>
+                        <th class="table-header">PID</th>
+                        <th class="table-header">Scheduled Date(s)</th>
+                        <th class="table-header">Labor Quote #</th>
+                        <th class="table-header">Labor Quote $</th>
+                        <th class="table-header">Budget $</th>
+                        <th class="table-header">Actual $</th>
+                        <th class="table-header">Budget GP %</th>
+                        <th class="table-header">Labor Quote GP $</th>
+                        <th class="table-header">Labor Quote GP %</th>
+                        <th class="table-header">Open/Closed Labor Lines</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var summary in Model.Summaries)
+                    {
+                        string[] quotes = summary.FullLaborQuoteCode.Split(",");
+                        string[] quotesNotSched = summary.FullLaborQuoteCode_NotScheduled.Split(",");
+                    <tr>
+                        <td style="white-space: nowrap;">@summary.Company_Code</td>
+                        <td style="white-space: nowrap;">@summary.Customer</td>
+                        <td style="white-space: nowrap;"><a asp-controller="jobcostingleadership" asp-action="getdetails" asp-route-projectid="@summary.Project_ID" asp-route-region="@ViewData["Region"]" asp-route-fromdate="@ViewData["SelectedFromDate"].ToString()" asp-route-todate="@ViewData["SelectedToDate"].ToString()" asp-route-customer="@summary.Customer" asp-route-customerid="@ViewData["SelectedCustomers"]" asp-route-location="@ViewData["SelectedLoc"]" target="_blank">@summary.Project_ID</a></td>
+                        <td style="white-space: nowrap; color:@summary.MaxSchDateColor">@summary.MinSchDate - @summary.MaxSchDate</td>
+                        <td>
+                            @foreach (var item in quotes)
+                            {
+                                if (quotesNotSched.Contains(item))
+                                {
+                                    <a style="color:gray;" asp-controller="estimatorprojecttotals" asp-action="index" asp-route-laborquotecode="@item" asp-route-region="@ViewData["Region"].ToString()" target="_blank">@item</a>
+                                }
+                                else
+                                {
+                                    <a asp-controller="estimatorprojecttotals" asp-action="index" asp-route-laborquotecode="@item" asp-route-region="@ViewData["Region"].ToString()" target="_blank">@item</a>
+                                }
+                            }
+                        </td>
+                        <td style="white-space: nowrap;" class="autoNCur"><span>@summary.LaborQuoteCost</span></td>
+                        <td style="white-space: nowrap;" class="autoNCur"><span>@summary.BudgetCost</span></td>
+                        <td style="white-space: nowrap;" class="autoNCur"><span>@summary.ActualCost</span></td>
+                        <td style="white-space: nowrap; background-color: @summary.GPPctColor;" class="autoNPct"><span>@summary.GPPct</span></td>
+                        <td style="white-space: nowrap;" class="autoNCur"><span>@summary.LQ_GPCost</span></td>
+                        <td style="white-space: nowrap;" class="autoNPct"><span>@summary.LQ_GPPct</span></td>
+                        <td style="white-space: nowrap;"><span>@summary.ProjectOpenLines</span></td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="no-results">
+
+            <span id="noresults">No results to show.</span>
+
+            <div class="d-flex justify-content-center">
+                <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+
+        </div>
+    }
+}
+else if (Model.Details != null)
+{
+    if (Model.Details.Count() > 0)
+    {
+        <div class="row">
+            <div class="col-12 lines-header">
+                <br />
+                <h3 class="d-inline-block">Details</h3>
+                <br />
+                <h5>@Model.Customer - PID # @Model.ProjectId</h5>
+                <br />
+            </div>
+        </div>
+        <div class="row" style="justify-content:end; align-content:center; margin-bottom:5px;">
+            <button class="btn btn-sm btn-primary" id="export-excel" data-type="details">Download Excel</button>
+        </div>
+        <div class="card p-3">
+            <table class="cell-border" id="jobCostingLeadershipTable" style="width:100%">
+                <thead>
+                    <tr>
+                        <th scope="col" class="table-header">Order #</th>
+                        <th scope="col" class="table-header">Line #</th>
+                        <th scope="col" class="table-header">Lead</th>
+                        <th scope="col" class="table-header">Scheduled Date</th>
+                        <th scope="col" class="table-header">Labor Line Total</th>
+                        <th scope="col" class="table-header">Actual</th>
+                        <th scope="col" class="table-header">Delivered</th>
+                        <th scope="col" class="table-header">Invoiced</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var detail in Model.Details)
+                    {
+                        <tr>
+                            <td style="white-space: nowrap;">@detail.Order_No</td>
+                            <td style="white-space: nowrap;">@detail.Lines</td>
+                            <td style="white-space: nowrap;">@detail.Lead</td>
+                            <td style="white-space: nowrap;">@detail.SchDate</td>
+                            <td style="white-space: nowrap;">
+                                @if (detail.LaborLineTotal != -1)
+                                {
+                                    <span class="autoNCur">@detail.LaborLineTotal</span>
+                                }
+                            </td>
+                            <td style="white-space: nowrap;"><span class="autoNCur">@detail.ActualCost</span></td>
+                            <td style="white-space: nowrap;">@(detail.Delivered ? "X" : "")</td>
+                            <td style="white-space: nowrap;">@(detail.Invoiced ? "X" : "")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    }
+    else
+    {
+        <div class="no-results">
+
+            <span id="noresults">No results to show.</span>
+
+            <div class="d-flex justify-content-center">
+                <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+
+        </div>
+    }
+}
+else
+{
+    <div class="no-results">
+
+        <span id="noresults">No results to show.</span>
+
+        <div class="d-flex justify-content-center">
+            <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+
+    </div>
+}

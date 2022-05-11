@@ -1,0 +1,261 @@
+﻿@model OWPApplications.Models.LaborQuoteAutomation.LaborQuoteAutomationViewModel;
+
+@{
+	ViewData["Title"] = "Estimator Stats Report";
+	ViewData["NavBarColor"] = "white";
+	ViewData["ShowNavBar"] = "True";
+	ViewData["Type"] = "EstimatorStatsReport";
+}
+
+<style type="text/css">
+	.linkSummary {
+		margin-left: 757px;
+		margin-top: 16px;
+	}
+
+	.fake-button {
+		transition: box-shadow .1s;
+		cursor: pointer;
+	}
+
+		.fake-button:hover {
+			box-shadow: 0 0 11px rgba(33,33,33,.2);
+		}
+
+	.filter-option-inner-inner {
+		max-width: 300px;
+	}
+
+	.highlight-yellow {
+		background-color: yellow;
+	}
+
+	[data-toggle="collapse"] .fas:before {
+		content: "\f103";
+	}
+
+	[data-toggle="collapse"].collapsed .fas:before {
+		content: "\f101";
+	}
+</style>
+
+<div class="linkSummary">
+	<a href="/estimatordashboard">Estimator Dashboard</a>
+	<span style="color:dodgerblue">&nbsp;│&nbsp;</span>
+	<a href="/laborquotedashboard">Labor Quote Dashboard</a>
+</div>
+
+<div class="row mt-3 expanded-table-s1">
+	<h3 class="col-12 lines-header">Quotes by month</h3>
+	<div class="card col-12 p-3">
+		<div class="alt-table-responsive table-responsive">
+			<table class="table table-sm table-bordered text-center">
+				<thead>
+					<tr>
+						<th scope="col" class="table-header">Month</th>
+						<th scope="col" class="table-header">Total Budget Amount</th>
+						<th scope="col" class="table-header">Completed</th>
+						<th scope="col" class="table-header">Revisions</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var lq in Model.CompletedQuotesByMonth)
+					{
+						<tr>
+							<td>@lq.Month</td>
+							<td>@lq.Total_Budget.ToString("C")</td>
+							<td>@lq.Count</td>
+							<td>@lq.RevisionCount</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+<div class="row mt-5 expanded-table-s1">
+	<h3 class="col-12 lines-header">OWP Quotes by Service Provider</h3>
+	<div class="card col-12 p-3">
+		<div class="alt-table-responsive table-responsive">
+			<table class="table table-sm table-bordered text-center">
+				<thead>
+					<tr>
+						<th scope="col" class="table-header">Service Provider</th>
+						<th scope="col" class="table-header">Total Budget Amount</th>
+						<th scope="col" class="table-header">Completed</th>
+						<th scope="col" class="table-header">Revisions</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var lq in Model.CompletedQuotesByServiceProviderOWP)
+					{
+						<tr>
+							<td>@lq.ServiceProvider</td>
+							<td>@lq.Total_Budget.ToString("C")</td>
+							<td>@lq.Count</td>
+							<td>@lq.RevisionCount</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+<div class="row mt-5 expanded-table-s1">
+    <h3 class="col-12 lines-header">Open Square Quotes by Service Provider</h3>
+    <div class="card col-12 p-3">
+        <div class="alt-table-responsive table-responsive">
+            <table class="table table-sm table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th scope="col" class="table-header">Service Provider</th>
+                        <th scope="col" class="table-header">Total Budget Amount</th>
+                        <th scope="col" class="table-header">Completed</th>
+                        <th scope="col" class="table-header">Revisions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var lq in Model.CompletedQuotesByServiceProviderOSQ)
+                    {
+                        <tr>
+                            <td>@lq.ServiceProvider</td>
+                            <td>@lq.Total_Budget.ToString("C")</td>
+                            <td>@lq.Count</td>
+                            <td>@lq.RevisionCount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5 expanded-table-s1">
+	<div class="col-10 lines-header fake-button collapsed" data-toggle="collapse" data-target="#bucket1collapse">
+		<h3 class="d-inline-block">Quotes by Customer</h3>
+		<span class="float-right"><i class="fa-2x fas"></i></span>
+	</div>
+	<div id="bucket1collapse" class="collapse col-12">
+		<div class="card col-12 p-3">
+			<div class="alt-table-responsive table-responsive">
+				<table class="table table-sm table-bordered text-center">
+					<thead>
+						<tr>
+							<th scope="col" class="table-header">Customer</th>
+							<th scope="col" class="table-header">Total Budget Amount</th>
+							<th scope="col" class="table-header">Completed</th>
+							<th scope="col" class="table-header">Revisions</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var lq in Model.CompletedQuotesByCustomer)
+						{
+							<tr>
+								<td>@lq.CustomerName</td>
+								<td>@lq.Total_Budget.ToString("C")</td>
+								<td>@lq.Count</td>
+								<td>@lq.RevisionCount</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row mt-5 expanded-table-s1">
+	<div class="col-10 lines-header fake-button collapsed" data-toggle="collapse" data-target="#bucket2collapse">
+		<h3 class="d-inline-block">Quotes by Requestor</h3>
+		<span class="float-right"><i class="fa-2x fas"></i></span>
+	</div>
+	<div id="bucket2collapse" class="collapse col-12">
+		<div class="card col-12 p-3">
+			<div class="alt-table-responsive table-responsive">
+				<table class="table table-sm table-bordered text-center">
+					<thead>
+						<tr>
+							<th scope="col" class="table-header">Requestor</th>
+							<th scope="col" class="table-header">Total Budget Amount</th>
+							<th scope="col" class="table-header">Completed</th>
+							<th scope="col" class="table-header">Revisions</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var lq in Model.CompletedQuotesByRequestor)
+						{
+							<tr>
+								<td>@lq.Requestor</td>
+								<td>@lq.Total_Budget.ToString("C")</td>
+								<td>@lq.Count</td>
+								<td>@lq.RevisionCount</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row mt-5 expanded-table-s1">
+	<h3 class="col-12 lines-header">Quotes by Assigned To (Estimator)</h3>
+	<div class="card col-12 p-3">
+		<div class="alt-table-responsive table-responsive">
+			<table class="table table-sm table-bordered text-center">
+				<thead>
+					<tr>
+						<th scope="col" class="table-header">Completed By</th>
+						<th scope="col" class="table-header">Sum of Budget Amount</th>
+						<th scope="col" class="table-header">Completed</th>
+						<th scope="col" class="table-header">Revisions</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var lq in Model.CompletedQuotesByEstimator)
+					{
+						<tr>
+							<td>@lq.CompletedBy</td>
+							<td>@lq.Total_Budget.ToString("C")</td>
+							<td>@lq.Count</td>
+							<td>@lq.RevisionCount</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+<div class="row mt-5 expanded-table-s1">
+	<h3 class="col-12 lines-header">Revision Reasons</h3>
+	<div class="card col-12 p-3">
+		<div class="alt-table-responsive table-responsive">
+			<table class="table table-sm table-bordered text-center">
+				<thead>
+					<tr>
+						<th scope="col" class="table-header">Revision Labor Quote #</th>
+						<th scope="col" class="table-header">Requestor</th>
+						<th scope="col" class="table-header">Customer Name</th>
+						<th scope="col" class="table-header">Reason</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var lq in Model.RevisionReasons)
+					{
+						<tr>
+							<td>@lq.LaborQuoteCode</td>
+							<td>@lq.RequestorName</td>
+							<td>@lq.CustomerName</td>
+							<td>@lq.RevisionReason</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+<input type="hidden" id="isPostBack" value="@ViewData["IsPostBack"]" />

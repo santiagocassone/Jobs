@@ -1,0 +1,47 @@
+﻿@model UserProfile
+
+@{
+    ViewBag.Title = "Login";
+}
+
+<style type="text/css">
+    fieldset {
+        width: 400px;
+        margin: auto;
+    }
+
+    tr {
+        height: 60px;
+    }
+
+    /*td {
+        width: 300px;
+    }*/
+</style>
+
+@using (Html.BeginForm("Login", "SubcontractorReceiving", FormMethod.Post))
+{
+    <fieldset style="text-align:-webkit-center;margin-top:200px">
+        <legend>Subcontractor Receiving</legend>
+
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+        @if (@ViewBag.Message != null)
+        {
+            <div style="color:red">@ViewBag.Message</div>
+        }
+        <table>
+            <tr>
+                <td>@Html.TextBoxFor(a => a.UserEmail, new { placeholder = "Email", @class = "form-control form-rounded", style = "width:300px" })</td>
+                <td>@Html.ValidationMessageFor(a => a.UserEmail)</td>
+            </tr>
+            <tr>
+                <td>@Html.PasswordFor(a => a.Password, new { placeholder = "Password", @class = "form-control form-rounded", style = "width:300px" })</td>
+                <td>@Html.ValidationMessageFor(a => a.Password)</td>
+            </tr>
+            <tr>
+                <td colspan="2" class="align-content-center"><input class="btn btn-primary btn-block btn-sm" style="width:300px" type="submit" value="Login" onclick="localStorage.clear();" /></td>
+            </tr>
+        </table>
+    </fieldset>
+}  

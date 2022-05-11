@@ -1,0 +1,138 @@
+﻿@model OWPApplications.Models.LaborQuoteAutomation.LaborQuoteAutomationViewModel;
+
+@{
+    ViewData["Title"] = "Labor Quote Dashboard";
+    ViewData["NavBarColor"] = "white";
+    ViewData["ShowNavBar"] = "True";
+    ViewData["Type"] = "LaborQuoteDashboard";
+}
+
+<style type="text/css">
+    #btnEstimation {
+        background: none !important;
+        border: none;
+        padding: 0 !important;
+        color: #007bff;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .container {
+        width: 100%;
+        margin-left: 50px;
+        margin-right: 50px;
+        max-width: -webkit-fill-available;
+    }
+</style>
+
+@if (Model.ShowResults)
+{
+    <div class="row">
+        <div class="lines-header">
+            <br />
+            <h3 class="d-inline-block">Labor Quotes</h3>
+            <br />
+        </div>
+    </div>
+    <div class="card p-3">
+        <table class="cell-border" id="laborQuoteTable" style="width:100%">
+            <thead>
+                <tr>
+                    <th class="table-header">Original Labor Quote #</th>
+                    <th class="table-header">Labor Quote #</th>
+                    <th class="table-header">Date Entered</th>
+                    <th class="table-header">Project ID</th>
+                    <th class="table-header">Quote/Order #</th>
+                    <th class="table-header">LQ Total</th>
+                    <th class="table-header">Status</th>
+                    <th class="table-header">Modified Date</th>
+                    <th class="table-header">Customer Name</th>
+                    <th class="table-header">Salesperson</th>
+                    <th class="table-header">Requested By</th>
+                    <th class="table-header">Estimator</th>
+                    <th class="table-header">Revision</th>
+                    <th class="table-header">Estimation</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var lq in Model.LaborQuotes)
+                {
+                    var bgColor = "";
+
+                    if (lq.Status == "Pending" || lq.Status == "Active")
+                    {
+                        bgColor = ((DateTime.Now - lq.CreatedOn).TotalHours >= 48 ? "style=background-color:lightcoral" : ((DateTime.Now - lq.CreatedOn).TotalHours >= 24 ? "style=background-color:yellow" : ""));
+                    }
+
+                    <tr @bgColor>
+                        @if (ViewData["Region"].ToString() == "OWP")
+                        {
+                            <td>@lq.OriginalLaborQuoteCode</td>
+                            <td><a href="onequoteform?laborQuoteCode=@lq.LaborQuoteCode" target="_blank">@lq.LaborQuoteCode</a></td>
+                        }
+                        else
+                        {
+                            <td>@(lq.OriginalLaborQuoteCode != "" ? lq.OriginalLaborQuoteCode + "S" : "")</td>
+                            <td><a href="laborquoterequestform?laborQuoteCode=@(lq.LaborQuoteCode)&draft=@(lq.Status == "Draft")" target="_blank" style="@(lq.Status == "Draft" ? "color:red;" : "")">@(lq.LaborQuoteCode)S</a></td>
+                        }
+                        <td>@lq.CreatedOn.ToString("MM/dd/yyyy")</td>
+                        <td>@lq.ProjectID</td>
+                        <td>@lq.QuoteOrOrderNumber</td>
+                        <td>$ @lq.LaborTotal</td>
+                        <td><span style="@(lq.Status == "Draft" ? "color:red;" : "")">@lq.Status</span></td>
+                        <td>@(lq.ModifiedOn != null ? ((DateTime)lq.ModifiedOn).ToString("MM/dd/yyyy") : ((DateTime)lq.CreatedOn).ToString("MM/dd/yyyy"))</td>
+                        <td>@lq.CustomerName</td>
+                        <td>@lq.SalespersonName</td>
+                        <td>@lq.RequestorName</td>
+                        <td>@lq.EstimatorName</td>
+                        @if (lq.Status.Trim() != "Canceled")
+                        {
+                            if (ViewData["Region"].ToString() == "OWP")
+                            {
+                                <td><a href="onequoteform?submit=CreateRevision&originalLaborQuoteNo=@lq.LaborQuoteCode" target="_blank" style="text-decoration: none">&nbsp;<i class="fas fa-edit"></i></a></td>
+                            }
+                            else
+                            {
+                                <td><a href="laborquoterequestform?submit=CreateRevision&originalLaborQuoteNo=@lq.LaborQuoteCode" target="_blank" style="text-decoration: none">&nbsp;<i class="fas fa-edit"></i></a></td>
+                            }
+
+                        }
+                        else
+                        {
+                            <td></td>
+                        }
+                        <td>
+                            @using (Html.BeginForm("Index", "EstimatorProjectTotals", FormMethod.Post))
+                            {
+                                <input type="text" value="@lq.LaborQuoteCode" name="laborQuoteCode" hidden />
+                                <input type="text" value="readonly" name="mode" hidden />
+                                <input type="text" value="@ViewData["DateFrom"]" name="paramdatefrom" hidden />
+                                <input type="text" value="@ViewData["DateTo"]" name="paramdateto" hidden />
+                                <input type="text" value="@ViewData["Status"]" name="paramstatus" hidden />
+                                <input type="text" value="@ViewData["Customer"]" name="paramcust" hidden />
+                                <input type="text" value="@ViewData["Code"]" name="paramlqno" hidden />
+                                <input type="text" value="@ViewData["Requestor"]" name="paramreqby" hidden />
+                                <input type="text" value="@ViewData["ProjectID"]" name="paramprojectid" hidden />
+                                <input type="text" value="@ViewData["OriginalLaborQuoteNo"]" name="paramoriglqno" hidden />
+                                <input type="text" value="@ViewData["Region"]" name="region" hidden />
+                                <button id="btnEstimation" type="submit" class="fas fa-calendar-check" style="text-decoration: none;@(lq.Status != "Complete" ? "display:none" : "")"></button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="no-results">
+        <span id="noresults">No results to show.</span>
+    </div>
+}

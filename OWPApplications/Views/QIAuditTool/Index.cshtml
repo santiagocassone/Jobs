@@ -1,0 +1,400 @@
+﻿@{
+    ViewData["Title"] = "Quote Inquiry Audit Tool";
+    ViewData["NavBarColor"] = "blue";
+    ViewData["ShowNavBar"] = "True";
+    ViewData["Type"] = "_Ignore_Use_RenderSection_";
+}
+@model OWPApplications.Models.QIAuditTool.QuoteInquiryAuditViewModel;
+
+@functions {
+
+
+    string ApplyComparisonColor(bool AreEqual)
+    {
+        if (AreEqual)
+        {
+            return "equal-comparison-color";
+        }
+
+        return "different-comparison-color";
+    }
+}
+
+
+@section HeaderSearcher {
+    <form class="form-inline" method="get">
+        <input class="form-control mr-sm-2" id="orderno" name="orderno" type="search" value="@Model.QuoteNo" placeholder="Quote #" aria-label="Search">
+        <button class="btn btn-outline-light my-2 my-sm-0" type="submit" onclick="ShowLoading()">Search</button>
+    </form>
+}
+
+@section BottomScripts {
+    <script src="~/js/qiaudittool.js" type="text/javascript" asp-append-version="true"></script>
+}
+
+<style type="text/css">
+
+
+    .comparison-even-row {
+        background-color: #f9f9f9;
+    }
+
+    .comparison-odd-row {
+        background-color: #efefef;
+    }
+
+    .equal-comparison-color {
+        background-color: #60c448;
+    }
+
+    .different-comparison-color {
+        background-color: #ff959f;
+    }
+
+    .prev-commments-box {
+        position: absolute;
+        width: 50%;
+        height: 50vh;
+        overflow-y: auto;
+        right: 0%
+    }
+
+    td.rotate {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+        td.rotate > div {
+            width: 30px;
+            transform: rotate(90deg);
+        }
+</style>
+
+@if (!Model.ShowResults)
+{
+    <div class="row mt-4">
+        <div class="card col-12 p-3">
+
+            @using (Html.BeginForm("Index", "QIAuditTool", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                <div class="form-row align-items-end">
+                    <div class="col">
+                        <label for="fileSalesXML">Add Sales XML File</label>
+                        <input type="file" class="form-control-file" id="fileSalesXML" name="fileSalesXML">
+                    </div>
+                    @*<div class="form-group">
+                            <label for="fileAttachment">Add Order XML File</label>
+                            <input type="file" class="form-control-file" id="fileOrderXML" name="fileOrderXML">
+                        </div>*@
+                    <input type="hidden" name="QuoteNo" id="inputQuoteNo" value="@Model.QuoteNo" />
+                    <button type="submit" class="btn btn-primary mb-2 col-4" id="submitFilesForComparison" disabled>
+                        Compare
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@if (Model.ShowResults)
+{
+
+    <div class="row mt-4">
+        <h3 class="col-12">Comparison Results Summary</h3>
+        <div class="card col-12">
+
+            <div class="row mt-3">
+                <div class="col-12">
+                    <p class="d-flex justify-content-between align-items-center"><span class="header-info--label">Hedberg Quote (@Model.QuoteNo) Line Count:</span><span class="header-info--value">@Model.DBLineCount</span></p>
+                    <p class="d-flex justify-content-between align-items-center"><span class="header-info--label">BOM Line Count:</span><span class="header-info--value">@Model.BOMLineCount</span></p>
+                </div>
+
+            </div>
+
+            @if (Model.MissingFromBOM.Count() > 0)
+            {
+                <div class="row">
+                    <div class="col-12"><p class="d-flex justify-content-between align-items-center mt-4"><span class="header-info--label ">Missing from BOM file</span></p></div>
+                </div>
+
+                <div class="row">
+                    <div class="offset-2 col-8">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered text-center">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="table-header">Line #</th>
+                                        <th scope="col" class="table-header">Catalog #</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var line in Model.MissingFromBOM.OrderBy(l => l.LineNumber))
+                                    {
+                                        <tr>
+                                            <td>@line.LineNumber</td>
+                                            <td>@line.DB?.CatalogNo</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+
+
+            @if (Model.MissingFromDB.Count() > 0)
+            {
+                <div class="row">
+                    <div class="col-12"><p class="d-flex justify-content-between align-items-center mt-4"><span class="header-info--label ">Missing from Hedberg</span></p></div>
+                </div>
+
+                <div class="row">
+                    <div class="offset-2 col-8">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered text-center">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="table-header">Line #</th>
+                                        <th scope="col" class="table-header">Catalog #</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var line in Model.MissingFromDB.OrderBy(l => l.LineNumber))
+                                    {
+                                        <tr>
+                                            <td>@line.LineNumber</td>
+                                            <td>@line.File?.CatalogNo</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+
+
+            @if (Model.LinesWithDifferences.Count() > 0)
+            {
+                <div class="row">
+                    <div class="col-12"><p class="d-flex justify-content-between align-items-center mt-4"><span class="header-info--label ">Incorrect Information</span></p></div>
+                </div>
+
+                <div class="row">
+                    <div class="offset-2 col-8">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered text-center">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="table-header">Line #</th>
+                                        <th scope="col" class="table-header">Catalog #</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var line in Model.LinesWithDifferences.OrderBy(l => l.LineNumber))
+                                    {
+                                        <tr>
+                                            <td>@line.LineNumber</td>
+                                            <td>@line.DB?.CatalogNo</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    <div class="col-12"><p class="d-flex justify-content-between align-items-center mt-4"><span class="header-info--label ">No differences found between Hedberg and BOM file data.</span></p></div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <h3 class="col-12">Header Info</h3>
+        <div class="card col-12">
+            <div class="row no-gutters">
+                <div class="col-md-6">
+                    <ul class="header-info py-3 pl-0">
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Project Id:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.ProjectId)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Quote #:</span><span class="header-info--value">@Html.Raw(Model.QuoteNo)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Title:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.OrderTitle)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Location Code:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.LocationCode)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Customer #:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.CustomerNo)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Sales IDs (%):</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.SalesIDs)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Terms Code:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.TermsCode)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Customer PO #:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.CustomerPONo)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">STC Invoice Type (STI or DB):</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.STCInvoiceType)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Ship To Address:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.ShipToAddress)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Sold To Address:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.SoldToAddress)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Mail To Address:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.MailToAddress)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Invoice Address:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.InvoiceAddress)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Sales Team (Header Sales Code):</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.SalesTeam)</span></li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="header-info py-3 pl-0">
+
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">Order Status (U, A, S, H, C):</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.OrderStatus)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">Delivery Instructions:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.DeliveryInstructions)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">MFG PO Info:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.MFG_PO_Info)</span></li>
+                        <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">Invoice Instructions:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.InvoiceInstructions)</span></li>
+
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div class="row mt-4 expanded-table-s1">
+        <h3 class="col-12 lines-header">Lines Info</h3>
+        <div id="qi-audit-results-table" class="card col-12 p-3">
+            @*<div class="custom-control custom-switch mx-4 mb-4">
+                    <input type="checkbox" class="custom-control-input" id="includeBOSwitch" data-from="quoteinquiry">
+                    <label class="custom-control-label" for="includeBOSwitch">Include "BO" lines.</label>
+                </div>*@
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered text-center fulltable">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="table-header" style="width: 7%">Line #</th>
+                            <th scope="col" class="table-header" style="width: 8%">Vendor #</th>
+                            <th scope="col" class="table-header" style="width: 30px" title="Source">*</th>
+                            <th scope="col" class="table-header" style="width: 12%">Catalog #</th>
+                            <th scope="col" class="table-header" style="width: 14%">General Tagging</th>
+                            <th scope="col" class="table-header">Qty.</th>
+                            <th scope="col" class="table-header" style="width:30%;">Description (freeform or EDI)</th>
+                            <th scope="col" class="table-header">List Pricing</th>
+                            <th scope="col" class="table-header">Cost</th>
+                            <th scope="col" class="table-header">Sell</th>
+                            <th scope="col" class="table-header" style="width: 9%">GP %</th>
+                            <th scope="col" class="table-header" style="width: 9%">Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int lineCounter = 0;
+                            foreach (var line in Model.Lines)
+                            {
+                                //Tables with rowspan cannot use css nth-child(2n) trick to alternate color... so do iterator manually
+                                string tdStyle = lineCounter++ % 2 == 0 ? "comparison-even-row" : "comparison-odd-row";
+                                <tr class="@tdStyle">
+                                    <td rowspan="2">@line.LineNumber</td>
+                                    <td rowspan="2">@line.DB?.VendorNo</td>
+                                    <td class="rotate"><div><span>Hedberg</span></div></td>
+                                    <td class="@ApplyComparisonColor(line.IsEqualCatalogNo)">@line.DB?.CatalogNo</td>
+                                    <td class="@ApplyComparisonColor(line.IsEqualGeneralTagging)">@line.DB?.GeneralTagging</td>
+                                    <td class="@ApplyComparisonColor(line.IsEqualQtyOrdered)" style="font-weight:bold">@line.DB?.QtyOrdered</td>
+                                    <td class="@ApplyComparisonColor(line.IsEqualDescription)" style="word-break: break-all; text-align:justify">@line.DB?.Description</td>
+                                    <td rowspan="2">@line.DB?.ListPricing</td>
+                                    <td rowspan="2">@line.DB?.Cost</td>
+                                    <td rowspan="2">@line.DB?.Sell</td>
+                                    <td rowspan="2">@line.DB?.GP</td>
+                                    <td rowspan="2">
+                                        @if (!string.IsNullOrEmpty(@line.Comment))
+                                        {
+                                            <a class="btn btn-outline-secondary btn-block prev-commments-button" data-toggle="collapse" href="#previousComments@(line.LineNumber.ToString("000"))" role="button" aria-expanded="false" aria-controls="multiCollapseExample1">Prev. Comments</a>
+                                            <div class="collapse multi-collapse prev-commments-box" id="previousComments@(line.LineNumber.ToString("000"))">
+                                                <div class="card card-body text-left">
+                                                    @Html.Raw(@line.Comment)
+                                                </div>
+                                            </div>
+                                        }
+                                        <textarea class="line-user-comment"
+                                                  data-line-no="@line.LineNumber"
+                                                  id="comment@(line.LineNumber.ToString("000"))"
+                                                  name="comment@(line.LineNumber.ToString("000"))"></textarea>
+                                    </td>
+                                </tr>
+                                <tr class="@tdStyle">
+                                    <td class="rotate"><div><span>File</span></div></td>
+                                    <td class="@ApplyComparisonColor(line.IsEqualCatalogNo)">@line.File?.CatalogNo</td>
+                                    <td class="@ApplyComparisonColor(line.IsEqualGeneralTagging)">@line.File?.GeneralTagging</td>
+                                    <td class="@ApplyComparisonColor(line.IsEqualQtyOrdered)" style="font-weight:bold">@line.File?.QtyOrdered</td>
+                                    <td class="@ApplyComparisonColor(line.IsEqualDescription)" style="word-break: break-all; text-align:justify">@line.File?.Description</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="7" style="text-align: right;padding-right: 1rem;">Total GP %:</th>
+                            <td id="totalGP">@Model.TotalGP</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row mt-4">
+        <!--  Validation https://getbootstrap.com/docs/4.3/components/forms/#custom-styles -->
+        <h3 class="col-12">Email Form</h3>
+        <div class="card col-md-6 p-5">
+            <form id="EmailForm">
+                <input type="hidden" id="hiddenOrderNo" value="@Model.QuoteNo" />
+                <input type="hidden" id="hiddenOrderTitle" value="@Model.HeaderInfo.OrderTitle" />
+                <input type="hidden" id="hiddenCustomerName" value="@Model.HeaderInfo.CustomerName" />
+
+                <div class="form-group">
+                    <label for="inputYourEmail">Your Name</label>
+                    <input type="text" class="form-control" id="inputYourName" name="inputYourName" required>
+                </div>
+                <div class="form-group">
+                    <label for="inputYourEmail">Your Email Address</label>
+                    <input type="email" class="form-control" id="inputYourEmail" name="inputYourEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="inputYourEmail">Send To</label>
+                    <input type="email" class="form-control" id="inputSendToEmail" name="inputSendToEmail" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="inputCC1">CC</label>
+                        <input type="email" class="form-control" id="inputCC1" />
+                    </div>
+                    <div class="form-group  col-md-6">
+                        <label for="inputCC2">CC</label>
+                        <input type="email" class="form-control" id="inputCC2" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="offset-1 col-10">
+                        <button type="submit" class="btn btn-primary btn-block mb-2" id="SendEmailComparisonResults">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+else
+{
+    <div class="no-results">
+
+        <span id="noresults">No results to show.</span>
+
+        <div class="d-flex justify-content-center">
+            <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+
+    </div>
+
+}
+
+
+
+
+<div id="alert"></div>

@@ -1,0 +1,599 @@
+﻿@using OWPApplications.Utils;
+@model OWPApplications.Models.DefaultPricingReport.DefaultPricingReportViewModel;
+
+@{
+    ViewData["Title"] = "Default Pricing Reporting";
+    ViewData["NavBarColor"] = "blue";
+    ViewData["ShowNavBar"] = "True";
+    ViewData["Type"] = "DefaultPricingReport";
+}
+
+<style type="text/css">
+    .dateTextInput {
+        width: 140px;
+        text-align: center;
+    }
+
+        .dateTextInput:hover {
+            border: 1px solid #73f6ff;
+        }
+
+    .fake-button {
+        transition: box-shadow .1s;
+        cursor: pointer;
+    }
+
+        .fake-button:hover {
+            box-shadow: 0 0 11px rgba(33,33,33,.2);
+        }
+
+    .filter-option-inner-inner {
+        max-width: 300px;
+    }
+
+    .highlight-yellow {
+        background-color: yellow;
+    }
+
+    [data-toggle="collapse"] .fas:before {
+        content: "\f103";
+    }
+
+    [data-toggle="collapse"].collapsed .fas:before {
+        content: "\f101";
+    }
+</style>
+
+@if (@Model.ShowResults)
+{
+    @if (@Model.ShowMainView)
+    {   // MAIN VIEW..
+        <div class="card mt-5">
+            <div class="card-body">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link h3 mb-0 active" id="spn-tab" data-toggle="tab" href="#spn" role="tab" aria-controls="spn" aria-selected="true">Comparison by Salesperson</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link h3 mb-0" id="vnd-tab" data-toggle="tab" href="#vnd" role="tab" aria-controls="vnd" aria-selected="false">Comparison by Vendor</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    @using (Html.BeginForm("ExportToExcel", "DefaultPricingReport", new { view = "MAIN", location = Model.Location, dateFrom = Model.DateFrom, dateTo = Model.DateTo, excludeVendors = Model.ExcludeVendors }, FormMethod.Post))
+                    {
+                        <div class="col-12 lines-header" style="margin-top:10px;padding-bottom:40px;">
+                            <button class="btn btn-sm btn-primary float-right" style="margin-right: 10px;">Export to Excel</button>
+                        </div>
+                    }
+                    @if (@Model.SalespersonFlow.Any())
+                    {
+                        <div id="spn" class="tab-pane fade show active">
+                            <div>
+                                <div class="card col-12 p-3">
+                                    <div class="form form-inline mx-3 my-4" id="spnSummary" style="visibility:visible">
+                                        <div class="input-group mx-3  mb-2">
+                                            <span class="header-info--label left">Total Sell:</span>
+                                            <span class="header-info--value">@Model.SummaryComparison.SalespersonSummary.TotalSell.ToString("C")</span>
+                                        </div>
+                                        <div class="input-group mx-3  mb-2">
+                                            <span class="header-info--label left">Total Cost:</span>
+                                            <span class="header-info--value">@Model.SummaryComparison.SalespersonSummary.TotalCost.ToString("C")</span>
+                                        </div>
+                                        <div class="input-group mx-3  mb-2">
+                                            <span class="header-info--label left">Total GP $:</span>
+                                            <span class="header-info--value">@Model.SummaryComparison.SalespersonSummary.TotalGPDollars.ToString("C")</span>
+                                        </div>
+                                        <div class="input-group mx-3  mb-2">
+                                            <span class="header-info--label left">Difference in GP $:</span>
+                                            <span class="header-info--value">@Model.SummaryComparison.SalespersonSummary.DifferenceGPDollars.ToString("C")</span>
+                                        </div>
+                                    </div>
+                                    <div class="alt-table-responsive table-responsive">
+                                        <table class="table table-sm table-bordered text-center sortable comparisonGrid">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col" class="table-header">Salesperson</th>
+                                                    <th scope="col" class="table-header">Salesperson ID</th>
+                                                    <th scope="col" class="table-header">Total Sell</th>
+                                                    <th scope="col" class="table-header">Total Cost</th>
+                                                    <th scope="col" class="table-header">GP $</th>
+                                                    <th scope="col" class="table-header">Average GP %</th>
+                                                    <th scope="col" class="table-header">Total QTY</th>
+                                                    <th scope="col" class="table-header">Difference $</th>
+                                                    <th scope="col" class="table-header"># of Vendors &lt; Default</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var spf in Model.SalespersonFlow)
+                                                {
+                                                    <tr>
+                                                        <td>@spf.Salesperson</td>
+                                                        <td>@spf.SalesPersonID</td>
+                                                        <td>@double.Parse(@spf.TotalSell).ToString("C")</td>
+                                                        <td>@double.Parse(@spf.TotalCost).ToString("C")</td>
+                                                        <td>@double.Parse(@spf.GP).ToString("C")</td>
+                                                        <td>@((double.Parse(@spf.AverageGPPct) / 100).ToString("P2"))</td>
+                                                        <td>@(double.Parse(@spf.TotalQTY).ToString("N0"))</td>
+                                                        <td>@spf.DifferenceDollars.ToString("C")</td>
+                                                        <td>
+                                                            <a asp-controller="defaultpricingreport" asp-action="index"
+                                                               asp-route-detview="VND"
+                                                               asp-route-location="@Model.Location.Trim()"
+                                                               asp-route-datefrom="@Model.DateFrom"
+                                                               asp-route-dateto="@Model.DateTo"
+                                                               asp-route-salespersonid="@spf.SalesPersonID"
+                                                               asp-route-excludevendors="@Model.ExcludeVendors"
+                                                               target="_blank">@spf.NumOfVendors</a>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="no-results">
+                            <span id="noresults">No Default Pricing Comparison data found.</span>
+                            <div class="d-flex justify-content-center">
+                                <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (@Model.VendorFlow.Any())
+                    {
+                        <div id="vnd" class="tab-pane fade">
+                            <div>
+                                <div class="card col-12 p-3">
+                                    <div class="form form-inline mx-3 my-4" id="vndSummary" style="visibility:hidden">
+                                        <div class="input-group mx-3  mb-2">
+                                            <span class="header-info--label left">Total Sell:</span>
+                                            <span class="header-info--value">@Model.SummaryComparison.VendorSummary.TotalSell.ToString("C")</span>
+                                        </div>
+                                        <div class="input-group mx-3  mb-2">
+                                            <span class="header-info--label left">Total Cost:</span>
+                                            <span class="header-info--value">@Model.SummaryComparison.VendorSummary.TotalCost.ToString("C")</span>
+                                        </div>
+                                        <div class="input-group mx-3  mb-2">
+                                            <span class="header-info--label left">Total GP $:</span>
+                                            <span class="header-info--value">@Model.SummaryComparison.VendorSummary.TotalGPDollars.ToString("C")</span>
+                                        </div>
+                                        <div class="input-group mx-3  mb-2">
+                                            <span class="header-info--label left">Difference in GP $:</span>
+                                            <span class="header-info--value">@Model.SummaryComparison.VendorSummary.DifferenceGPDollars.ToString("C")</span>
+                                        </div>
+                                    </div>
+                                    <div class="alt-table-responsive table-responsive">
+                                        <table class="table table-sm table-bordered text-center sortable comparisonGrid">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col" class="table-header">Vendor</th>
+                                                    <th scope="col" class="table-header">Vendor ID</th>
+                                                    <th scope="col" class="table-header">Total Sell</th>
+                                                    <th scope="col" class="table-header">Total Cost</th>
+                                                    <th scope="col" class="table-header">Average GP %</th>
+                                                    <th scope="col" class="table-header">Default GP %</th>
+                                                    <th scope="col" class="table-header">Total QTY</th>
+                                                    <th scope="col" class="table-header">Difference $</th>
+                                                    <th scope="col" class="table-header">Difference %</th>
+                                                    <th scope="col" class="table-header"># SP &lt; Default</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var vf in Model.VendorFlow)
+                                                {
+                                                    <tr>
+                                                        <td>@vf.Vendor</td>
+                                                        <td>@vf.VendorID</td>
+                                                        <td>@double.Parse(@vf.TotalSell).ToString("C")</td>
+                                                        <td>@double.Parse(@vf.TotalCost).ToString("C")</td>
+                                                        <td>@((double.Parse(@vf.AverageGPPct) / 100).ToString("P2"))</td>
+                                                        <td>@((double.Parse(@vf.DefaultVendorGPPct) / 100).ToString("P2"))</td>
+                                                        <td>@(double.Parse(@vf.TotalQTY).ToString("N0"))</td>
+                                                        <td>@vf.DifferenceDollars.ToString("C")</td>
+                                                        <td>@((double.Parse(@vf.DifferencePct) / 100).ToString("P2"))</td>
+                                                        <td>
+                                                            <a asp-controller="defaultpricingreport" asp-action="index"
+                                                               asp-route-detview="SPN"
+                                                               asp-route-location="@Model.Location"
+                                                               asp-route-datefrom="@Model.DateFrom"
+                                                               asp-route-dateto="@Model.DateTo"
+                                                               asp-route-vendorno="@vf.VendorID"
+                                                               asp-route-excludevendors="@Model.ExcludeVendors"
+                                                               target="_blank">@vf.NumOfSP</a>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="no-results">
+                            <span id="noresults">No Default Pricing Comparison data found.</span>
+                            <div class="d-flex justify-content-center">
+                                <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {   // SECONDARY VIEWS..
+        @if (@Model.VendorFlow != null && @Model.VendorFlow.Any())
+        {
+            <br />
+            <div class="col-12 lines-header">
+                <h3 class="d-inline-block">Vendors Level Detail</h3>
+            </div>
+            using (@Html.BeginForm("ExportToExcel", "DefaultPricingReport", new { view = "SEC_" + Model.DetailsView, location = Model.Location, dateFrom = Model.DateFrom, dateTo = Model.DateTo, salespersonID = Model.SalespersonID, excludeVendors = Model.ExcludeVendors }, FormMethod.Post))
+            {
+                <div class="col-12 lines-header" style="padding-bottom:40px;">
+                    <button class="btn btn-sm btn-primary float-right">Export to Excel</button>
+                </div>
+            }
+            <div class="card col-12 p-3">
+                <div class="form form-inline mx-4 mb-4 mt-4">
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total Sell:</span>
+                        <span class="header-info--value">@Model.Summary.TotalSell.ToString("C")</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total Cost:</span>
+                        <span class="header-info--value">@Model.Summary.TotalCost.ToString("C")</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total GP $:</span>
+                        <span class="header-info--value">@Model.Summary.TotalGPDollars.ToString("C")</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Difference in GP $:</span>
+                        <span class="header-info--value">@Model.Summary.DifferenceGPDollars.ToString("C")</span>
+                    </div>
+                </div>
+                <div class="alt-table-responsive table-responsive">
+                    <table class="table table-sm table-bordered text-center sortable">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="table-header">Vendor</th>
+                                <th scope="col" class="table-header">Vendor ID</th>
+                                <th scope="col" class="table-header">Total Sell</th>
+                                <th scope="col" class="table-header">Total Cost</th>
+                                <th scope="col" class="table-header">GP $</th>
+                                <th scope="col" class="table-header" style="width:115px">Average GP %</th>
+                                <th scope="col" class="table-header">Total QTY</th>
+                                <th scope="col" class="table-header">Difference $</th>
+                                <th scope="col" class="table-header" style="width:115px">Difference %</th>
+                                <th scope="col" class="table-header">Default Vendor GP %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var vf in Model.VendorFlow)
+                            {
+                                <tr style="background-color:@vf.BackgroundColor">
+                                    @*<td>@vf.Vendor</td>*@
+                                    <td>
+                                        <a asp-controller="defaultpricingreport" asp-action="index"
+                                           asp-route-detview="CST_"
+                                           asp-route-location="@Model.Location"
+                                           asp-route-datefrom="@Model.DateFrom"
+                                           asp-route-dateto="@Model.DateTo"
+                                           asp-route-vendorno="@vf.VendorID"
+                                           asp-route-salespersonid="@Model.SalespersonID"
+                                           asp-route-excludevendors="@Model.ExcludeVendors"
+                                           target="_blank">@vf.Vendor</a>
+                                    </td>
+                                    <td>@vf.VendorID</td>
+                                    <td>@double.Parse(@vf.TotalSell).ToString("C")</td>
+                                    <td>@double.Parse(@vf.TotalCost).ToString("C")</td>
+                                    <td>@double.Parse(@vf.GP).ToString("C")</td>
+                                    <td>@((double.Parse(@vf.AverageGPPct) / 100).ToString("P2"))</td>
+                                    <td>@(double.Parse(@vf.TotalQTY).ToString("N0"))</td>
+                                    <td>@vf.DifferenceDollars.ToString("C")</td>
+                                    <td>@((double.Parse(@vf.DifferencePct) / 100).ToString("P2"))</td>
+                                    <td>@((double.Parse(@vf.DefaultVendorGPPct) / 100).ToString("P2"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else if (!Model.ShowMainView && Model.DetailsView == "VND")
+        {
+            <div class="no-results">
+                <span id="noresults">No data found.</span>
+                <div class="d-flex justify-content-center">
+                    <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (@Model.SalespersonFlow != null && @Model.SalespersonFlow.Any())
+        {
+            <br />
+            <div class="col-12 lines-header">
+                <h3 class="d-inline-block">Salesperson Level Detail</h3>
+            </div>
+            using (@Html.BeginForm("ExportToExcel", "DefaultPricingReport", new { view = "SEC_" + Model.DetailsView, location = Model.Location, dateFrom = Model.DateFrom, dateTo = Model.DateTo, vendorNo = Model.VendorNo, excludeVendors = Model.ExcludeVendors }, FormMethod.Post))
+            {
+                <div class="col-12 lines-header" style="padding-bottom:40px;">
+                    <button class="btn btn-sm btn-primary float-right">Export to Excel</button>
+                </div>
+            }
+            <div class="card col-12 p-3">
+                <div class="form form-inline mx-4 mb-4 mt-4">
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total Sell:</span>
+                        <span class="header-info--value">@Model.Summary.TotalSell.ToString("C")</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total Cost:</span>
+                        <span class="header-info--value">@Model.Summary.TotalCost.ToString("C")</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total GP $:</span>
+                        <span class="header-info--value">@Model.Summary.TotalGPDollars.ToString("C")</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Difference in GP $:</span>
+                        <span class="header-info--value">@Model.Summary.DifferenceGPDollars.ToString("C")</span>
+                    </div>
+                </div>
+                <div class="alt-table-responsive table-responsive">
+                    <table class="table table-sm table-bordered text-center sortable">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="table-header">Salesperson</th>
+                                <th scope="col" class="table-header">Salesperson ID</th>
+                                <th scope="col" class="table-header">Total Sell</th>
+                                <th scope="col" class="table-header">Total Cost</th>
+                                <th scope="col" class="table-header">Total GP $</th>
+                                <th scope="col" class="table-header">Average GP %</th>
+                                <th scope="col" class="table-header">Default GP %</th>
+                                <th scope="col" class="table-header">Total QTY</th>
+                                <th scope="col" class="table-header">Difference $</th>
+                                <th scope="col" class="table-header">Difference %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var spf in Model.SalespersonFlow)
+                            {
+                                <tr style="background-color:@spf.BackgroundColor">
+                                    <td>
+                                        <a asp-controller="defaultpricingreport" asp-action="index"
+                                           asp-route-detview="CST"
+                                           asp-route-location="@Model.Location"
+                                           asp-route-datefrom="@Model.DateFrom"
+                                           asp-route-dateto="@Model.DateTo"
+                                           asp-route-salespersonid="@spf.SalesPersonID"
+                                           asp-route-vendorno="@Model.VendorNo"
+                                           asp-route-excludevendors="@Model.ExcludeVendors"
+                                           target="_blank">@spf.Salesperson</a>
+                                    </td>
+                                    <td>@spf.SalesPersonID</td>
+                                    <td>@double.Parse(@spf.TotalSell).ToString("C")</td>
+                                    <td>@double.Parse(@spf.TotalCost).ToString("C")</td>
+                                    <td>@double.Parse(@spf.GP).ToString("C")</td>
+                                    <td>@((double.Parse(@spf.AverageGPPct) / 100).ToString("P2"))</td>
+                                    <td>@((double.Parse(@spf.DefaultVendorGPPct) / 100).ToString("P2"))</td>
+                                    <td>@(double.Parse(@spf.TotalQTY).ToString("N0"))</td>
+                                    <td>@spf.DifferenceDollars.ToString("C")</td>
+                                    <td>@((double.Parse(@spf.DifferencePct) / 100).ToString("P2"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else if (!Model.ShowMainView && Model.DetailsView == "SPN")
+        {
+            <div class="no-results">
+                <span id="noresults">No data found.</span>
+                <div class="d-flex justify-content-center">
+                    <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (@Model.CustomerFlow != null && @Model.CustomerFlow.Any())
+        {
+            <br />
+            <div class="col-12 lines-header">
+                <h3 class="d-inline-block">Customer Level Detail</h3>
+            </div>
+            using (@Html.BeginForm("ExportToExcel", "DefaultPricingReport", new { view = "SEC_" + Model.DetailsView, location = Model.Location, dateFrom = Model.DateFrom, dateTo = Model.DateTo, salespersonID = Model.SalespersonID, vendorNo = Model.VendorNo, excludeVendors = Model.ExcludeVendors }, FormMethod.Post))
+            {
+                <div class="col-12 lines-header" style="padding-bottom:40px;">
+                    <button class="btn btn-sm btn-primary float-right">Export to Excel</button>
+                </div>
+            }
+            <div class="card col-12 p-3">
+                <div class="form form-inline mx-4 mb-4 mt-4">
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total Sell:</span>
+                        <span class="header-info--value">@Model.Summary.TotalSell.ToString("C")</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total Cost:</span>
+                        <span class="header-info--value">@Model.Summary.TotalCost.ToString("C")</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total GP $:</span>
+                        <span class="header-info--value">@Model.Summary.TotalGPDollars.ToString("C")</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Difference in GP $:</span>
+                        <span class="header-info--value">@Model.Summary.DifferenceGPDollars.ToString("C")</span>
+                    </div>
+                </div>
+                <div class="alt-table-responsive table-responsive">
+                    <table class="table table-sm table-bordered text-center sortable">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="table-header">Customer</th>
+                                <th scope="col" class="table-header">Customer ID</th>
+                                <th scope="col" class="table-header">Total Sell</th>
+                                <th scope="col" class="table-header">Total Cost</th>
+                                <th scope="col" class="table-header">Total GP $</th>
+                                <th scope="col" class="table-header">Average GP %</th>
+                                <th scope="col" class="table-header">Default GP %</th>
+                                <th scope="col" class="table-header">Total QTY</th>
+                                <th scope="col" class="table-header">Difference $</th>
+                                <th scope="col" class="table-header">Difference %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var cf in Model.CustomerFlow)
+                            {
+                                <tr style="background-color:@cf.BackgroundColor">
+                                    <td>
+                                        <a asp-controller="defaultpricingreport" asp-action="index"
+                                           asp-route-detview="ORD"
+                                           asp-route-location="@Model.Location"
+                                           asp-route-datefrom="@Model.DateFrom"
+                                           asp-route-dateto="@Model.DateTo"
+                                           asp-route-salespersonid="@Model.SalespersonID"
+                                           asp-route-vendorno="@Model.VendorNo"
+                                           asp-route-customerno="@cf.Customer_no"
+                                           asp-route-excludevendors="@Model.ExcludeVendors"
+                                           target="_blank">@cf.Customer_Name</a>
+                                    </td>
+                                    <td>@cf.Customer_no</td>
+                                    <td>@double.Parse(@cf.TotalSell).ToString("C")</td>
+                                    <td>@double.Parse(@cf.TotalCost).ToString("C")</td>
+                                    <td>@(!string.IsNullOrEmpty(@cf.GP) ? double.Parse(@cf.GP).ToString("C") : "")</td>
+                                    <td>@((double.Parse(@cf.AverageGPPct) / 100).ToString("P2"))</td>
+                                    <td>@((double.Parse(@cf.DefaultVendorGPPct) / 100).ToString("P2"))</td>
+                                    <td>@(double.Parse(@cf.TotalQTY).ToString("N0"))</td>
+                                    <td>@cf.DifferenceDollars.ToString("C")</td>
+                                    <td>@((double.Parse(@cf.DifferencePct) / 100).ToString("P2"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else if (!Model.ShowMainView && (Model.DetailsView == "CST" || Model.DetailsView == "CST_"))
+        {
+            <div class="no-results">
+                <span id="noresults">No data found.</span>
+                <div class="d-flex justify-content-center">
+                    <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (@Model.OrderFlow != null && @Model.OrderFlow.Any())
+        {
+            <br />
+            <div class="col-12 lines-header">
+                <h3 class="d-inline-block">Order Level Detail</h3>
+            </div>
+            using (@Html.BeginForm("ExportToExcel", "DefaultPricingReport", new { view = "SEC_" + Model.DetailsView, location = Model.Location, dateFrom = Model.DateFrom, dateTo = Model.DateTo, salespersonID = Model.SalespersonID, vendorNo = Model.VendorNo, customerNo = Model.CustomerNo, excludeVendors = Model.ExcludeVendors }, FormMethod.Post))
+            {
+                <div class="col-12 lines-header" style="padding-bottom:40px;">
+                    <button class="btn btn-sm btn-primary float-right">Export to Excel</button>
+                </div>
+            }
+            <div class="card col-12 p-3">
+                <div class="form form-inline mx-4 mb-4 mt-4">
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total Sell:</span>
+                        <span class="header-info--value">@Model.Summary.TotalSell.ToString("C")</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total Cost:</span>
+                        <span class="header-info--value">@Model.Summary.TotalCost.ToString("C")</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Total GP $:</span>
+                        <span class="header-info--value">@Model.Summary.TotalGPDollars.ToString("C")</span>
+                    </div>
+                    <div class="input-group mx-4  mb-2">
+                        <span class="header-info--label left">Difference in GP $:</span>
+                        <span class="header-info--value">@Model.Summary.DifferenceGPDollars.ToString("C")</span>
+                    </div>
+                </div>
+                <div class="alt-table-responsive table-responsive">
+                    <table class="table table-sm table-bordered text-center sortable">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="table-header">Order Number</th>
+                                <th scope="col" class="table-header">Total Sell</th>
+                                <th scope="col" class="table-header">Total Cost</th>
+                                <th scope="col" class="table-header">Total GP $</th>
+                                <th scope="col" class="table-header">Average GP %</th>
+                                <th scope="col" class="table-header">Default GP %</th>
+                                <th scope="col" class="table-header">Total QTY</th>
+                                <th scope="col" class="table-header">Difference $</th>
+                                <th scope="col" class="table-header">Difference %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var of in Model.OrderFlow)
+                            {
+                                <tr style="background-color:@of.BackgroundColor">
+                                    <td>@of.Order_No</td>
+                                    <td>@double.Parse(@of.TotalSell).ToString("C")</td>
+                                    <td>@double.Parse(@of.TotalCost).ToString("C")</td>
+                                    <td>@double.Parse(@of.GP).ToString("C")</td>
+                                    <td>@((double.Parse(@of.AverageGPPct) / 100).ToString("P2"))</td>
+                                    <td>@((double.Parse(@of.DefaultVendorGPPct) / 100).ToString("P2"))</td>
+                                    <td>@(double.Parse(@of.TotalQTY).ToString("N0"))</td>
+                                    <td>@of.DifferenceDollars.ToString("C")</td>
+                                    <td>@((double.Parse(@of.DifferencePct) / 100).ToString("P2"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else if (!Model.ShowMainView && (Model.DetailsView == "ORD" || Model.DetailsView == "ORD_"))
+        {
+            <div class="no-results">
+                <span id="noresults">No data found.</span>
+                <div class="d-flex justify-content-center">
+                    <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+}
+else
+{
+    <div class="no-results">
+        <span id="noresults">No results to show.</span>
+        <div class="d-flex justify-content-center">
+            <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    </div>
+}
+

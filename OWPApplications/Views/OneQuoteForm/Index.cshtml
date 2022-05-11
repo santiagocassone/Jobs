@@ -1,0 +1,728 @@
+﻿@model OWPApplications.Models.LaborQuoteAutomation.LaborQuoteAutomationViewModel;
+
+@{
+	ViewData["Title"] = "One Quote Form";
+	ViewData["NavBarColor"] = "white";
+	ViewData["ShowNavBar"] = "True";
+	ViewData["Type"] = "OneQuoteForm";
+}
+
+<style>
+    .tdStaging {
+        overflow: initial;
+    }
+
+    .fake-button {
+        transition: box-shadow .1s;
+        cursor: pointer;
+    }
+
+        .fake-button:hover {
+            box-shadow: 0 0 11px rgba(33,33,33,.2);
+        }
+
+    [data-toggle="collapse"] .fas:before {
+        content: "\f103";
+    }
+
+    [data-toggle="collapse"].collapsed .fas:before {
+        content: "\f101";
+    }
+</style>
+
+<form id="frmLaborQuote" method="post" enctype="multipart/form-data">
+    <fieldset @(Model.IsReadOnly ? "disabled='disabled'" : "")>
+        @if (Model.IsRevision)
+        {
+            <div id="divRevisionTitle" class="form-group row col-12 mt-4">
+                <h2>Revision Labor Quote # @Model.RevisionCode</h2>
+            </div>
+            <hr />
+        }
+        @if (Model.IsReadOnly)
+        {
+            <div id="divRevisionTitle" class="form-group row col-12 mt-4">
+                <h2>Labor Quote # @Model.LaborQuote.LaborQuoteCode</h2>
+            </div>
+            <hr />
+        }
+        <div class="form-group row col-6 mt-4">
+            <h3>Do you need a labor quote for:</h3>
+            <div class="checkbox-wrapper mx-4 mt-2">
+                @foreach (var item in Model.LaborQuoteTypes)
+                {
+                    <div class="checkbox-inline">
+                        <label class="form-check-label" @(Model.IsReadOnly ? "style=color:#6c757d" : "")>
+                            <input class="form-check-input" type="checkbox" name="LaborQuoteTypes" value=@item.LookupGeneralID @(Model.LaborQuote.LaborQuoteTypes != null && Model.LaborQuote.LaborQuoteTypes.Contains(item.LookupGeneralID) ? "checked" : "")>@item.TranslateValue
+                        </label>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="projectManagement">
+            <hr />
+            <div class="form-group form-check row col-6 mt-4 yulioPresentation">
+                <h4>Does this project require a Yulio Presentation? <span style="color:red">*</span></h4>
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="radio" name="LaborQuoteYulioPresentation" value="true" @(Model.LaborQuote.YPRequired == true ? "checked" : "")>
+                    <label class="form-check-label">Yes</label>
+                </div>
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="radio" name="LaborQuoteYulioPresentation" value="false" @(Model.LaborQuote.YPRequired == false ? "checked" : "")>
+                    <label class="form-check-label">No</label>
+                </div>
+            </div>
+            <div class="outOfStateProject">
+                <div class="form-group form-check row col-6 mt-4">
+                    <h4>Is this an out-of-state project? <span style="color:red">*</span></h4>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="LaborQuoteOutOfStateProject" value="true" @(Model.LaborQuote.OutOfStateProject == true ? "checked" : "")>
+                        <label class="form-check-label">Yes</label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="LaborQuoteOutOfStateProject" value="false" @(Model.LaborQuote.OutOfStateProject == false ? "checked" : "")>
+                        <label class="form-check-label">No</label>
+                    </div>
+                </div>
+                <div class="form-group row col-6 mt-4 floorsIncluded">
+                    <h4>How many floors are included? <span style="color:red">*</span></h4>
+                    <input class="form-control form-rounded mt-2" type="number" name="LaborQuoteFloorsIncluded" value="@(!string.IsNullOrEmpty(Model.LaborQuote.QtyOfIncludedFloors) ? Model.LaborQuote.QtyOfIncludedFloors : "")" />
+                </div>
+                <div class="form-group form-check row col-6 mt-4 scenesPerFloor">
+                    <h4>Number of Scenes per Floor? <span style="color:red">*</span></h4>
+                    @foreach (var item in Model.ScenesPerFloor)
+                    {
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="radio" name="@item.Name" value="@item.LookupGeneralID" @(Model.LaborQuote.LaborQuoteScenesPerFloorLookUpID == Int32.Parse(item.LookupGeneralID) ? "checked" : "")>
+                            <label class="form-check-label">@item.Value</label>
+                        </div>
+                    }
+                </div>
+                <span style="color:red"><b>*** ONE PRESENTATION PER FLOOR ***</b></span>
+            </div>
+            <hr />
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3>Requestor Name <span style="color:red">*</span></h3>
+            <input class="form-control form-rounded mt-2" type="text" name="LaborQuoteRequestorName" required value="@Model.LaborQuote.RequestorName" />
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3>Requestor Email <span style="color:red">*</span></h3>
+            <input class="form-control form-rounded mt-2" type="email" name="LaborQuoteRequestorEmail" required value="@Model.LaborQuote.RequestorEmail" />
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <div class="form-group col-6 pl-0">
+                <h3>CC </h3>
+                <input class="form-control form-rounded mt-2" type="email" name="LaborQuoteRequestorEmailCC1" value="@Model.LaborQuote.RequestorEmailCC" />
+            </div>
+            <div class="form-group col-6 pr-0">
+                <h3>CC </h3>
+                <input class="form-control form-rounded mt-2" type="email" name="LaborQuoteRequestorEmailCC2" value="@Model.LaborQuote.RequestorEmailCC2" />
+            </div>
+        </div>
+        @if (Model.IsRevision)
+        {
+            <div class="form-group row col-6 mt-4">
+                <h3>Original Labor Quote #</h3>
+                <input class="form-control form-rounded mt-2" type="text" name="LaborQuoteOriginalLaborQuoteNo" value="@Model.LaborQuote.FullLaborQuoteCode" readonly />
+            </div>
+        }
+        <div class="form-group row col-6 mt-4">
+            <h3>Hedberg Project ID <span style="color:red">*</span></h3>
+            <input class="form-control form-rounded mt-2" type="text" name="LaborQuoteHedbergProjectID" onkeypress="validate(event)" maxlength="6" required value="@Model.LaborQuote.ProjectID" />
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3>Customer <span style="color:red">*</span></h3>
+            <select class="custom-select form-control" name="LaborQuoteCustomer" required>
+                @foreach (var customer in Model.Customers)
+                {
+                    <option value="@customer.ID" selected="@(Model.LaborQuote.CustomerNumber == customer.ID ? true : false)">@customer.Label</option>
+                }
+            </select>
+        </div>
+        <div class="form-group form-check row col-6 mt-4">
+            <h3>Is this a Quote or Order? <span style="color:red">*</span></h3>
+            <div class="form-check mt-2">
+                <input class="form-check-input" type="radio" name="LaborQuoteOrOrder" required value="Q" @(Model.LaborQuote.QuoteOrOrder == 'Q' ? "checked" : "")>
+                <label class="form-check-label">Quote</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="LaborQuoteOrOrder" value="O" @(Model.LaborQuote.QuoteOrOrder == 'O' ? "checked" : "")>
+                <label class="form-check-label">Order</label>
+            </div>
+        </div>
+        <div id="divQONo" class="form-group row col-6 mt-4" style="display:none">
+            <h3 id="QuoteOrOrderNumberLabel"></h3>
+            <input class="form-control form-rounded mt-2" type="text" name="QuoteOrOrderNumber" onkeypress="validate(event)" maxlength="6" required value="@Model.LaborQuote.QuoteOrOrderNumber" />
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3>Job Address <span style="color:red">*</span></h3>
+            <input class="form-control form-rounded mt-2" type="text" name="LaborQuoteStreetAddress" value="@Model.LaborQuote.AddressLine1" placeholder="Street Address" required />
+            <input class="form-control form-rounded mt-2" type="text" name="LaborQuoteBRF" value="@Model.LaborQuote.AddressLine2" placeholder="Bldg/Room/Floor" />
+            <input class="form-control form-rounded mt-2" type="text" name="LaborQuoteCity" value="@Model.LaborQuote.AddressCity" placeholder="City" required />
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3>Sales Rep <span style="color:red">*</span></h3>
+            <select class="custom-select form-control" name="LaborQuoteSalesRep" required>
+                @foreach (var salesperson in Model.Salespersons)
+                {
+                    <option value="@salesperson.ID" selected="@(Model.LaborQuote.SalespersonID == salesperson.ID ? true : false)">@salesperson.Label</option>
+                }
+            </select>
+        </div>
+        @*<div class="form-group row col-6 mt-4">
+            <h3>Sales Support <span style="color:red">*</span></h3>
+            <input class="form-control form-rounded mt-2" type="text" name="LaborQuoteCoordinator" required value="@Model.LaborQuote.Coordinator" />
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3>Project Manager</h3>
+            <input class="form-control form-rounded mt-2" type="text" name="LaborQuoteProjectManager" value="@Model.LaborQuote.ProjectManager" />
+        </div>
+        <div class="form-group form-check row col-6 mt-4">
+            <h3>Directory Created? <span style="color:red">*</span></h3>
+            <div class="form-check mt-2">
+                <input class="form-check-input" type="radio" name="LaborQuoteDirectoryCreated" value="1" @(Model.LaborQuote.DirectoryCreated ? "checked" : "")>
+                <label class="form-check-label">Yes</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="LaborQuoteDirectoryCreated" value="0" @(!Model.LaborQuote.DirectoryCreated ? "checked" : "")>
+                <label class="form-check-label">No</label>
+            </div>
+        </div>*@
+        <div class="form-group row col-6 mt-4">
+            <h3># of Days for Install</h3>
+            <input class="form-control form-rounded mt-2" type="number" name="LaborQuoteNoDaysForInstall" value="@Model.LaborQuote.DaysForInstall" />
+            <small class="m-1">If left blank the Quote Team will determine # of days for install</small>
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3>Target Install Date <span style="color:red">*</span></h3>
+            <input class="form-control form-rounded datepicker mt-2" style="text-indent:8px" name="LaborQuoteTargetDate" type="text" autocomplete="off" required value="@(Model.LaborQuote.TargetDate == null ? "" : ((DateTime)Model.LaborQuote.TargetDate).ToString("MM/dd/yyyy"))" />
+        </div>
+        <div class="form-group form-check row col-6 mt-4">
+            <h3>Project Is <span style="color:red">*</span></h3>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="LaborQuoteProjectIs" value="N" @(!string.IsNullOrEmpty(Model.LaborQuote.ProjectIs) && Model.LaborQuote.ProjectIs.Trim() == "N" ? "checked" : "")>
+                <label class="form-check-label">Non-Union</label>
+            </div>
+            <div class="form-check mt-2">
+                <input class="form-check-input" type="radio" name="LaborQuoteProjectIs" value="U" @(!string.IsNullOrEmpty(Model.LaborQuote.ProjectIs) && Model.LaborQuote.ProjectIs.Trim() == "U" ? "checked" : "")>
+                <label class="form-check-label">Union</label>
+            </div>
+            <div class="form-check mt-2">
+                <input class="form-check-input" type="radio" name="LaborQuoteProjectIs" value="W" @(!string.IsNullOrEmpty(Model.LaborQuote.ProjectIs) && Model.LaborQuote.ProjectIs.Trim() == "W" ? "checked" : "")>
+                <label class="form-check-label">Prevailing Wage</label>
+            </div>
+        </div>
+        <div id="LaborQuoteUnionVendorsSelect" class="form-group row col-6 mt-4">
+            <h3>Please select the Union Vendors:</h3>
+            <div class="checkbox-wrapper mx-4 mt-2">
+                @foreach (var item in Model.LaborQuoteUnionVendors)
+                {
+                    <div class="checkbox-inline">
+                        <label class="form-check-label" @(Model.IsReadOnly ? "style=color:#6c757d" : "")>
+                            <input class="form-check-input" type="checkbox" name="LaborQuoteUnionVendors" value=@item.Value @(Model.LaborQuote.LaborQuoteUnionVendors != null && Model.LaborQuote.LaborQuoteUnionVendors.Contains(item.LookupGeneralID) ? "checked" : "")>@item.TranslateValue
+                        </label>
+                    </div>
+                }
+            </div>
+            <div id="LaborQuoteUnionVendorsADD" class="form-group row col-6 mt-4">
+                <input class="form-control form-rounded mt-2" type="email" name="LaborQuoteUnionVendorsADD" value="@Model.LaborQuote.LaborQuoteUnionVendorsADD" />
+            </div>
+        </div>
+        <div id="LaborQuoteSupplyEmail" class="form-group row col-6 mt-4">
+            <h5>For Union jobs you must supply your email address here <span style="color:red">*</span></h5>
+            <input class="form-control form-rounded mt-2" type="email" name="LaborQuoteSupplyRequestorEmail" value="@Model.LaborQuote.UnionJobsEmailAddress" />
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3>Scope of Work <span style="color:red">*</span></h3>
+            <textarea class="form-control form-rounded mt-2" rows="6" cols="100" name="LaborQuoteScopeOfWork" required>@Model.LaborQuote.ScopeOfWork</textarea>
+        </div>
+        
+        
+        <hr />
+        <h2>Product Information</h2>
+        <div class="form-group col-6 mt-4">
+            <h3 style="margin-left:-10px">Product <span style="color:red">*</span></h3>
+            <div class="checkbox-wrapper mx-2 mt-2" style="padding-left:2px">
+                @foreach (var item in Model.ProductTypeList)
+                {
+                    <div class="checkbox-inline">
+                        <label class="form-check-label" @(Model.IsReadOnly ? "style=color:#6c757d" : "")>
+                            <input class="form-check-input" type="checkbox" name="LaborQuoteProduct" value=@item.LookupGeneralID @(Model.LaborQuote.LaborQuoteProductTypes != null && Model.LaborQuote.LaborQuoteProductTypes.Contains(item.LookupGeneralID) ? "checked" : "")>@item.TranslateValue
+                        </label>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3>Manufacturer <span style="color:red">*</span></h3>
+            <input class="form-control form-rounded mt-2" type="text" name="LaborQuoteManufacturer" required value="@Model.LaborQuote.ProductManufacturer" />
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3>Series <span style="color:red">*</span></h3>
+            <input class="form-control form-rounded mt-2" type="text" name="LaborQuoteSeries" required value="@Model.LaborQuote.ProductSeries" />
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3># Workstations <span style="color:red">*</span></h3>
+            <input class="form-control form-rounded mt-2" type="number" name="LaborQuoteWorkstations" required value="@Model.LaborQuote.ProductWorkstations" />
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3># Panels Only</h3>
+            <input class="form-control form-rounded mt-2" type="number" name="LaborQuotePanels" value="@(!string.IsNullOrEmpty(Model.LaborQuote.ProductPanelsOnly) ? Model.LaborQuote.ProductPanelsOnly : "")" />
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3># Private Offices <span style="color:red">*</span></h3>
+            <input class="form-control form-rounded mt-2" type="number" name="LaborQuotePrivOffices" required value="@Model.LaborQuote.ProductPrivateOffices" />
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3># Conference Rooms</h3>
+            <input class="form-control form-rounded mt-2" type="number" name="LaborQuoteConfRooms" value="@(!string.IsNullOrEmpty(Model.LaborQuote.ProductConferenceRooms) ? Model.LaborQuote.ProductConferenceRooms : "")" />
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3># Exam Rooms</h3>
+            <input class="form-control form-rounded mt-2" type="number" name="LaborQuoteExamRooms" value="@(!string.IsNullOrEmpty(Model.LaborQuote.ProductExamRooms) ? Model.LaborQuote.ProductExamRooms : "")" />
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3># Class Rooms</h3>
+            <input class="form-control form-rounded mt-2" type="number" name="LaborQuoteClassRooms" value="@(!string.IsNullOrEmpty(Model.LaborQuote.ProductClassRooms) ? Model.LaborQuote.ProductClassRooms : "")" />
+        </div>
+        <div class="form-group row col-6 mt-4">
+            <h3>Other (Ancillary)</h3>
+            <input class="form-control form-rounded mt-2" type="text" name="LaborQuoteOtherAncillary" value="@(!string.IsNullOrEmpty(Model.LaborQuote.ProductOther) ? Model.LaborQuote.ProductOther : "")" />
+        </div>
+        
+        <div class="row mt-4 expanded-table-s1" id="bucket-nro2-container">
+            <div class="col-10 lines-header fake-button collapsed" data-toggle="collapse" data-target="#bucket2collapse">
+                <h1 class="d-inline-block">Other Items</h1>
+                <span class="float-right"><i class="fa-2x fas"></i></span>
+            </div>
+
+            <div id="bucket2collapse" class="collapse form-group col-12" style="margin-left: 90px;">
+                <hr />
+                <h2>Site Information</h2>
+                <div class="form-group form-check row col-6 mt-4">
+                    <h3>Site Is</h3>
+                    @foreach (var item in Model.SiteIsList)
+                    {
+                        <div class="form-check mt-2">
+                            @if (string.IsNullOrEmpty(Model.LaborQuote.LaborQuoteSiteIsLookupID) && item.Value == "F&C")
+                            {
+                                <input class="form-check-input" type="radio" name="LaborQuoteSiteIs" value="@item.LookupGeneralID" checked />
+                                <label class="form-check-label">@item.TranslateValue</label>
+                            }
+                            else
+                            {
+                                <input class="form-check-input" type="radio" name="LaborQuoteSiteIs" value="@item.LookupGeneralID" @(!string.IsNullOrEmpty(Model.LaborQuote.LaborQuoteSiteIsLookupID) && Model.LaborQuote.LaborQuoteSiteIsLookupID.Trim() == item.LookupGeneralID ? "checked" : "")>
+                                <label class="form-check-label">@item.TranslateValue</label>
+                            }
+                        </div>
+                    }
+                </div>
+                <div class="form-group col-6 mt-4">
+                    <h3 style="margin-left:-10px">Walls are</h3>
+                    <div class="checkbox-wrapper mx-2 mt-2" style="padding-left:2px">
+                        @foreach (var item in Model.WallsAreList)
+                        {
+                            <div class="checkbox-inline">
+                                <label class="form-check-label" @(Model.IsReadOnly ? "style=color:#6c757d" : "")>
+                                    @if ((Model.LaborQuote.LaborQuoteWallsAres == null || Model.LaborQuote.LaborQuoteWallsAres.Length == 0) && item.Value == "DW")
+                                    {
+                                        <input class="form-check-input" type="checkbox" name="LaborQuoteWallsAre" value="@item.LookupGeneralID" checked>@item.TranslateValue
+                                    }
+                                    else
+                                    {
+                                        <input class="form-check-input" type="checkbox" name="LaborQuoteWallsAre" value="@item.LookupGeneralID" @(Model.LaborQuote.LaborQuoteWallsAres != null && Model.LaborQuote.LaborQuoteWallsAres.Contains(item.LookupGeneralID) ? "checked" : "")>@item.TranslateValue
+                                    }
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="form-group col-6 mt-4">
+                    <h3 style="margin-left:-10px">Protection</h3>
+                    <div class="checkbox-wrapper mx-2 mt-2" style="padding-left:2px">
+                        @foreach (var item in Model.ProtectionList)
+                        {
+                            <div class="checkbox-inline">
+                                <label class="form-check-label" @(Model.IsReadOnly ? "style=color:#6c757d" : "")>
+                                    <input class="form-check-input" type="checkbox" id="@(item.Value.Trim() == "Floor" ? "chkFloor" : "")" name="LaborQuoteProtection" value=@item.LookupGeneralID @(Model.LaborQuote.LaborQuoteProtections != null && Model.LaborQuote.LaborQuoteProtections.Contains(item.LookupGeneralID) ? "checked" : "")>@item.TranslateValue
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="form-group row col-6 mt-4 masoniteQuestion" style="display:none">
+                    <h3>How many feet of Masonite?</h3>
+                    <input class="form-control form-rounded mt-2" type="text" name="LaborQuoteFeetMasonite" value="@(!string.IsNullOrEmpty(Model.LaborQuote.FeetOfMasonite) ? Model.LaborQuote.FeetOfMasonite : "")" />
+                </div>
+                <div class="form-group col-6 mt-4">
+                    <h3 style="margin-left:-10px">Elevator</h3>
+                    <div class="checkbox-wrapper mx-2 mt-2" style="padding-left:2px">
+                        @foreach (var item in Model.ElevatorList)
+                        {
+                            <div class="checkbox-inline">
+                                <label class="form-check-label" @(Model.IsReadOnly ? "style=color:#6c757d" : "")>
+                                    @if ((Model.LaborQuote.LaborQuoteElevators == null || Model.LaborQuote.LaborQuoteElevators.Length == 0) && item.Value == "PA")
+                                    {
+                                        <input class="form-check-input" type="checkbox" name="LaborQuoteElevator" value="@item.LookupGeneralID" checked />@item.TranslateValue
+                                    }
+                                    else
+                                    {
+                                        <input class="form-check-input" type="checkbox" name="LaborQuoteElevator" value="@item.LookupGeneralID" @(Model.LaborQuote.LaborQuoteElevators != null && Model.LaborQuote.LaborQuoteElevators.Contains(item.LookupGeneralID) ? "checked" : "")>@item.TranslateValue
+                                    }
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="form-group form-check row col-6 mt-4">
+                    <h3>Carry Up</h3>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="LaborQuoteCarryUp" value="1" @(Model.LaborQuote.CarryUp == true ? "checked" : "")>
+                        <label class="form-check-label">Yes</label>
+                    </div>
+                    <div class="form-check mt-2">
+                        @if (Model.LaborQuote.CarryUp == null)
+                        {
+                            <input class="form-check-input" type="radio" name="LaborQuoteCarryUp" value="0" checked>
+                        }
+                        else
+                        {
+                            <input class="form-check-input" type="radio" name="LaborQuoteCarryUp" value="0" @(Model.LaborQuote.CarryUp == false ? "checked" : "")>
+                        }
+                        <label class="form-check-label">No</label>
+                    </div>
+                </div>
+                <div class="form-group row col-6 mt-4 noOfFlights" style="display:none">
+                    <h3>Number of flights</h3>
+                    <input class="form-control form-rounded mt-2" type="number" name="LaborQuoteNoOfFlights" value="@(!string.IsNullOrEmpty(Model.LaborQuote.NumberOfFlights) ? Model.LaborQuote.NumberOfFlights : "")" />
+                </div>
+                <div class="form-group col-6 mt-4">
+                    <h3 style="margin-left:-10px">Power</h3>
+                    <div class="checkbox-wrapper mx-2 mt-2" style="padding-left:2px">
+                        @foreach (var item in Model.PowerList)
+                        {
+                            <div class="checkbox-inline">
+                                <label class="form-check-label" @(Model.IsReadOnly ? "style=color:#6c757d" : "")>
+                                    <input class="form-check-input" type="checkbox" name="LaborQuotePower" value=@item.LookupGeneralID @(Model.LaborQuote.LaborQuotePowers != null && Model.LaborQuote.LaborQuotePowers.Contains(item.LookupGeneralID) ? "checked" : "")>@item.TranslateValue
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="form-group form-check row col-6 mt-4">
+                    <h3>Security Clearance Required?</h3>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="LaborQuoteSecurity" value="1" @(Model.LaborQuote.SecurityClearanceRequired == true ? "checked" : "")>
+                        <label class="form-check-label">Yes</label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="LaborQuoteSecurity" value="0" @(Model.LaborQuote.SecurityClearanceRequired == false ? "checked" : "")>
+                        <label class="form-check-label">No</label>
+                    </div>
+                </div>
+                <div class="form-group form-check row col-6 mt-4">
+                    <h3>Electrical Permit Required?</h3>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="LaborQuoteElectrical" value="1" @(Model.LaborQuote.ElectricalPerimitRequired == true ? "checked" : "")>
+                        <label class="form-check-label">Yes</label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="LaborQuoteElectrical" value="0" @(Model.LaborQuote.ElectricalPerimitRequired == false ? "checked" : "")>
+                        <label class="form-check-label">No</label>
+                    </div>
+                </div>
+                <hr />
+                <div class="form-group form-check row col-6 mt-4">
+                    <h3>Receive/Deliver</h3>
+                    <div class="form-check mt-2">
+                        @if (string.IsNullOrEmpty(Model.LaborQuote.LaborQuoteReceiveDeliverLookupID))
+                        {
+                            <input class="form-check-input" id="recDelMonFri" type="checkbox" name="LaborQuoteDeliver" value="@Model.ReceiveDeliverList.Where(x => x.Value == "M-F").Select(x => x.LookupGeneralID).FirstOrDefault()" checked>
+                        }
+                        else
+                        {
+                            <input class="form-check-input" id="recDelMonFri" type="checkbox" name="LaborQuoteDeliver" value="@Model.ReceiveDeliverList.Where(x => x.Value == "M-F").Select(x => x.LookupGeneralID).FirstOrDefault()" @(Model.LaborQuote.LaborQuoteReceiveDeliverLookupID.Trim() == Model.ReceiveDeliverList.Where(x => x.Value == "M-F").Select(x => x.LookupGeneralID).FirstOrDefault() ? "checked" : "")>
+                        }
+                        <label class="form-check-label">Monday/Friday</label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" id="recDelWeekend" type="checkbox" name="LaborQuoteDeliver" value="@Model.ReceiveDeliverList.Where(x => x.Value == "WE").Select(x => x.LookupGeneralID).FirstOrDefault()" @(!string.IsNullOrEmpty(Model.LaborQuote.LaborQuoteReceiveDeliverLookupID) && Model.LaborQuote.LaborQuoteReceiveDeliverLookupID.Trim() == Model.ReceiveDeliverList.Where(x => x.Value == "WE").Select(x => x.LookupGeneralID).FirstOrDefault() ? "checked" : "")>
+                        <label class="form-check-label">Weekend</label>
+                    </div>
+                </div>
+                <div class="form-group form-check row col-6 mt-4" id="recDelTimes" style="display: none;">
+                    <h3 id="DeliverWeekLabel"></h3>
+                    <div class="form-check optionalDeliverTime">
+                        @if (string.IsNullOrEmpty(Model.LaborQuote.LaborQuoteReceiveDeliverDayTimeLookupID))
+                        {
+                            <input class="form-check-input" id="delTimeReg" type="checkbox" name="LaborQuoteDeliverTime" value="@Model.ReceiveDeliverTimeList.Where(x => x.Value == "REG").Select(x => x.LookupGeneralID).FirstOrDefault()" checked />
+
+                        }
+                        else
+                        {
+                            <input class="form-check-input" id="delTimeReg" type="checkbox" name="LaborQuoteDeliverTime" value="@Model.ReceiveDeliverTimeList.Where(x => x.Value == "REG").Select(x => x.LookupGeneralID).FirstOrDefault()" @(Model.LaborQuote.LaborQuoteReceiveDeliverDayTimeLookupID.Trim() == Model.ReceiveDeliverTimeList.Where(x => x.Value == "REG").Select(x => x.LookupGeneralID).FirstOrDefault() ? "checked" : "")>
+
+                        }
+                        <label class="form-check-label">Regular Time</label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" id="delTimeOT" type="checkbox" name="LaborQuoteDeliverTime" value="@Model.ReceiveDeliverTimeList.Where(x => x.Value == "OT").Select(x => x.LookupGeneralID).FirstOrDefault()" @(!string.IsNullOrEmpty(Model.LaborQuote.LaborQuoteReceiveDeliverDayTimeLookupID) && Model.LaborQuote.LaborQuoteReceiveDeliverDayTimeLookupID.Trim() == Model.ReceiveDeliverTimeList.Where(x => x.Value == "OT").Select(x => x.LookupGeneralID).FirstOrDefault() ? "checked" : "")>
+                        <label class="form-check-label">Overtime</label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" id="delTimeDT" type="checkbox" name="LaborQuoteDeliverTime" value="@Model.ReceiveDeliverTimeList.Where(x => x.Value == "DT").Select(x => x.LookupGeneralID).FirstOrDefault()" @(!string.IsNullOrEmpty(Model.LaborQuote.LaborQuoteReceiveDeliverDayTimeLookupID) && Model.LaborQuote.LaborQuoteReceiveDeliverDayTimeLookupID.Trim() == Model.ReceiveDeliverTimeList.Where(x => x.Value == "DT").Select(x => x.LookupGeneralID).FirstOrDefault() ? "checked" : "")>
+                        <label class="form-check-label">Double Time</label>
+                    </div>
+                </div>
+                <hr />
+                <div class="form-group form-check row col-6 mt-4">
+                    <h3>Installation</h3>
+                    <div class="form-check mt-2">
+                        @if (string.IsNullOrEmpty(Model.LaborQuote.LaborQuoteInstallationLookupID))
+                        {
+                            <input class="form-check-input" id="instMonFri" type="checkbox" name="LaborQuoteInstallation" value="@Model.InstallationList.Where(x => x.Value == "M-F").Select(x => x.LookupGeneralID).FirstOrDefault()" checked>
+
+                        }
+                        else
+                        {
+                            <input class="form-check-input" id="instMonFri" type="checkbox" name="LaborQuoteInstallation" value="@Model.InstallationList.Where(x => x.Value == "M-F").Select(x => x.LookupGeneralID).FirstOrDefault()" @(Model.LaborQuote.LaborQuoteInstallationLookupID.Trim() == Model.InstallationList.Where(x => x.Value == "M-F").Select(x => x.LookupGeneralID).FirstOrDefault() ? "checked" : "")>
+
+                        }
+                        <label class="form-check-label">Monday/Friday</label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" id="instWeekend" type="checkbox" name="LaborQuoteInstallation" value="@Model.InstallationList.Where(x => x.Value == "WE").Select(x => x.LookupGeneralID).FirstOrDefault()" @(!string.IsNullOrEmpty(Model.LaborQuote.LaborQuoteInstallationLookupID) && Model.LaborQuote.LaborQuoteInstallationLookupID.Trim() == Model.InstallationList.Where(x => x.Value == "WE").Select(x => x.LookupGeneralID).FirstOrDefault() ? "checked" : "")>
+                        <label class="form-check-label">Weekend</label>
+                    </div>
+                </div>
+                <div class="form-group form-check row col-6 mt-4" id="instTimes" style="display: none;">
+                    <h3 id="InstallationWeekLabel"></h3>
+                    <div class="form-check optionalInstallationTime">
+                        @if (string.IsNullOrEmpty(Model.LaborQuote.LaborQuoteInstallationTimeLookupID))
+                        {
+                            <input class="form-check-input" id="instReg" type="checkbox" name="LaborQuoteInstallationTime" value="@Model.InstallationTimeList.Where(x => x.Value == "REG").Select(x => x.LookupGeneralID).FirstOrDefault()" checked>
+
+                        }
+                        else
+                        {
+                            <input class="form-check-input" id="instReg" type="checkbox" name="LaborQuoteInstallationTime" value="@Model.InstallationTimeList.Where(x => x.Value == "REG").Select(x => x.LookupGeneralID).FirstOrDefault()" @(Model.LaborQuote.LaborQuoteInstallationTimeLookupID.Trim() == Model.InstallationTimeList.Where(x => x.Value == "REG").Select(x => x.LookupGeneralID).FirstOrDefault() ? "checked" : "")>
+
+                        }
+                        <label class="form-check-label">Regular Time</label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" id="instOT" type="checkbox" name="LaborQuoteInstallationTime" value="@Model.InstallationTimeList.Where(x => x.Value == "OT").Select(x => x.LookupGeneralID).FirstOrDefault()" @(!string.IsNullOrEmpty(Model.LaborQuote.LaborQuoteInstallationTimeLookupID) && Model.LaborQuote.LaborQuoteInstallationTimeLookupID.Trim() == Model.InstallationTimeList.Where(x => x.Value == "OT").Select(x => x.LookupGeneralID).FirstOrDefault() ? "checked" : "")>
+                        <label class="form-check-label">Overtime</label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" id="instDT" type="checkbox" name="LaborQuoteInstallationTime" value="@Model.InstallationTimeList.Where(x => x.Value == "DT").Select(x => x.LookupGeneralID).FirstOrDefault()" @(!string.IsNullOrEmpty(Model.LaborQuote.LaborQuoteInstallationTimeLookupID) && Model.LaborQuote.LaborQuoteInstallationTimeLookupID.Trim() == Model.InstallationTimeList.Where(x => x.Value == "DT").Select(x => x.LookupGeneralID).FirstOrDefault() ? "checked" : "")>
+                        <label class="form-check-label">Double Time</label>
+                    </div>
+                </div>
+                <hr />
+                <h2>Delivery Receiving Information</h2>
+                <div class="form-group col-6 mt-4">
+                    <h3 style="margin-left:-10px">Product From</h3>
+                    <div class="checkbox-wrapper mx-2 mt-2" style="padding-left:2px">
+                        @foreach (var item in Model.ProductFromList)
+                        {
+                            <div class="checkbox-inline">
+                                <label class="form-check-label" @(Model.IsReadOnly ? "style=color:#6c757d" : "")>
+                                    @if ((Model.LaborQuote.LaborQuoteProductFroms == null || Model.LaborQuote.LaborQuoteProductFroms.Length == 0) && item.Value == "OWP")
+                                    {
+                                        <input class="form-check-input" type="checkbox" name="LaborQuoteProductForm" value=@item.LookupGeneralID checked />@item.TranslateValue
+                                    }
+                                    else
+                                    {
+                                        <input class="form-check-input" type="checkbox" name="LaborQuoteProductForm" value=@item.LookupGeneralID @(Model.LaborQuote.LaborQuoteProductFroms != null && Model.LaborQuote.LaborQuoteProductFroms.Contains(item.LookupGeneralID) ? "checked" : "")>@item.TranslateValue
+                                    }
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="form-group form-check row col-6 mt-4">
+                    <h3>Unload At</h3>
+                    <div class="form-check mt-2">
+                        @if (string.IsNullOrEmpty(Model.LaborQuote.LaborQuoteUnloadAtLookupID))
+                        {
+                            <input class="form-check-input" type="radio" name="LaborQuoteUnloadAt" value="@Model.UnloadAtList.Where(x => x.Value == "DCK").Select(x => x.LookupGeneralID).FirstOrDefault()" checked />
+                            <label class="form-check-label">@Model.UnloadAtList.Where(x => x.Value == "DCK").Select(x => x.TranslateValue).FirstOrDefault()</label>
+                        }
+                        else
+                        {
+                            <input class="form-check-input" type="radio" name="LaborQuoteUnloadAt" value="@Model.UnloadAtList.Where(x => x.Value == "DCK").Select(x => x.LookupGeneralID).FirstOrDefault()" @(Model.LaborQuote.LaborQuoteUnloadAtLookupID.Trim() == Model.UnloadAtList.Where(x => x.Value == "DCK").Select(x => x.LookupGeneralID).FirstOrDefault() ? "checked" : "") />
+                            <label class="form-check-label">@Model.UnloadAtList.Where(x => x.Value == "DCK").Select(x => x.TranslateValue).FirstOrDefault()</label>
+                        }
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="LaborQuoteUnloadAt" value="@Model.UnloadAtList.Where(x => x.Value == "STR").Select(x => x.LookupGeneralID).FirstOrDefault()" @(!string.IsNullOrEmpty(Model.LaborQuote.LaborQuoteUnloadAtLookupID) && Model.LaborQuote.LaborQuoteUnloadAtLookupID.Trim() == @Model.UnloadAtList.Where(x => x.Value == "STR").Select(x => x.LookupGeneralID).FirstOrDefault() ? "checked" : "")>
+                        <label class="form-check-label">@Model.UnloadAtList.Where(x => x.Value == "STR").Select(x => x.TranslateValue).FirstOrDefault()</label>
+                    </div>
+                </div>
+                <hr />
+                <h2>Health and Safety</h2>
+                <div class="form-group col-6 mt-4">
+                    <h3 style="margin-left:-10px">Type of Screening</h3>
+                    <div class="checkbox-wrapper mx-2 mt-2" style="padding-left:2px">
+                        @foreach (var item in Model.TypeOfScreeningList)
+                        {
+                            <div class="checkbox-inline">
+                                <label class="form-check-label" @(Model.IsReadOnly ? "style=color:#6c757d" : "")>
+                                    @if ((Model.LaborQuote.LaborQuoteTypeOfScreenings == null || Model.LaborQuote.LaborQuoteTypeOfScreenings.Length == 0) && item.Value == "STD")
+                                    {
+                                        <input class="form-check-input" type="checkbox" name="LaborQuoteTypeOfScreening" value=@item.LookupGeneralID checked>@item.TranslateValue
+                                    }
+                                    else
+                                    {
+                                        <input class="form-check-input" type="checkbox" name="LaborQuoteTypeOfScreening" value=@item.LookupGeneralID @(Model.LaborQuote.LaborQuoteTypeOfScreenings != null && Model.LaborQuote.LaborQuoteTypeOfScreenings.Contains(item.LookupGeneralID) ? "checked" : "")>@item.TranslateValue
+                                    }
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="form-group form-check row col-6 mt-4">
+                    <h3>Will elevator be needed during install?</h3>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="LaborQuoteElevatorNeeded" value="1" @(Model.LaborQuote.ElevatorNeeded == true ? "checked" : "")>
+                        <label class="form-check-label">Yes</label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="LaborQuoteElevatorNeeded" value="0" @(Model.LaborQuote.ElevatorNeeded == false ? "checked" : "")>
+                        <label class="form-check-label">No</label>
+                    </div>
+                </div>
+                <div class="form-group form-check row col-6 mt-4">
+                    <h3>Does product need to be cleaned/sanitized?</h3>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="LaborQuoteProductCleaned" value="1" @(Model.LaborQuote.ProductNeedToBeCleanedOrSanitized == true ? "checked" : "")>
+                        <label class="form-check-label">Yes</label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="LaborQuoteProductCleaned" value="0" @(Model.LaborQuote.ProductNeedToBeCleanedOrSanitized == false ? "checked" : "")>
+                        <label class="form-check-label">No</label>
+                    </div>
+                </div>
+                <div class="form-group col-6 mt-4">
+                    <h3 style="margin-left:-10px">Product Is </h3>
+                    <div class="checkbox-wrapper mx-2 mt-2" style="padding-left:2px">
+                        @foreach (var item in Model.ProductIsList)
+                        {
+                            <div class="checkbox-inline">
+                                <label class="form-check-label" @(Model.IsReadOnly ? "style=color:#6c757d" : "")>
+                                    @if ((Model.LaborQuote.LaborQuoteProductIs == null || Model.LaborQuote.LaborQuoteProductIs.Length == 0) && item.Value == "CND")
+                                    {
+                                        <input class="form-check-input" type="checkbox" name="LaborQuoteProductIs" value=@item.LookupGeneralID checked />@item.TranslateValue
+                                    }
+                                    else
+                                    {
+                                        <input class="form-check-input" type="checkbox" name="LaborQuoteProductIs" value=@item.LookupGeneralID @(Model.LaborQuote.LaborQuoteProductIs != null && Model.LaborQuote.LaborQuoteProductIs.Contains(item.LookupGeneralID) ? "checked" : "")>@item.TranslateValue
+                                    }
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="form-group row col-6 mt-4">
+                    <h3>Additional Info</h3>
+                    <textarea class="form-control form-rounded mt-2" rows="6" cols="100" name="LaborQuoteAddInfo">@(!string.IsNullOrEmpty(Model.LaborQuote.ProductIsAdditionalInfo) ? Model.LaborQuote.ProductIsAdditionalInfo : "")</textarea>
+                </div>
+            </div>
+        </div>
+            @if (Model.IsRevision)
+            {
+                <div class="form-group row col-6 mt-4">
+                    <h3>Revision Reason <span style="color:red">*</span></h3>
+                    <textarea class="form-control form-rounded mt-2" rows="6" cols="100" name="LaborQuoteRevisionReason" required pattern=".*\S+.*">@(!string.IsNullOrEmpty(Model.LaborQuote.RevisionReason) ? Model.LaborQuote.RevisionReason : "")</textarea>
+                </div>
+            }
+            @*@if (!String.IsNullOrEmpty(Model.LaborQuote.OriginalLaborQuoteCode))
+            {
+                <div class="form-group row col-6 mt-4">
+                    <h3>Revision Reason</h3>
+                    <textarea class="form-control form-rounded mt-2" rows="6" cols="100" name="LaborQuoteRevisionReason">@(!string.IsNullOrEmpty(Model.LaborQuote.RevisionReason) ? Model.LaborQuote.RevisionReason : "")</textarea>
+                </div>
+            }*@
+            <hr />
+            @if (!Model.IsReadOnly)
+            {
+                <div class="form-group row col-6 mt-4">
+                    <h3>Upload Preliminary Plan</h3>
+                    <div class="input-group filePrelDiv" id="filePrelDiv-0">
+                        <input class="form-control form-rounded mt-2 checkSize" style="height:44px" type="file" name="filePrelPlan" />
+                    </div>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-primary" onclick="addPrelFile()" id="btnAddPrelFile">+</button>
+                </div>
+                <div class="form-group row col-6 mt-4">
+                    <h3>Upload Final Installation Plan</h3>
+                    <div class="input-group fileFinalInstDiv" id="fileFinalInstDiv-0">
+                        <input class="form-control form-rounded mt-2 checkSize" style="height:44px" type="file" name="fileFinalInstPlan" />
+                    </div>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-primary" onclick="addInstFile()" id="btnAddFinalInstFile">+</button>
+                </div>
+                <div class="form-group row col-6 mt-4">
+                    <h3>Upload Specifications</h3>
+                    <input class="form-control form-rounded mt-2 checkSize" style="height:44px" type="file" name="fileSpec" />
+                </div>
+                <div class="form-group row col-6 mt-4">
+                    <h3>Upload Pull List</h3>
+                    <input class="form-control form-rounded mt-2 checkSize" style="height:44px" type="file" name="filePullList" />
+                </div>
+                <div class="form-group row col-6 mt-4">
+                    <h3>Other File Upload</h3>
+                    <input class="form-control form-rounded mt-2 checkSize" style="height:44px" type="file" name="fileOther" />
+                </div>
+                <br />
+                <hr />
+                <div class="form-inline row col-6 mt-4">
+                    <button type="submit" name="submit" class="btn btn-primary" id="SendLaborQuote" value="SendLaborQuote" style="width:200px">Submit</button>
+                    <button type="button" class="btn btn-primary" id="SendLaborQuoteFake" style="width:200px; display:none;" disabled>Submit</button>
+                    @if (!Model.IsRevision)
+                    {
+                        <button type="reset" name="submit" class="btn btn-primary" id="CancelRevision" value="CancelLaborQuote" style="width:200px;margin-left:10px">Reset</button>
+                    }
+                    else
+                    {
+                        <a href="/onequoteform" class="btn btn-primary" style="width:200px;margin-left:10px">Cancel</a>
+                    }
+                </div>
+                <input type="hidden" name="isRevision" value="@Model.IsRevision.ToString()" />
+                <input type="hidden" name="originalLaborQuoteNo" value="@(Model.IsRevision ? @Model.LaborQuote.LaborQuoteCode : "")" />
+            }
+            else
+            {
+                if (Model.LaborQuote.AttachedFiles != null && Model.LaborQuote.AttachedFiles.Count > 0)
+                {
+                    <div class="form-group row col-6 mt-4">
+                        <h3>Attached Files</h3>
+                        <hr />
+                        <div class="form-control-file">
+                            <ul style="list-style-type:none" class="list-inline">
+                                @foreach (var attFile in Model.LaborQuote.AttachedFiles)
+                                {
+                                    <li>@Html.ActionLink(attFile.FileName, "Download", "OneQuoteForm", new { filename = attFile.FullFileName })</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                }
+            }
+    </fieldset>
+	<input id="hdnRevisionCode" type="hidden" name="revisionCode" value="@Model.RevisionCode" />
+</form>
+
+@if (Model.IsReadOnly)
+{
+	@*<a href="/laborquotedashboard" class="btn btn-primary" style="width:200px">Back to Dashboard</a>*@
+}
+
+<input id="hdnSuccess" type="hidden" value="@Model.Success" />
+<input id="hdnIsReadOnly" type="hidden" value="@Model.IsReadOnly.ToString()" />
+
+

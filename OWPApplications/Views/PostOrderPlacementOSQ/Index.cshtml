@@ -1,0 +1,610 @@
+﻿@{
+    ViewData["Title"] = "Post Order Placement Open Square";
+    ViewData["NavBarColor"] = "grey";
+    ViewData["ShowNavBar"] = "True";
+    ViewData["Type"] = "PostOrderPlacementOSQ";
+}
+@model OWPApplications.Models.PostOrderPlacement.PostOrderPlacementViewModel;
+
+<style type="text/css">
+    .frzTable {
+        display: flex;
+        flex-flow: column;
+        width: 100%;
+    }
+
+        .frzTable thead {
+            flex: 0 0 auto;
+            width: calc( 100% - 1em );
+        }
+
+        .frzTable tbody {
+            flex: 1 1 auto;
+            display: block;
+            overflow-y: scroll;
+            overflow-x: hidden;
+            height: 600px;
+        }
+
+        .frzTable tr {
+            width: 100%;
+            display: table;
+            table-layout: fixed;
+        }
+
+    #popupColsLD, #popupColsPOS {
+        width: 400px;
+        position: fixed;
+        top: calc(50% - 200px);
+        left: calc(50% - 200px);
+        background-color: white;
+    }
+</style>
+
+@if (Model.ShowResults)
+{
+    <div class="row mt-4">
+        <h3 class="col-12">Header Info</h3>
+        <div class="card col-12">
+            <input id="projectID" value="@Html.Raw(Model.HeaderInfo.ProjectId)" hidden />
+            <input id="customerName" value="@Html.Raw(Model.HeaderInfo.CustomerName)" hidden />
+            <input id="locationCode" value="@Html.Raw(Model.HeaderInfo.Location_Code)" hidden />
+            @Html.Raw(Model.HeaderHtml)
+        </div>
+    </div>
+
+    <div class="row mt-4 expanded-table-s2">
+        <div class="col-12 lines-header" style="margin-left: 0px;">
+            <h3 class="d-inline-block">Summary Info</h3>
+
+            <button class="btn btn-sm btn-primary float-right" id="posReport" onclick="OpenPopupSelection('POS')" style="margin-left: 5px;">PO Suffix/Line Detail</button>
+            <button class="btn btn-sm btn-primary float-right" id="ldReport" onclick="OpenPopupSelection('LD')">PO Summary</button>
+        </div>
+        <div class="card col-12 p-3">
+            <div class="alt-table-responsive table-responsive">
+                <table class="table table-sm table-bordered text-center frzTable">
+                    @Html.Raw(Model.SummaryHeaderHtml)
+                    <tbody>
+                        @if (Model.SummaryInfo != null)
+                        {
+                            for (int i = 0; i < Model.SummaryInfo.Count(); i++)
+                            {
+                                var line = Model.SummaryInfo.ElementAt(i);
+                                string clsACK = line.ACKNotReceived ? "bg-red-light" : "";
+                                bool showCheckBox = line.IsAvailableVendor;
+                                string rowCls = (!showCheckBox) ? "row-gray" : "";
+                                <tr class="po-@line.PoSuffix breakrow @rowCls" data-podate="@line.OrderedDate" data-estarrival="@line.EstimatedArrival" data-schedarrival="@line.ScheduledArrivalDate">
+                                    <td style="width:40px">
+                                        @if (showCheckBox)
+                                        {
+                                            <input type="checkbox" class="show-email-options" id="cb-@string.Format("{0}{1}-{2}-{3}", ViewData["CompanyCode"], line.OrderNo, line.PoSuffix, line.VendorNo.Trim().Replace("&",""))"
+                                                   data-source="POP_APP"
+                                                   data-vendor="@line.VendorNo.Trim()"
+                                                   data-po="@line.PoSuffix"
+                                                   data-orderno="@line.OrderNo"
+                                                   data-issteelcase="@line.IsSteelcaseVendor">
+                                        }
+                                    </td>
+                                    <td><a class="link-po--posto" data-index="@i" tabindex="@i">@string.Format("{0}{1}-{2}", ViewData["CompanyCode"], line.OrderNo, line.PoSuffix)</a></td>
+                                    <td>@line.VendorName (@line.VendorNo.Trim())</td>
+                                    <td>@line.OrderedDate</td>
+                                    <td class="@clsACK">@line.AckNo</td>
+                                    <td class="@clsACK">@line.AckDate</td>
+                                    <td>@line.ShipDate</td>
+                                    <td>@line.RequestedArrival</td>
+                                    <td>@line.LastReceivedDate</td>
+                                    <td>@line.LatestSoftSchDt</td>
+                                    <td>@line.EstimatedArrival</td>
+
+                                    @if (line.PoSuffix == "")
+                                    {
+                                        <td>
+                                            <input style="width:94px"
+                                                   data-orderno="@line.OrderNo"
+                                                   data-po="@line.PoSuffix"
+                                                   data-keystring="@line.VendorNo.Trim()"
+                                                   data-companycode="S"
+                                                   data-ordertype="O"
+                                                   data-upsertlevel="OR"
+                                                   data-source="POP_APP"
+                                                   data-field="Sched_Arrival_Dt"
+                                                   class="schArrDate values-input-date"
+                                                   value="@line.ScheduledArrivalDate" />
+                                        </td>
+                                        <td>
+                                            <textarea style="width:94px" class="values-input" id="carrier-@string.Format("{0}{1}-{2}", ViewData["CompanyCode"], line.OrderNo, line.PoSuffix)"
+                                                      data-orderno="@line.OrderNo"
+                                                      data-po="@line.PoSuffix"
+                                                      data-keystring="@line.VendorNo.Trim()"
+                                                      data-companycode="S"
+                                                      data-ordertype="O"
+                                                      data-upsertlevel="OR"
+                                                      data-field="Carrier"
+                                                      data-source="POP_APP" rows="3">@line.Carrier</textarea>
+                                        </td>
+                                        <td>
+                                            <textarea style="width:94px" class="values-input" id="tracking-@string.Format("{0}{1}-{2}", ViewData["CompanyCode"], line.OrderNo, line.PoSuffix)"
+                                                      data-orderno="@line.OrderNo"
+                                                      data-po="@line.PoSuffix"
+                                                      data-keystring="@line.VendorNo.Trim()"
+                                                      data-companycode="S"
+                                                      data-ordertype="O"
+                                                      data-upsertlevel="OR"
+                                                      data-field="Tracking"
+                                                      data-source="POP_APP" rows="3">@line.Tracking</textarea>
+                                        </td>
+                                        <td>
+                                            <a href="@("http://"+line.TrackingLink)" id="linkTrackLink-@string.Format("W{0}-{1}", line.OrderNo, line.PoSuffix)" target="_blank" style="display:@(line.TrackingLink == null || line.TrackingLink == "" ? "none" : "inline");">
+                                                <i class="fa fa-regular fa-link"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm" data-toggle="modal" data-target="#trackingLinkModal" id="trackLink-@string.Format("W{0}-{1}", line.OrderNo, line.PoSuffix)"
+                                                    data-orderno="@line.OrderNo"
+                                                    data-po="@line.PoSuffix"
+                                                    data-keystring="@line.VendorNo.Trim()"
+                                                    data-companycode="S"
+                                                    data-ordertype="O"
+                                                    data-upsertlevel="OR"
+                                                    data-value="@line.TrackingLink"
+                                                    data-source="POP_APP"
+                                                    data-field="TrackingLink">
+                                                <i class="fa fa-regular fa-pen"></i>
+                                            </button>
+                                        </td>
+                                        <td style="width:160px;padding:0">
+                                            <textarea style="width:159px;height:88px;border:0" class="values-input" id="comments-@string.Format("{0}{1}-{2}", ViewData["CompanyCode"], line.OrderNo, line.PoSuffix)"
+                                                      data-orderno="@line.OrderNo"
+                                                      data-po="@line.PoSuffix"
+                                                      data-keystring="@line.VendorNo.Trim()"
+                                                      data-companycode="S"
+                                                      data-ordertype="O"
+                                                      data-upsertlevel="OR"
+                                                      data-field="Comment"
+                                                      data-source="POP_APP" rows="3">@line.Comments</textarea>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>
+                                            <input style="width:94px"
+                                                   class="schArrDate values-input-date"
+                                                   data-orderno="@line.OrderNo"
+                                                   data-po="@line.PoSuffix"
+                                                   data-keystring="@line.VendorNo.Trim()"
+                                                   data-companycode="S"
+                                                   data-ordertype="O"
+                                                   data-upsertlevel="PO"
+                                                   data-field="Sched_Arrival_Dt"
+                                                   data-source="POP_APP"
+                                                   value="@line.ScheduledArrivalDate" />
+                                        </td>
+                                        <td>
+                                            <textarea style="width:94px" class="values-input" id="carrier-@string.Format("{0}{1}-{2}", ViewData["CompanyCode"], line.OrderNo, line.PoSuffix)"
+                                                      data-orderno="@line.OrderNo"
+                                                      data-po="@line.PoSuffix"
+                                                      data-keystring="@line.VendorNo.Trim()"
+                                                      data-companycode="S"
+                                                      data-ordertype="O"
+                                                      data-upsertlevel="PO"
+                                                      data-field="Carrier"
+                                                      data-source="POP_APP" rows="3">@line.Carrier</textarea>
+                                        </td>
+                                        <td>
+                                            <textarea style="width:94px" class="values-input" id="tracking-@string.Format("{0}{1}-{2}", ViewData["CompanyCode"], line.OrderNo, line.PoSuffix)"
+                                                      data-orderno="@line.OrderNo"
+                                                      data-po="@line.PoSuffix"
+                                                      data-keystring="@line.VendorNo.Trim()"
+                                                      data-companycode="S"
+                                                      data-ordertype="O"
+                                                      data-upsertlevel="PO"
+                                                      data-field="Tracking"
+                                                      data-source="POP_APP" rows="3">@line.Tracking</textarea>
+                                        </td>
+                                        <td>
+                                            <a href="@("http://"+line.TrackingLink)" id="linkTrackLink-@string.Format("W{0}-{1}", line.OrderNo, line.PoSuffix)" target="_blank" style="display:@(line.TrackingLink == null || line.TrackingLink == "" ? "none" : "inline");">
+                                                <i class="fa fa-regular fa-link"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm" data-toggle="modal" data-target="#trackingLinkModal" id="trackLink-@string.Format("W{0}-{1}", line.OrderNo, line.PoSuffix)"
+                                                    data-orderno="@line.OrderNo"
+                                                    data-po="@line.PoSuffix"
+                                                    data-keystring="@line.VendorNo.Trim()"
+                                                    data-companycode="S"
+                                                    data-ordertype="O"
+                                                    data-upsertlevel="OR"
+                                                    data-value="@line.TrackingLink"
+                                                    data-source="POP_APP"
+                                                    data-field="TrackingLink">
+                                                <i class="fa fa-regular fa-pen"></i>
+                                            </button>
+                                        </td>
+                                        <td style="width:160px;padding:0">
+                                            <textarea style="width:159px;height:88px;border:0" class="values-input" id="comments-@string.Format("{0}{1}-{2}", ViewData["CompanyCode"], line.OrderNo, line.PoSuffix)"
+                                                      data-orderno="@line.OrderNo"
+                                                      data-po="@line.PoSuffix"
+                                                      data-keystring="@line.VendorNo.Trim()"
+                                                      data-companycode="S"
+                                                      data-ordertype="O"
+                                                      data-upsertlevel="PO"
+                                                      data-field="Comment"
+                                                      data-source="POP_APP" rows="3">@line.Comments</textarea>
+                                        </td>
+                                    }
+                                </tr>
+                                <tr class="optionrow" style="display:none">
+                                    <td colspan="14" id="options-@line.PoSuffix-@line.VendorNo.Trim().Replace("&","")">
+                                        <div class="container p-3">
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <h3 class="col-12">Back-up Documentation</h3>
+        <div class="card col-12 p-4">
+            <h5> Location: </h5>
+            <div class="folder-link form-inline">
+                <a style="margin-right: 10px" href="file:@Model.HeaderInfo.FileName">@Model.HeaderInfo.FileName</a>
+                <i style="margin-right: 30px;">(Internet Explorer Required to View)</i>
+            </div>
+            <br />
+            <div class="folder-link form-inline">
+                <input type="text" id="inputClipboard" style="position: absolute; margin-left: -99999px;" class="form-control" value="@Model.HeaderInfo.FileName" />
+                <button class="btn btn-sm  btn-primary" id="clipboardPOPApp" style="margin-right: 10px;">Copy to Clipboard</button>
+                <i>Once you hit “Copy to Clipboard,” open your file explorer and paste (Ctrl + V) into the Quick Access field</i>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!--  Validation https://getbootstrap.com/docs/4.3/components/forms/#custom-styles -->
+        <h3 class="col-12">Email Form</h3>
+        <div class="card col-md-6 p-5">
+            <form id="EmailForm">
+                <input type="hidden" id="hiddenOrderNo" value="@Model.OrderNo" />
+                <input type="hidden" id="hiddenOrderTitle" value="@Model.HeaderInfo.OrderTitle" />
+                <input type="hidden" id="hiddenSalesPersonID" value="@Model.HeaderInfo.SalesPersonID" />
+                <input type="hidden" id="hiddenCustomerName" value="@Model.HeaderInfo.CustomerName" />
+
+                <div class="alert alert-info" style="display:none" id="msgEmailForm">
+                    Please provide more information as to what you're inquiring about to the vendor. Example: Warranty Information, Putting orders on hold,
+                    changing ship to addresses, etc.
+                </div>
+
+                <div class="form-group">
+                    <label for="inputEmailType">Email Type</label>
+                    <select class="custom-select mr-sm-2" id="inputEmailType" required>
+                        @foreach (var item in Model.EmailTypes)
+                        {
+                            <option value="@item.Type" displayweekdayfield="@item.displayWeekDayField">@item.Title</option>
+                        }
+                    </select>
+                </div>
+
+                @foreach (var item in Model.EmailFields)
+                {
+                    var clasName = "emailTypeFields_" + item.EmailType;
+                    var clasDataType = "emailTypeFields_" + item.Type;
+                    <div class="form-group @clasName divCustomField" style="display:none">
+                        <label for="inputSubject">@item.Label</label>
+                        <input class="form-control inputCustomField @clasDataType" id="@item.Name" name="@item.Name">
+                    </div>
+                }
+
+
+                <div class="form-group" id="divInputSubject" style="display:none">
+                    <label for="inputSubject">Freeform Subject</label>
+                    <input type="email" class="form-control" id="inputSubject" name="inputSubject" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputYourEmail">Your Name</label>
+                    <input type="email" class="form-control" id="inputYourName" name="inputYourName" required>
+                </div>
+                <div class="form-group">
+                    <label for="inputYourEmail">Your Email Address</label>
+                    <input type="email" class="form-control" id="inputYourEmail" name="inputYourEmail" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="inputCC1">CC</label>
+                        <input type="email" class="form-control" id="inputCC1" />
+                    </div>
+                    <div class="form-group  col-md-6">
+                        <label for="inputCC2">CC</label>
+                        <input type="email" class="form-control" id="inputCC2" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputNotes">Notes: <span style="font-style:italic; color:red;">(This will appear on every vendor email)</span></label>
+                    <textarea class="form-control" id="inputNotes" name="inputNotes" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="includeTitle" checked />
+                            <label class="form-check-label" for="includeTitle">
+                                Include Title
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <button type="submit" class="btn btn-primary btn-block mb-2" id="SendEmailPostOrderPlacement">Submit</button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document" style="max-width: 85%;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailsModalTitle"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table id="postorderTableDetails" class="table table-sm table-bordered text-center sortable">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="table-header">Line #</th>
+                                <th scope="col" class="table-header">Process Code</th>
+                                <th scope="col" class="table-header">Line Sales Code</th>
+                                <th scope="col" class="table-header">Vendor #</th>
+                                <th scope="col" class="table-header">Catalog</th>
+                                <th scope="col" class="table-header">Description</th>
+                                <th scope="col" class="table-header">Qty Ordered</th>
+                                <th scope="col" class="table-header">Qty Received</th>
+                                <th scope="col" class="table-header">Received Date</th>
+                                <th scope="col" class="table-header">Requestedd Arrival Date</th>
+                                <th scope="col" class="table-header">Estmated Arrival Date</th>
+                                <th scope="col" class="table-header">Ship Date</th>
+                                <th scope="col" class="table-header">General Tagging</th>
+                                <th scope="col" class="table-header">Last Schedule Date</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+else
+{
+    <div class="no-results">
+        <span id="noresults">No results to show.</span>
+        <div class="d-flex justify-content-center">
+            <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    </div>
+}
+
+<div id="popupColsLD" class="modal-content" style="display:none;background-color:whitesmoke">
+    <div class="modal-header">
+        <h4 class="">Choose columns to export:</h4>
+        <button type="button" class="close">  x  </button>
+    </div>
+    <div class="modal-body" style="margin-left:50px">
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsLDToExport" value="1" checked="checked">PO #
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsLDToExport" value="2" checked="checked">Vendor #
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsLDToExport" value="3" checked="checked">Ordered (Date)
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsLDToExport" value="4" checked="checked">Ack #
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsLDToExport" value="5" checked="checked">Ack Date
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsLDToExport" value="6" checked="checked">Ship Date
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsLDToExport" value="7" checked="checked">Requested Arrival Date
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsLDToExport" value="8" checked="checked">Lastest Received Date
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsLDToExport" value="14" checked="checked">Soft Schedule Date
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsLDToExport" value="9" checked="checked">Estimated Arrival Date
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsLDToExport" value="10" checked="checked">Scheduled Arrival Date
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsLDToExport" value="11" checked="checked">Carrier
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsLDToExport" value="12" checked="checked">Tracking/PRO #/BOL
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsLDToExport" value="13" checked="checked">Comments
+            </label>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary button button4 btnExport" onclick="GeneratePDF(LinesPostOrder, $('#hdnExportType').val())">Submit</button>
+    </div>
+</div>
+<div id="popupColsPOS" class="modal-content" style="display:none;background-color:whitesmoke">
+    <div class="modal-header">
+        <h4 class="">Choose columns to export:</h4>
+        <button type="button" class="close">  x  </button>
+    </div>
+    <div class="modal-body" style="margin-left:50px">
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsPOSToExport" value="1" checked="checked">PO #
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsPOSToExport" value="2" checked="checked">Line #
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsPOSToExport" value="4" checked="checked">Process Code
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsPOSToExport" value="5" checked="checked">Line Sales Code
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsPOSToExport" value="6" checked="checked">Vendor #
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsPOSToExport" value="7" checked="checked">Catalog
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsPOSToExport" value="8" checked="checked">Description
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsPOSToExport" value="3" checked="checked">Ordered Date
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsPOSToExport" value="9" checked="checked">Qty Ordered
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsPOSToExport" value="10" checked="checked">Qty Received
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsPOSToExport" value="11" checked="checked">Received Date
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsPOSToExport" value="12" checked="checked">Requested Arrival Date
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsPOSToExport" value="13" checked="checked">Estimated Arrival Date
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsPOSToExport" value="14" checked="checked">Ship Date
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsPOSToExport" value="16" checked="checked">General Tagging
+            </label>
+        </div>
+        <div class="checkbox-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="colsPOSToExport" value="15" checked="checked">Last Schedule Date
+            </label>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="processCodeFilter">
+            <label class="form-check-label float-left">Exclude BO, OM and PA lines</label>
+        </div>
+        <button type="submit" class="btn btn-primary button button4 btnExport" onclick="GeneratePDF(LinesPostOrder, $('#hdnExportType').val())">Submit</button>
+    </div>
+</div>
+<input type="hidden" id="hdnExportType" />
+<input type="hidden" id="hdnCompanyCode" value="@ViewData["CompanyCode"]" />
+
+<div id="alert"></div>
+
+<div class="modal fade" id="trackingLinkModal" tabindex="-1" role="dialog" aria-labelledby="trackingLinkModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="trackingLinkModalLabel">Tracking Link</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="trackingLink"
+                           data-orderno=""
+                           data-po=""
+                           data-keystring=""
+                           data-companycode=""
+                           data-ordertype=""
+                           data-upsertlevel=""
+                           data-source=""
+                           data-field="" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="btnSaveTrackingLink">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+  var LinesPostOrder = @Html.Raw(Model.SummaryInfoJson());
+</script>

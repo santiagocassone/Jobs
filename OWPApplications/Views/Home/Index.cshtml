@@ -1,0 +1,436 @@
+﻿@{
+    ViewData["Title"] = "Home";
+    Layout = "~/Views/Shared/_HomeLayout.cshtml";
+}
+@model List<OWPApplications.Models.Announcement>
+
+<style>
+
+    html {
+        height: 100%;
+    }
+
+    body {
+        min-height: 100%;
+        background-color: #e1e1e1a1;
+        font-size: .9rem;
+    }
+
+    #left {
+        background-color: whitesmoke;
+        overflow: auto;
+    }
+
+    .card-body {
+        padding: 1em;
+    }
+
+    hr {
+        margin-top: 2px;
+        margin-bottom: 2px;
+    }
+
+    .app-status {
+        float: right;
+        font-weight: 600;
+    }
+
+    .complete {
+        color: green;
+    }
+
+    .app-name {
+        display: inline-block;
+    }
+
+    .app-date {
+        float: right;
+        font-size: 10pt;
+        font-weight: bold;
+    }
+</style>
+
+
+<div class="container-fluid h-100">
+    <div class="row h-100">
+        <div class="col-sm-9 col-2 h-100 py-2 fixed-top" id="left">
+            @if (ViewBag.ComingSoon)
+            {
+                <div class="row" style="justify-content:center;"><h5 style="color:red;">Testing environment</h5></div>
+            }
+            <div class="styleDiv">
+                <br />
+                <div class="row mt-2">
+                    <h3 class="col-12">In Production</h3>
+                </div>
+                <div class="row" style="margin-top: 10px;">
+                    <div class="col-sm-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <h5 class="card-title">Live ISR</h5>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <a href="/home/internalstatusreport" class="btn btn-primary btn-block btn-sm">Open</a>
+                                    </div>
+                                </div>
+                                <p class="mb-0">Work on the closeout of orders through this app, which allows you to easily identify open lines and send requests to the appropriate parties.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <h5 class="card-title">Manager Approval</h5>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <a href="https://owpforms.com/manager-approval-form/" class="btn btn-primary btn-block btn-sm">Open</a>
+                                    </div>
+                                </div>
+                                <p class="mb-0">Submit various manager approval requests required for order placement and other tasks</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <h5 class="card-title">Order Release Request</h5>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <a href="/orderadmin/default.asp" class="btn btn-primary btn-block btn-sm">Open</a>
+                                    </div>
+                                </div>
+                                <p class="mb-0">Submit your order/line for release, re-release, or cancellation.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <h5 class="card-title">Post Order Placement</h5>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <a href="/postorderplacementowp" class="btn btn-primary btn-block btn-sm">OWP</a>
+                                        <a href="/postorderplacementosq" class="btn btn-primary btn-block btn-sm">Open Square</a>
+                                    </div>
+                                </div>
+                                <p class="mb-0">View high-level acknowledgement info, detailed line info, and inquire on order status/tracking info from vendors.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <h5 class="card-title">Presold Storage</h5>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <a href="/warehouse/presoldstorage.asp" class="btn btn-primary btn-block btn-sm">Open</a>
+                                    </div>
+                                </div>
+                                <p class="mb-0">Proactively track orders that are upcoming on presold storage charges; find storage charge costs to pass along to your client.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <h5 class="card-title">Quote Inquiry App</h5>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <a href="/home/quoteinquiry" class="btn btn-primary btn-block btn-sm">OWP</a>
+                                        <a href="/quoteinquiryosq/index" class="btn btn-primary btn-block btn-sm">Open Square</a>
+                                    </div>
+                                </div>
+                                <p class="mb-0">View high-level quote information, line details, as well as request vendor quote requests.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="card mb-3">
+                            <div class="card-body" style="height:100%;">
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <h5 class="card-title">Salesforce Standard Price List</h5>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <a href="/home/standardprice" class="btn btn-primary btn-block btn-sm">Open</a>
+                                    </div>
+                                </div>
+                                <p class="mb-0"> </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <h5 class="card-title">Post Order Portal Dashboard</h5>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <a href="/popdashboard?region=OWP" class="btn btn-primary btn-block btn-sm">OWP</a>
+                                        <a href="/popdashboard?region=OSQ" class="btn btn-primary btn-block btn-sm">Open Square</a>
+                                    </div>
+                                </div>
+                                <p class="mb-0">All things for order status and closeout!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <h5 class="card-title">One Quote Form</h5>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <a href="https://owpforms.com/one-quote-form" class="btn btn-primary btn-block btn-sm">Open</a>
+                                    </div>
+                                </div>
+                                <p class="mb-0">Request labor quotes for Storage, Refurb, Receiving or Shipping Requests.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <h5 class="card-title">Live ISR Manager View</h5>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <a href="/isrmanagerview" class="btn btn-primary btn-block btn-sm">Open</a>
+                                    </div>
+                                </div>
+                                <p class="mb-0"> </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <h5 class="card-title">Labor One Quote Form</h5>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <a href="/onequoteform" class="btn btn-primary btn-block btn-sm">OWP</a>
+                                        <a href="/laborquoterequestform" class="btn btn-primary btn-block btn-sm">Open Square</a>
+                                    </div>
+                                </div>
+                                <p class="mb-0">Request labor quotes for Installation, Delivery, Service and Project Management.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <h5 class="card-title">Labor Quote Dashboard</h5>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <a href="/laborquotedashboard" class="btn btn-primary btn-block btn-sm">Open</a>
+                                    </div>
+                                </div>
+                                <p class="mb-0">View the status of your labor quote requests!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <h5 class="card-title">Vendor Deposit Request</h5>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <a href="/vendordepositrequest" class="btn btn-primary btn-block btn-sm">Open</a>
+                                    </div>
+                                </div>
+                                <p class="mb-0">Submit Requests for vendor deposits to the Accounts Payable team through this intuitive form!</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <h5 class="card-title">Warehouse DT Report</h5>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <a href="/home/warehousedt" class="btn btn-primary btn-block btn-sm">Open</a>
+                                    </div>
+                                </div>
+                                <p class="mb-0">Allows the warehouse team to view product needing to be pulled for future jobs.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <h5 class="card-title">Job Costing</h5>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <a href="/jobcosting" class="btn btn-primary btn-block btn-sm">Open</a>
+                                    </div>
+                                </div>
+                                <p class="mb-0"> </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <h5 class="card-title">Job Costing Leadership</h5>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <a href="/jobcostingleadership" class="btn btn-primary btn-block btn-sm">Open</a>
+                                    </div>
+                                </div>
+                                <p class="mb-0"> </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-9">
+                                    <h5 class="card-title">Stock Inventory</h5>
+                                </div>
+                                <div class="col-sm-3">
+                                    <a href="/stockinventory" class="btn btn-primary btn-block btn-sm">Open</a>
+                                </div>
+                            </div>
+                            <p class="mb-0"> </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12 mt-2"><hr /></div>
+            </div>
+            <br />
+            <div class="row mt-2">
+                <h3 class="col-12">Coming Soon...</h3>
+            </div>
+
+            <div class="row" style="margin-top: 10px;">
+                <div class="col-sm-6">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-9">
+                                    <h5 class="card-title">Receiving App</h5>
+                                </div>
+                                <div class="col-sm-3">
+                                    <a href="/home/fasttrack" class="btn btn-primary btn-block btn-sm @(ViewBag.ComingSoon ? "" : "isDisabled")">Open</a>
+                                </div>
+                            </div>
+                            <p class="mb-0">View orders/lines that have a quick turnaround within our warehouse. This allows our warehouse team to work more efficiently.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-9">
+                                    <h5 class="card-title">Open Issue KPI</h5>
+                                </div>
+                                <div class="col-sm-3">
+                                    <a href="/operations/openissues.asp" class="btn btn-primary btn-block btn-sm @(ViewBag.ComingSoon ? "" : "isDisabled")">Open</a>
+                                </div>
+                            </div>
+                            <p class="mb-0"> </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-9">
+                                    <h5 class="card-title">Default Pricing Reporting</h5>
+                                </div>
+                                <div class="col-sm-3">
+                                    <a href="/defaultpricingreport" class="btn btn-primary btn-block btn-sm @(ViewBag.ComingSoon ? "" : "isDisabled")">Open</a>
+                                </div>
+                            </div>
+                            <p class="mb-0"> </p>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+
+            <span>v1.2.1</span>
+
+        </div>
+
+        <div class="col-sm-9 invisible col-2"><!--hidden spacer--></div>
+        <div class="col offset-2 offset-sm-9 py-2">
+            <br />
+            <div class="row mt-2 mb-2">
+                <h3 class="col-12">Application Enhancement Announcements</h3>
+            </div>
+            @{
+                foreach (Announcement announcement in @Model)
+                {
+                    await Html.RenderPartialAsync("~/Views/Home/_Announcement.cshtml", announcement);
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@*<div class="card mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-sm-9">
+                    <h5 class="card-title">Live ISR Manager View</h5>
+                </div>
+                <div class="col-sm-3">
+                    <a href="/isrmanagerview" class="btn btn-primary btn-block btn-sm">Open</a>
+                </div>
+            </div>
+            <p class="mb-0"></p>
+        </div>
+    </div>*@

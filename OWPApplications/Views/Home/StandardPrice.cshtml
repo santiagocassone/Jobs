@@ -1,0 +1,145 @@
+﻿
+@{
+  ViewData["Title"] = "Salesforce Standard Price List";
+  ViewData["NavBarColor"] = "brown";
+  ViewData["ShowNavBar"] = "True";
+  ViewData["Type"] = "Quote";
+}
+@model OWPApplications.Models.StandardPrice.StandardPriceViewModel;
+
+
+@if (Model.ShowResults)
+{
+  <div class="row mt-4">
+    <h3 class="col-12">Header Info</h3>
+    <div class="card col-12">
+      <div class="row no-gutters">
+        <div class="col-md-6">
+          <ul class="header-info py-3 pl-0">
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Project Id:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.ProjectId)</span></li>
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Title:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.OrderTitle)</span></li>
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Customer #:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.CustomerNo)</span></li>
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Sales IDs (%):</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.SalesIDs)</span></li>
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Customer PO #:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.CustomerPONo)</span></li>
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Ship To Address:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.ShipToAddress)</span></li>
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Order Status (U, A, S, H, C):</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.OrderStatus)</span></li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <ul class="header-info py-3 pl-0">
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">Delivery Instructions:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.DeliveryInstructions)</span></li>
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label right">MFG PO Info:</span><span class="header-info--value">@Html.Raw(Model.HeaderInfo.MFG_PO_Info)</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4 postorder-table alt-table">
+    <div class="col-12 lines-header">
+      <h3 class="d-inline-block">Lines Info</h3>
+      <a class="float-right" href="/home/DownloadCSVStandardPrice?orderno=@Model.OrderNo" target="_blank"> Download CSV </a>
+    </div>
+    <div class="card col-12 p-3">
+      <div class="custom-control custom-switch mx-4 mb-4">
+        <input type="checkbox" class="custom-control-input" id="includeBOSwitch" data-from="standardprice">
+        <label class="custom-control-label" for="includeBOSwitch">Include "BO" lines.</label>
+      </div>
+      <div class="alt-table-responsive table-responsive">
+        <table class="table table-sm table-bordered text-center">
+          <thead>
+            <tr>
+              <th scope="col" class="table-header" style="width: 50px">Line #</th>
+              <th scope="col" class="table-header" style="width: 150px ">General Tagging</th>
+              <th scope="col" class="table-header" style="width: 150px ">Lines Notes</th>
+              <th scope="col" class="table-header" style="width: 70px">Vendor</th>
+              <th scope="col" class="table-header" style="width: 75px">Catalog</th>
+              <th scope="col" class="table-header" style="width: 300px">Product Description</th>
+              <th scope="col" class="table-header" style="width: 77px">Qty. Ordered</th>
+              <th scope="col" class="table-header" style="width: 85px">Unit Sell</th>
+              <th scope="col" class="table-header" style="width: 85px">Extended Sell</th>
+              <th scope="col" class="table-header" style="width: 70px">Unit Cost</th>
+              <th scope="col" class="table-header" style="width: 85px">Extended Cost</th>
+              <th scope="col" class="table-header" style="width: 70px">Unit List</th>
+              <th scope="col" class="table-header" style="width: 85px">Extended List</th>
+              <th scope="col" class="table-header" style="width: 82px">Cost Discount</th>
+              <th scope="col" class="table-header" style="width: 70px">GP %</th>
+              <th scope="col" class="table-header" style="width: 70px">GP $</th>
+              <th scope="col" class="table-header" style="width: 70px">Auto Priced</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var line in Model.LinesInfos)
+            {
+              var classValue = (line.IsBo) ? "row-isbo" : "";
+          <tr class="@classValue">
+            <td>@line.LineNo</td>
+            <td>@line.GeneralTagging</td>
+            <td>@line.LineNotes</td>
+            <td>@line.VendorNo</td>
+            <td>@line.CatalogNo</td>
+            <td>@line.ProductDesc</td>
+            <td>@line.QtyOrdered</td>
+            <td>@line.UnitSell</td>
+            <td>@line.ExtendedSell</td>
+            <td>@line.UnitCost</td>
+            <td>@line.ExtendedCost</td>
+            <td>@line.UnitList</td>
+            <td>@line.ExtendedList</td>
+            <td>@line.CostDiscount</td>
+            <td>@line.GPPct</td>
+            <td>@line.GPDollars</td>
+            <td>@line.AutoPriced</td>
+          </tr>
+          }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="card col-12">
+      <div class="row no-gutters">
+        <div class="col-md-4 p-4">
+          <h3>Order Totals</h3>
+          <ul class="header-info py-3 pl-0">
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Total Sell:</span><span id="totalSell" class="header-info--value">@Model.Totals.TotalSell</span></li>
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Total Cost:</span><span id="totalCost" class="header-info--value">@Model.Totals.TotalCost</span></li>
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">GP $:</span><span id="gpDollars" class="header-info--value">@Model.Totals.GPDollars</span></li>
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">GP %:</span><span id="gpPct" class="header-info--value text-@Model.Totals.GPColor">@Model.Totals.GPPct</span></li>
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Tax:</span><span id="tax" class="header-info--value">@Model.Totals.Tax</span></li>
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">Total w/ Tax:</span><span id="total_W_Tax" class="header-info--value">@Model.Totals.Total_W_Tax</span></li>
+          </ul>
+        </div>
+        <div class="col-md-4 p-4">
+          <h3>PID Totals</h3>
+          <ul class="header-info py-3 pl-0">
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">PID Total Sell:</span><span id="pidTotalSell" class="header-info--value">@Model.Totals.PIDTotalSell</span></li>
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">PID Total Cost:</span><span id="pidTotalCost" class="header-info--value">@Model.Totals.PIDTotalCost</span></li>
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">PID Total GP $:</span><span id="pidGPDollars" class="header-info--value">@Model.Totals.PIDGPDollars</span></li>
+            <li class="d-flex justify-content-between align-items-center"><span class="header-info--label left">PID Total GP %:</span><span id="pidGPPct" class="header-info--value text-@Model.Totals.PIDGPColor">@Model.Totals.PIDGPPct</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <input type="hidden" id="hiddenOrderNo" value="@Model.OrderNo" />
+}
+else
+{
+  <div class="no-results">
+
+    <span id="noresults">No results to show.</span>
+
+    <div class="d-flex justify-content-center">
+      <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>
+
+  </div>
+}
+

@@ -1,0 +1,354 @@
+﻿@{
+	ViewData["Title"] = "Receiving App";
+	ViewData["NavBarColor"] = "green";
+	ViewData["ShowNavBar"] = "True";
+	ViewData["Type"] = "FastTrack";
+}
+@model OWPApplications.Models.FastTrack.FastTrackViewModel;
+
+<style type="text/css">
+	section {
+		width: 100%;
+		height: 80vh;
+	}
+
+	.box {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 800px;
+		height: 400px;
+		border-bottom: 1px solid #000;
+		border-left: 1px solid #000;
+		display: flex;
+	}
+
+		.box .week {
+			position: relative;
+			flex: 1;
+			text-align: center;
+		}
+
+			.box .week .graph {
+				position: absolute;
+				width: 100px;
+				background: #007bff;
+				bottom: 0;
+				left: 50%;
+				transform: translateX(-50%);
+			}
+
+				.box .week .graph:before {
+					content: '';
+					position: absolute;
+					top: 2px;
+					left: 2px;
+					right: 2px;
+					bottom: 0;
+				}
+
+				.box .week .graph:after {
+					content: '';
+					position: absolute;
+					top: 2px;
+					left: 2px;
+					width: 50%;
+					height: 100%;
+				}
+
+				.box .week .graph .qty {
+					position: absolute;
+					top: -22px;
+					left: 50%;
+					transform: translateX(-50%);
+					text-align: center;
+					font-weight: bold;
+				}
+
+			.box .week .name {
+				position: absolute;
+				bottom: -55px;
+				left: 50%;
+				transform: translateX(-50%);
+				text-align: center;
+				padding: 2px 2px;
+			}
+
+	.graph:hover {
+		cursor: pointer;
+	}
+</style>
+
+<div class="card expanded-table-s2 mt-5">
+	<div class="card-body">
+		<ul class="nav nav-tabs" role="tablist">
+			<li class="nav-item">
+				<a class="nav-link h3 mb-0 active" id="fasttrack-tab" data-toggle="tab" href="#fasttrack" role="tab" aria-controls="fasttrack" aria-selected="true">Fast Track Report</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link h3 mb-0" id="expwarhousereceipt-tab" data-toggle="tab" href="#expwarhousereceipt" role="tab" aria-controls="expwarhousereceipt" aria-selected="false">Expected Warehouse Receipt Report</a>
+			</li>
+		</ul>
+		<div class="tab-content">
+
+			<div id="fasttrack" class="tab-pane fade show active">
+				<div class="row mt-4 alt-table" id="fastTrackSummary" style="visibility:visible">
+					@if (Model.ShowFastTrackResults)
+					{
+						<div class="card col-12 p-3">
+							<div class="table-responsive alt-table-responsive">
+								<table id="fasttrackTable" class="table table-sm table-bordered text-center tablesorter">
+									<thead>
+										<tr>
+											<th scope="col" class="table-header" style="width: 100px;">PO #</th>
+											<th scope="col" class="table-header" style="width: 200px;">Vendor</th>
+											<th scope="col" class="table-header" style="width: 200px;">Steelcase Load # or Tracking/PRO #</th>
+											<th scope="col" class="table-header" style="width: 120px;">Received Status</th>
+											<th scope="col" class="table-header" style="width: 100px;">Ack #</th>
+											<th scope="col" class="table-header" style="width: 100px;">Estimated Arrival</th>
+											<th scope="col" class="table-header" style="width: 100px;">Next Schedule</th>
+											<th scope="col" class="table-header" style="width: 80px;">Order Status</th>
+											<th scope="col" class="table-header" style="width: 120px;">Tracking Info</th>
+											<th scope="col" class="table-header" style="width: 200px;">Comments</th>
+										</tr>
+									</thead>
+									<tbody>
+										@for (int i = 0; i < Model.SummaryInfo.Count(); i++)
+										{
+											var line = Model.SummaryInfo.ElementAt(i);
+											string orderStatusColor = line.OrderStatus == "S" ? "bg-red-ft" : "";
+											string scheduleDateColor = string.IsNullOrEmpty(line.ScheduleDateBackgroundColor) ?
+												  "" : "bg-" + line.ScheduleDateBackgroundColor.ToLower() + "-light";
+											if (!string.IsNullOrEmpty(line.ScheduleDateBackgroundColor))
+											{
+												if (line.ScheduleDateBackgroundColor.ToLower() == "yellow")
+												{
+													line.Comment = "Date Changed";
+												}
+												else if (line.ScheduleDateBackgroundColor.ToLower() == "red")
+												{
+													line.Comment = "Job Canceled";
+												}
+											}
+											string steelCaseEditable = string.IsNullOrEmpty(line.LoadNumbers) ? "" : "readonly";
+											string valueLoad = string.IsNullOrEmpty(line.LoadNumbers) ? line.LoadComment : line.LoadNumbers;
+											string nextSchedule = line.NextSchedule.Replace("*",
+												"<span class='multiple-dates' data-toggle='tooltip' title='" + line.MultiSchedule + "'>*</span>");
+											<tr>
+												<td rowspan="2" align-middle"><a class="link-po" data-index="@i" tabindex="@i">@line.PO</a></td>
+												<td rowspan="2" class="align-middle">@line.Vendor</td>
+												<td rowspan="2" class="align-middle">
+													<textarea class="values-input" id="steelcaseload-@line.PO"
+															  data-source="FT_APP"
+															  data-orderno="@line.OrderNo" data-po="@line.PoSuffix"
+															  data-field="SteelcaseLoad"
+															  data-company="W"
+															  data-upsertlevel="PO"
+															  @steelCaseEditable
+															  rows="3">@valueLoad</textarea>
+												</td>
+												<td rowspan="2" class="align-middle receivedStatusColor-@line.ReceivedStatusColor">@line.ReceivedStatus</td>
+												<td rowspan="2" class="align-middle">@line.ACK</td>
+												<td rowspan="2" class="align-middle">@line.EstimatedArrival</td>
+												<td rowspan="2" class="align-middle text-@line.SoftScheduleTestColor.ToLower()">@Html.Raw(nextSchedule)</td>
+												<td rowspan="2" class="align-middle @orderStatusColor">@line.OrderStatus</td>
+												<td class="align-middle">@line.Carrier</td>
+												<td rowspan="2" class="align-middle">
+													<textarea class="values-input" id="comments-@line.PO"
+															  data-source="FT_APP"
+															  data-field="Comment"
+															  data-companycode="W"
+															  data-upsertlevel="PO"
+															  data-ordertype="O"
+															  data-keystring=""
+															  data-orderno="@line.OrderNo" data-po="@line.PoSuffix"
+															  rows="3">@line.Comment</textarea>
+												</td>
+											</tr>
+											<tr class="tablesorter-childRow">
+												<td class="align-middle">@line.Tracking</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					}
+					else
+					{
+						<div class="no-results" style="width:100%">
+							<span id="noresults">No results to show.</span>
+							<div class="d-flex justify-content-center">
+								<div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+									<span class="sr-only">Loading...</span>
+								</div>
+							</div>
+						</div>
+					}
+				</div>
+			</div>
+
+			<div id="expwarhousereceipt" class="tab-pane fade">
+				<div class="row mt-4 alt-table" id="expWHRecGraph" style="visibility:hidden">
+					@if (Model.Graphics != null)
+					{
+						DateTime lastWeekFrom = Model.Graphics.Where(x => x.Week == -1).Select(x => x.DateFrom).SingleOrDefault();
+						DateTime lastWeekTo = Model.Graphics.Where(x => x.Week == -1).Select(x => x.DateTo).SingleOrDefault();
+						DateTime thisWeekFrom = Model.Graphics.Where(x => x.Week == 0).Select(x => x.DateFrom).SingleOrDefault();
+						DateTime thisWeekTo = Model.Graphics.Where(x => x.Week == 0).Select(x => x.DateTo).SingleOrDefault();
+						DateTime nextWeekFrom = Model.Graphics.Where(x => x.Week == 1).Select(x => x.DateFrom).SingleOrDefault();
+						DateTime nextWeekTo = Model.Graphics.Where(x => x.Week == 1).Select(x => x.DateTo).SingleOrDefault();
+						DateTime weekOf1From = Model.Graphics.Where(x => x.Week == 2).Select(x => x.DateFrom).SingleOrDefault();
+						DateTime weekOf1To = Model.Graphics.Where(x => x.Week == 2).Select(x => x.DateTo).SingleOrDefault();
+						DateTime weekOf2From = Model.Graphics.Where(x => x.Week == 3).Select(x => x.DateFrom).SingleOrDefault();
+						DateTime weekOf2To = Model.Graphics.Where(x => x.Week == 3).Select(x => x.DateTo).SingleOrDefault();
+						DateTime weekOf3From = Model.Graphics.Where(x => x.Week == 4).Select(x => x.DateFrom).SingleOrDefault();
+						DateTime weekOf3To = Model.Graphics.Where(x => x.Week == 4).Select(x => x.DateTo).SingleOrDefault();
+						double qtyLastWeek = Model.Graphics.Where(x => x.Week == -1).Select(x => x.Quantity).SingleOrDefault();
+						double qtyThisWeek = Model.Graphics.Where(x => x.Week == 0).Select(x => x.Quantity).SingleOrDefault();
+						double qtyNextWeek = Model.Graphics.Where(x => x.Week == 1).Select(x => x.Quantity).SingleOrDefault();
+						double qtyWeekOf1 = Model.Graphics.Where(x => x.Week == 2).Select(x => x.Quantity).SingleOrDefault();
+						double qtyWeekOf2 = Model.Graphics.Where(x => x.Week == 3).Select(x => x.Quantity).SingleOrDefault();
+						double qtyWeekOf3 = Model.Graphics.Where(x => x.Week == 4).Select(x => x.Quantity).SingleOrDefault();
+						var maxValue = (new double[] { qtyLastWeek, qtyThisWeek, qtyNextWeek, qtyWeekOf1, qtyWeekOf2, qtyWeekOf3 }).Max();
+						int pctLastWeek = qtyLastWeek != maxValue ? Convert.ToInt32(qtyLastWeek * 100 / maxValue) : 100;
+						int pctThisWeek = qtyThisWeek != maxValue ? Convert.ToInt32(qtyThisWeek * 100 / maxValue) : 100;
+						int pctNextWeek = qtyNextWeek != maxValue ? Convert.ToInt32(qtyNextWeek * 100 / maxValue) : 100;
+						int pctWeekOf1 = qtyWeekOf1 != maxValue ? Convert.ToInt32(qtyWeekOf1 * 100 / maxValue) : 100;
+						int pctWeekOf2 = qtyWeekOf2 != maxValue ? Convert.ToInt32(qtyWeekOf2 * 100 / maxValue) : 100;
+						int pctWeekOf3 = qtyWeekOf3 != maxValue ? Convert.ToInt32(qtyWeekOf3 * 100 / maxValue) : 100;
+
+						<section>
+							<div class="box">
+								<div class="week">
+									<div class="graph" style="height:@(maxValue != 0 ? pctLastWeek.ToString() + "%" : "0%")" data-datefrom="@lastWeekFrom.ToString("MM/dd/yyyy")" data-dateto="@lastWeekTo.ToString("MM/dd/yyyy")">
+										<div class="qty">@qtyLastWeek.ToString("0.##")</div>
+									</div>
+									<div class="name">Last Week</div>
+								</div>
+								<div class="week">
+									<div class="graph" style="height:@(maxValue != 0 ? pctThisWeek.ToString() + "%" : "0%")" data-datefrom="@thisWeekFrom.ToString("MM/dd/yyyy")" data-dateto="@thisWeekTo.ToString("MM/dd/yyyy")">
+										<div class="qty">@qtyThisWeek.ToString("0.##")</div>
+									</div>
+									<div class="name">This Week</div>
+								</div>
+								<div class="week">
+									<div class="graph" style="height:@(maxValue != 0 ? pctNextWeek.ToString() + "%" : "0%")" data-datefrom="@nextWeekFrom.ToString("MM/dd/yyyy")" data-dateto="@nextWeekTo.ToString("MM/dd/yyyy")">
+										<div class="qty">@qtyNextWeek.ToString("0.##")</div>
+									</div>
+									<div class="name">Next Week</div>
+								</div>
+								<div class="week">
+									<div class="graph" style="height:@(maxValue != 0 ? pctWeekOf1.ToString() + "%" : "0%")" data-datefrom="@weekOf1From.ToString("MM/dd/yyyy")" data-dateto="@weekOf1To.ToString("MM/dd/yyyy")">
+										<div class="qty">@qtyWeekOf1.ToString("0.##")</div>
+									</div>
+									<div class="name">Week of @weekOf1From.ToString("MM/dd")</div>
+								</div>
+								<div class="week">
+									<div class="graph" style="height:@(maxValue != 0 ? pctWeekOf2.ToString() + "%" : "0%")" data-datefrom="@weekOf2From.ToString("MM/dd/yyyy")" data-dateto="@weekOf2To.ToString("MM/dd/yyyy")">
+										<div class="qty">@qtyWeekOf2.ToString("0.##")</div>
+									</div>
+									<div class="name">Week of @weekOf2From.ToString("MM/dd")</div>
+								</div>
+								<div class="week">
+									<div class="graph" style="height:@(maxValue != 0 ? pctWeekOf3.ToString() + "%" : "0%")" data-datefrom="@weekOf3From.ToString("MM/dd/yyyy")" data-dateto="@weekOf3To.ToString("MM/dd/yyyy")">
+										<div class="qty">@qtyWeekOf3.ToString("0.##")</div>
+									</div>
+									<div class="name">Week of @weekOf3From.ToString("MM/dd")</div>
+								</div>
+							</div>
+						</section>
+					}
+					else
+					{
+						<div class="no-results" style="width:100%">
+							<span id="noresults">No results to show.</span>
+							<div class="d-flex justify-content-center">
+								<div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+									<span class="sr-only">Loading...</span>
+								</div>
+							</div>
+						</div>
+					}
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalTitle" aria-hidden="true">
+	<div class="modal-dialog" role="document" style="max-width: 65%;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="detailsModalTitle"></h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<table id="fasttrackTableDetails" class="table table-sm table-bordered text-center sortable">
+					<thead>
+						<tr>
+							<th scope="col" class="table-header">Line #</th>
+							<th scope="col" class="table-header">Sales Code</th>
+							<th scope="col" class="table-header">Vendor</th>
+							<th scope="col" class="table-header">Catalog</th>
+							<th scope="col" class="table-header">Description</th>
+							<th scope="col" class="table-header">Qty Ordered</th>
+							<th scope="col" class="table-header">Qty Received</th>
+							<th scope="col" class="table-header">Received Status</th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Week Info Modal -->
+<div class="modal fade" id="weekInfoModal" tabindex="-1" role="dialog" aria-labelledby="weekInfoModalTitle" aria-hidden="true">
+	<div class="modal-dialog" role="document" style="max-width: 85%;">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="weekInfoModalTitle"></h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<table id="weekInfoTableDetails" class="table table-sm table-bordered text-center sortable">
+					<thead>
+						<tr>
+							<th scope="col" class="table-header" style="width: 5%;">Expected Receipt Date</th>
+							<th scope="col" class="table-header" style="width: 5%;">Order #</th>
+							<th scope="col" class="table-header" style="width: 5%;">PO Suffix</th>
+							<th scope="col" class="table-header" style="width: 8%;">Vendor #</th>
+							<th scope="col" class="table-header" style="width: 8%;">Vendor Name</th>
+							<th scope="col" class="table-header" style="width: 25%;">Salesperson Name</th>
+							<th scope="col" class="table-header" style="width: 7%;">Customer Name</th>
+							<th scope="col" class="table-header" style="width: 7%;">Line #</th>
+							<th scope="col" class="table-header" style="width: 8%;">Catalog #</th>
+							<th scope="col" class="table-header" style="width: 8%;">Description</th> @*TODO: two lines and then tooltip for entire description*@
+							<th scope="col" class="table-header" style="width: 8%;">QTY Ordered</th>
+							<th scope="col" class="table-header" style="width: 8%;">QTY Received</th>
+							<th scope="col" class="table-header" style="width: 8%;">Expected QTY</th>
+							<th scope="col" class="table-header" style="width: 8%;">Ack #</th>
+							<th scope="col" class="table-header" style="width: 8%;">Scheduled Date</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+  var LinesFastTrack = @Html.Raw(Model.LinesInfoJson());
+</script>
+

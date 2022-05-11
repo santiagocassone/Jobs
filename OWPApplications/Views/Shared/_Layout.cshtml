@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"]</title>
+
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css">
+	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/lib/bootstrap-datepicker/css/bootstrap-datepicker.min.css" />
+	<link rel="stylesheet" href="~/lib/bootstrap-sortable/css/bootstrap-sortable.css" />
+	<link href="~/lib/bootstrap-multiselect/bootstrap-multiselect.min.css" rel="stylesheet" />
+
+
+</head>
+<body>
+
+    @if (Convert.ToBoolean(ViewData["ShowNavBar"]))
+    {
+        <nav class="navbar navbar-dark bg-@ViewData["NavBarColor"]--custom">
+            <div class="@(ViewData["Type"] == "InternalStatusReport" ? "container-fluid" : "container")">
+                <a class="navbar-brand title" href="@((string)ViewData["Type"] != "SubcontractorReceiving" ? @"/" : @"#")">
+                    <img src="~/images/owp-logo.png" width="50" height="50" class="d-inline-block" alt="One Workplace">
+                    @if ((new[] { "OneQuoteForm", "LaborQuoteDashboard", "EstimatorProjectTotals", "EstimatorDashboard", "EstimatorStatsReport", "LaborQuoteRequestForm" }).Contains(ViewData["Type"].ToString(), StringComparer.Ordinal))
+                    {
+                        <span style="color:black">@ViewData["Title"]</span>
+                    }
+                    else
+                    {
+                        @ViewData["Title"]
+                    }
+                </a>
+
+                <partial name="_FormSearcher" />
+                @RenderSection("HeaderSearcher", required: false)
+            </div>
+        </nav>
+    }
+
+    <div class="container mb-5">
+        @RenderBody()
+    </div>
+
+    <footer>
+            <a class="suggestion" href="https://www.wrike.com/form/eyJhY2NvdW50SWQiOjYwNTE2LCJ0YXNrRm9ybUlkIjo1MzEyMjd9CTQ3ODE1Mjc4NzQzNzkJZWNlNmUyZTQ2MjZmNDU1M2JiOTczMmM4MzI3NmQwNjk3MTczZjk5MWUxNTFlZTIwN2I0MDQ4YTk4ZjM5ZTdlYw==" target="_blank">Suggestions/Enhancements or Bug Fixes</a>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/popper/popper.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="~/lib/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+    <script src="~/lib/sortable/sortable.js"></script>
+    <script src="~/lib/bootstrap-multiselect/bootstrap-multiselect.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <partial name="_PagesScriptsPartial" />
+
+    @RenderSection("BottomScripts", required: false)
+</body>
+</html>

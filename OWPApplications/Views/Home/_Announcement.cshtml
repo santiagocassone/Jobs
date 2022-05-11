@@ -1,0 +1,18 @@
+﻿
+@model OWPApplications.Models.Announcement;
+@{
+}
+
+<div class="row px-3">
+    <div class="card app-announcement mb-3 col-12 px-0">
+        <div class="card-header">
+            <h6 class="app-name">@Model.Title</h6>
+            <span class="app-date text-muted">@Model.Date</span>
+        </div>
+        <div class="card-body">
+            <p class="mb-0">
+                @Model.Description
+            </p>
+        </div>
+    </div>
+</div>

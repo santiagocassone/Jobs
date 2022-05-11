@@ -1,0 +1,41 @@
+﻿@model ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="alert alert-danger mt-xl-5" role="alert">
+	<h4 class="alert-heading">Oops!</h4>
+	@if (Model.Msg == "sending")
+	{
+		<p>An error occurred while sending your email.</p>
+	}
+	else if (Model.Msg == "processing")
+	{
+		<p>An error occurred while processing your email request.</p>
+	}
+	else if (Model.Msg == "sendingpdf")
+	{
+		<p>An error occurred while sending your pdf.</p>
+	}
+	else if (Model.Msg == "processingpdf")
+	{
+		<p>An error occurred while processing your pdf.</p>
+	}
+	else if (Model.Msg == "savinglaborquote")
+	{
+		<p>An error occurred while saving your labor quote.</p>
+	}
+	else
+	{
+		<p>An unknown error occurred.</p>
+	}
+	<hr>
+	<p class="mb-0">Try again! If error persist, please contact to support.</p>
+</div>
+
+@if (Model.ShowRequestId)
+{
+    <p>
+        <strong>Request ID:</strong> <code>@Model.RequestId</code>
+    </p>
+}

@@ -1,0 +1,357 @@
+﻿@{
+    ViewData["Title"] = "Warehouse DT Report";
+    ViewData["NavBarColor"] = "ceil";
+    ViewData["ShowNavBar"] = "True";
+    ViewData["Type"] = "WarehouseDT";
+}
+@model OWPApplications.Models.WarehouseDT.WarehouseDTViewModel;
+
+<style>
+    .tdStaging {
+        overflow: initial;
+    }
+
+    .fake-button {
+        transition: box-shadow .1s;
+        cursor: pointer;
+    }
+
+        .fake-button:hover {
+            box-shadow: 0 0 11px rgba(33,33,33,.2);
+        }
+
+    [data-toggle="collapse"] .fas:before {
+        content: "\f103";
+    }
+
+    [data-toggle="collapse"].collapsed .fas:before {
+        content: "\f101";
+    }
+</style>
+
+@if (Model.ShowResults)
+{
+    <div class="row mt-4 expanded-table-s2" id="wdtContent">
+        <div class="row" style="margin-top: 20px; margin-bottom: 20px;">
+            <div class="col-12">
+                <div class="row" style="margin-left:1110px;font-size:small;font-weight:600">
+                    <div>Check = completely staged or loaded</div>
+                    <div>Partial = partially staged or loaded</div>
+                    <div>Blank = not started staging or loading</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4 expanded-table-s1" id="bucket-nro1-container">
+        @if (Model.SummaryInfo?.Where(x => x.HardOrSoft == "H")?.Count() > 0)
+        {
+            <div class="col-10 lines-header fake-button collapsed" data-toggle="collapse" data-target="#bucket1collapse">
+                <h3 class="d-inline-block">Hard Schedule Summary Info</h3>
+                <span class="float-right"><i class="fa-2x fas"></i></span>
+            </div>
+
+            <div id="bucket1collapse" class="collapse col-12">
+                <div class="card col-12 p-3">
+                    <div class="alt-table-responsive table-responsive">
+                        <table class="table table-sm table-bordered text-center sortable">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th scope="col" class="table-header">Customer Name</th>
+                                    <th scope="col" class="table-header">Order #</th>
+                                    <th scope="col" class="table-header">PID</th>
+                                    <th scope="col" class="table-header">Staged?</th>
+                                    <th scope="col" class="table-header">Loaded</th>
+                                    <th scope="col" class="table-header">Order Status</th>
+                                    <th scope="col" class="table-header">Scheduled Type</th>
+                                    <th scope="col" class="table-header">Staging Name</th>
+                                    <th scope="col" class="table-header">Truck</th>
+                                    <th scope="col" class="table-header">Stop #</th>
+                                    <th scope="col" class="table-header">Type of Request</th>
+                                    <th scope="col" class="table-header">Ticket #</th>
+                                    <th scope="col" class="table-header">Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ int i = 0;
+                                    foreach (var line in Model.SummaryInfo?.Where(x => x.HardOrSoft == "H"))
+                                    {
+                                        var rowColor = "style=background-color:" + line.OrderNoColor;
+
+
+                                        <tr @rowColor>
+                                            <td class="align-middle">@line.CustomerName</td>
+                                            <td class="align-middle"><a class="link-orderno-wdt" data-orderno="@line.OrderNo" data-index="@i" tabindex="@i">@line.OrderNo</a></td>
+                                            <td class="align-middle">@line.ProjectId</td>
+                                            @if (line.Location == "1")
+                                            {
+                                                <td class="align-middle"><img src="~/images/check-mark.png" width="20" height="20" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td id="tdLocation" class="align-middle">@line.Location</td>
+                                            }
+                                            @if (line.LoadedValue == "1")
+                                            {
+                                                <td class="align-middle"><img src="~/images/check-mark.png" width="20" height="20" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td class="align-middle">@line.LoadedValue</td>
+                                            }
+                                            <td class="align-middle">@line.OrderStatus</td>
+                                            <td class="align-middle">@line.ScheduleType</td>
+                                            <td class="align-middle tdStaging">
+                                                <div>
+                                                    <select class="selectpicker form-control stgNameSelectPicker"
+                                                            title="Select Persons..."
+                                                            multiple
+                                                            data-max-options="3"
+                                                            data-orderno="@line.OrderNo">
+                                                        @foreach (var s in Model.StagingNames)
+                                                        {
+                                                            if (line.InfoStagingNames.Contains(s.StagingNameID))
+                                                            {
+                                                                <option value="@s.StagingNameID" selected>@s.StgName</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@s.StagingNameID">@s.StgName</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">@line.Truck</td>
+                                            <td class="align-middle">@line.StopNo</td>
+                                            <td class="align-middle">@line.TypeOfRequest</td>
+                                            <td class="align-middle">
+                                                @{ string[] tickets = Array.Empty<string>();
+
+                                                    if (line.DeliveryTicket != "")
+                                                    {
+                                                        tickets = line.DeliveryTicket.Split(",");
+                                                    }
+                                                    for (var j = 0; j < tickets.Count(); j++)
+                                                    {
+                                                        <span>@tickets[j]</span>
+                                                    }
+                                                }
+                                            </td>
+                                            <td style="padding:0">
+                                                <textarea class="values-input" id="comments-@line.OrderNo" rows="3"
+                                                          data-source="WDT_APP"
+                                                          data-orderno="@line.OrderNo"
+                                                          data-field="Comment"
+                                                          data-companycode="W"
+                                                          data-ordertype="O"
+                                                          data-upsertlevel="OR"
+                                                          style="font-size:small;vertical-align:middle;">@line.Comment</textarea>
+                                            </td>
+                                        </tr>
+
+                                        i++;
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p>No Hard Schedule data found.</p>
+        }
+    </div>
+
+    <div class="row mt-4 expanded-table-s1" id="bucket-nro2-container">
+        @if (@Model.SummaryInfo?.Where(x => x.HardOrSoft == "S")?.Count() > 0)
+        {
+            <div class="col-10 lines-header fake-button collapsed" data-toggle="collapse" data-target="#bucket2collapse">
+                <h3 class="d-inline-block">Soft Schedule Summary Info</h3>
+                <span class="float-right"><i class="fa-2x fas"></i></span>
+            </div>
+
+            <div id="bucket2collapse" class="collapse col-12">
+                <div class="card col-12 p-3">
+                    <div class="alt-table-responsive table-responsive">
+                        <table class="table table-sm table-bordered text-center sortable openQuotes">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th scope="col" class="table-header">Customer Name</th>
+                                    <th scope="col" class="table-header">Order #</th>
+                                    <th scope="col" class="table-header">PID</th>
+                                    <th scope="col" class="table-header">Staged?</th>
+                                    <th scope="col" class="table-header">Loaded</th>
+                                    <th scope="col" class="table-header">Order Status</th>
+                                    <th scope="col" class="table-header">Scheduled Type</th>
+                                    <th scope="col" class="table-header">Staging Name</th>
+                                    <th scope="col" class="table-header">Truck</th>
+                                    <th scope="col" class="table-header">Stop #</th>
+                                    <th scope="col" class="table-header">Type of Request</th>
+                                    <th scope="col" class="table-header">Ticket #</th>
+                                    <th scope="col" class="table-header">Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ int i = 0;
+                                    foreach (var line in Model.SummaryInfo?.Where(x => x.HardOrSoft == "S"))
+                                    {
+                                        var rowColor = "style=background-color:" + line.OrderNoColor;
+
+                                        <tr @rowColor>
+                                            <td class="align-middle">@line.CustomerName</td>
+                                            <td class="align-middle"><a class="link-orderno-wdt" data-orderno="@line.OrderNo" data-index="@i" tabindex="@i">@line.OrderNo</a></td>
+                                            <td class="align-middle">@line.ProjectId</td>
+                                            @if (line.Location == "1")
+                                            {
+                                                <td class="align-middle"><img src="~/images/check-mark.png" width="20" height="20" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td id="tdLocation" class="align-middle">@line.Location</td>
+                                            }
+                                            @if (line.LoadedValue == "1")
+                                            {
+                                                <td class="align-middle"><img src="~/images/check-mark.png" width="20" height="20" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td class="align-middle">@line.LoadedValue</td>
+                                            }
+                                            <td class="align-middle">@line.OrderStatus</td>
+                                            <td class="align-middle">@line.ScheduleType</td>
+                                            <td class="align-middle tdStaging">
+                                                <div>
+                                                    <select class="selectpicker form-control stgNameSelectPicker"
+                                                            title="Select Persons..."
+                                                            multiple
+                                                            data-max-options="3"
+                                                            data-orderno="@line.OrderNo">
+                                                        @foreach (var s in Model.StagingNames)
+                                                        {
+                                                            if (line.InfoStagingNames.Contains(s.StagingNameID))
+                                                            {
+                                                                <option value="@s.StagingNameID" selected>@s.StgName</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@s.StagingNameID">@s.StgName</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">@line.Truck</td>
+                                            <td class="align-middle">@line.StopNo</td>
+                                            <td class="align-middle">@line.TypeOfRequest</td>
+                                            <td class="align-middle">
+                                                @{ string[] ticketsSoft = Array.Empty<string>();
+
+                                                    if (line.DeliveryTicket != "")
+                                                    {
+                                                        ticketsSoft = line.DeliveryTicket.Split(",");
+                                                    }
+                                                    for (var j = 0; j < ticketsSoft.Count(); j++)
+                                                    {
+                                                        <span>@ticketsSoft[j]</span>
+                                                    }
+                                                }
+                                            </td>
+                                            <td style="padding:0">
+                                                <textarea class="values-input" id="comments-@line.OrderNo" rows="3"
+                                                          data-source="WDT_APP"
+                                                          data-orderno="@line.OrderNo"
+                                                          data-field="Comment"
+                                                          data-companycode="W"
+                                                          data-ordertype="O"
+                                                          data-upsertlevel="OR"
+                                                          style="font-size:small;vertical-align:middle;">@line.Comment</textarea>
+                                            </td>
+                                        </tr>
+
+                                        i++;
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p>No Soft Schedule data found.</p>
+        }
+    </div>
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document" style="max-width: 65%;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailsModalTitle"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table id="warehouseTableDetails" class="table table-sm table-bordered text-center sortable">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="table-header">Line #</th>
+                                <th scope="col" class="table-header">Qty Ordered</th>
+                                <th scope="col" class="table-header">Qty Received</th>
+                                <th scope="col" class="table-header">Qty Cartons</th>
+                                <th scope="col" class="table-header">Qty Scheduled</th>
+                                <th scope="col" class="table-header">Vendor</th>
+                                <th scope="col" class="table-header">Catalog</th>
+                                <th scope="col" class="table-header">Description</th>
+                                <th scope="col" class="table-header" width="100px">Location</th>
+                                <th scope="col" class="table-header">Loaded</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="width: 100%; padding: 0px 20px 20px 0px">
+                    <a id="csvWarehouseLink" class="float-right" data-date="@ViewData["FormValue"]" data-warehouse="@string.Join(",", ViewData["Warehouse"] as List<string>)" href="" target="_blank"> Download CSV </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+else
+{
+    <div class="no-results">
+
+        <span id="noresults">No results to show.</span>
+
+        <div class="d-flex justify-content-center">
+            <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+
+    </div>
+}
+
+<div class="no-results" id="divSavingChanges" style="display:none">
+    <span id="noresults">Saving changes...</span>
+    <div class="d-flex justify-content-center">
+        <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    var LinesWarehouse = @Html.Raw(Model.LinesInfoJson());
+</script>
+

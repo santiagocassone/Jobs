@@ -1,0 +1,145 @@
+﻿@model OWPApplications.Models.InternalStatusReport.ISRClosedOrderSummaryViewModel;
+
+@{
+    ViewData["Title"] = "Closed Order Summary";
+    ViewData["NavBarColor"] = "violet";
+    ViewData["ShowNavBar"] = "True";
+    ViewData["Type"] = "ClosedOrderSummary";
+}
+@{
+    List<string> selectedCustomersTemp = ViewData["SelectedCustomers"] as List<string>;
+    string selectedCustomers = ViewData["SelectedCustomers"] == null || selectedCustomersTemp.Count() == 0 ? null : String.Join(",", selectedCustomersTemp.ToArray());
+    List<string> salespersonTemp = ViewData["Salesperson"] as List<string>;
+    string salesperson = ViewData["Salesperson"] == null || salespersonTemp.Count() == 0 ? null : String.Join(",", salespersonTemp.ToArray());
+}
+<style type="text/css">
+    .linkBackISRSummary {
+        background: none !important;
+        border: none;
+        padding: 0 !important;
+        color: dodgerblue;
+    }
+
+    .tooltip-inner {
+        min-width: 100%;
+        max-width: 100%;
+        background-color: white;
+    }
+
+    .rTable {
+        display: table;
+        width: 100%;
+    }
+
+    .rTableRow {
+        display: table-row;
+    }
+
+    .rTableCell, .rTableHead {
+        display: table-cell;
+        padding: 3px 10px;
+        border: 1px solid #999999;
+        color: black;
+    }
+
+    .rTableHeading {
+        display: table-header-group;
+        background-color: #ddd;
+        font-weight: bold;
+        color: black;
+    }
+
+    .rTableBody {
+        display: table-row-group;
+    }
+
+    .tooltip-inner {
+        background-color: lightgray !important;
+    }
+
+    .clsBlack {
+        color: black;
+    }
+
+    .clsRed {
+        color: red;
+    }
+
+    .tooltip.top .tooltip-arrow {
+        border-top-color: black;
+    }
+
+    .tooltip.right .tooltip-arrow {
+        border-right-color: black;
+    }
+
+    .tooltip.bottom .tooltip-arrow {
+        border-bottom-color: black;
+    }
+
+    .tooltip.left .tooltip-arrow {
+        border-left-color: black;
+    }
+</style>
+
+<div class="row mt-4 col-12 p-3">
+    <div class="col-12 lines-header" style="margin-left: 0px;">
+        <h3 class="d-inline-block">Closed Order Summary</h3>
+    </div>
+    @using (Html.BeginForm("internalstatusreport", "home", FormMethod.Post))
+    {
+        <input type="hidden" value="@salesperson" name="s" />
+        <input type="hidden" value="@selectedCustomers" name="c" />
+        <input type="hidden" value="@ViewData["CutOffDate"]" name="cutoffdate" />
+        <input type="hidden" value="@ViewData["SPType"]" name="salespersontype" />
+        <input type="hidden" value="@ViewData["Region"]" name="regionISR" />
+        <input type="hidden" value="@ViewData["OrderNo"]" name="orderno" />
+        <button type="submit" class="linkBackISRSummary" style="margin-left:860px;margin-bottom:5px">Back to Live ISR Summary</button>
+    }
+    <div class="card col-12 p-3">
+        <div class="alt-table-responsive table-responsive">
+            <table class="table table-sm table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th scope="col" class="table-header">Project ID</th>
+                        <th scope="col" class="table-header">Order #</th>
+                        <th scope="col" class="table-header">Order Date</th>
+                        <th scope="col" class="table-header">Customer</th>
+                        <th scope="col" class="table-header">Order Title</th>
+                        <th scope="col" class="table-header">Last Estimated Arrival Date</th>
+                        <th scope="col" class="table-header">Customer Requested Date</th>
+                        <th scope="col" class="table-header">Total Sell</th>
+                        <th scope="col" class="table-header">Total Cost</th>
+                        <th scope="col" class="table-header">Comments</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var co in Model.ClosedOrders)
+                    {
+                        <tr>
+                            <td>@co.ProjectID</td>
+                            <td>@co.OrderNo</td>
+                            <td>@co.DateEntered</td>
+                            <td>@co.Customer</td>
+                            <td class="emailTooltip" data-html="true" data-toggle="tooltip" title="@co.Tooltip(co.EmailLogs)">@co.OrderTitle</td>
+                            <td>@co.MaxEstimatedArrivalDate</td>
+                            <td>@co.CustRequestDate</td>
+                            <td>@co.TotalSell.ToString("C")</td>
+                            <td>@co.TotalCost.ToString("C")</td>
+                            <td>
+                                <textarea class="values-input" id="comments-@co.OrderNo"
+                                          data-source="ISR_APP"
+                                          data-orderno="@co.OrderNo"
+                                          data-field="Comment"
+                                          data-companycode="@(ViewData["Region"].ToString() == "OWP" ? "W" : "S")"
+                                          data-ordertype="O"
+                                          data-upsertlevel="OR"
+                                          rows="3">@co.Comments</textarea>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

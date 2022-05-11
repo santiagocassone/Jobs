@@ -1,0 +1,556 @@
+﻿@using System.Globalization;
+@model OWPApplications.Models.JobCosting.JobCostingViewModel;
+@{
+    ViewData["Title"] = "Job Costing";
+    ViewData["NavBarColor"] = "blue";
+    ViewData["ShowNavBar"] = "True";
+    ViewData["Type"] = "JobCosting";
+    var numberFormat = (NumberFormatInfo)CultureInfo.CurrentCulture.NumberFormat.Clone();
+    numberFormat.CurrencyNegativePattern = 1;
+}
+
+<style>
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .container {
+        width: 100%;
+        margin-left: 50px;
+        margin-right: 50px;
+        max-width: -webkit-fill-available;
+    }
+</style>
+
+@if (Model.Reports != null)
+{
+    if (Model.Reports.Count() > 0)
+    {
+        <div class="row">
+            <div class="lines-header">
+                <br />
+                <h3 class="d-inline-block">Report</h3>
+            </div>
+            <div class="lines-header" style="align-self: center; margin-left: 50px;">
+                <button class="btn btn-sm btn-primary" id="export-excel">Download Excel</button>
+            </div>
+        </div>
+        <div id="loadingTable" style="text-align: center;"><span class="spinner-border"></span><span style="font-weight:600; vertical-align: super; font-size:22px;"> Loading Table</span></div>
+        <div class="card p-3" id="loadedTable" style="display:none;">
+            <table class="cell-border" id="jobCostingTable" style="width:100%">
+                <thead>
+                    <tr>
+                        <th class="table-header">Customer</th>
+                        <th class="table-header">Lead</th>
+                        <th class="table-header">PID</th>
+                        <th class="table-header">Date Range(s)</th>
+                        <th class="table-header">Labor Quotes</th>
+                        <th class="table-header">Quote/Budget</th>
+                        <th class="table-header">Additional Cost</th>
+                        <th class="table-header">Vehicle Quote Breakout</th>
+                        <th class="table-header">H&S Quote Breakout</th>
+                        <th class="table-header">Change Order</th>
+                        <th class="table-header">Budget Total</th>
+                        <th class="table-header">Hourly Rate</th>
+                        <th class="table-header">Actual Hs</th>
+                        <th class="table-header">Labor Cost</th>
+                        <th class="table-header">Vehicle Cost</th>
+                        <th class="table-header">Additional Expenses</th>
+                        <th class="table-header">Total Cost</th>
+                        <th class="table-header">GPS</th>
+                        <th class="table-header">GP %</th>
+                        <th class="table-header">Order(s)</th>
+                        <th class="table-header">Delivered</th>
+                        <th class="table-header">Invoiced</th>
+                        <th class="table-header">Additional Order(s)</th>
+                        <th class="table-header">Additional Line(s)</th>
+                        <th class="table-header">Delivered</th>
+                        <th class="table-header">Invoiced</th>
+                        <th class="table-header">Notes</th>
+                        <th class="table-header">Billing Team Initials</th>
+                        <th class="table-header">Billing Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var report in Model.Reports)
+                    {
+                        <tr>
+                            <td style="white-space: nowrap;">@report.Customer</td>
+                            <td>
+                                <input class="values-input form-control"
+                                       id="Lead-@string.Format("{0}", report.Project)"
+                                       data-projectid="@report.Project"
+                                       data-upsertlevel="PR"
+                                       data-companycode="W"
+                                       data-field="Lead"
+                                       data-source="JC_APP" value="@report.Lead"
+                                       style="width:150px;" />
+
+                            </td>
+                            <td><a asp-controller="jobcosting" asp-action="projectdetails" asp-route-projectid="@report.Project" asp-route-orderdatefrom="@Model.DateFrom" asp-route-orderdateto="@Model.DateTo" target="_blank">@report.Project</a></td>
+                            <td style="white-space: nowrap;">@report.MinSchDate-@report.MaxSchDate</td>
+                            <td>
+                                @{ string[] quotes = Array.Empty<string>();
+
+                                    if (report.LaborQuoteNumbers != "")
+                                    {
+                                        quotes = report.LaborQuoteNumbers.Split(",");
+                                    }
+
+                                }
+                                @for (var i = 0; i < quotes.Count(); i++)
+                                {
+                                    <a asp-controller="EstimatorProjectTotals"
+                                       asp-action="PDFReport"
+                                       asp-route-quoteno="@quotes[i]"
+                                       target="_blank">@quotes[i]</a>
+                                    <br />
+                                }
+                            </td>
+                            <td>
+                                <div class="input-group" style="width:200px;">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">$</span>
+                                    </div>
+                                    <input class="values-input form-control jcbudtotal autoN"
+                                           type="text"
+                                           id="QuoteBudget-@string.Format("{0}", report.Project)"
+                                           data-projectid="@report.Project"
+                                           data-upsertlevel="PR"
+                                           data-companycode="W"
+                                           data-field="QuoteBudget"
+                                           data-source="JC_APP"
+                                           value="@report.QuoteBudget.ToString("N2")"
+                                           @(quotes.Count() > 0 ? "readonly" : "") />
+                                </div>
+                            </td>
+                            <td>
+                                <div class="input-group" style="width:200px;">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">$</span>
+                                    </div>
+                                    <input class="values-input form-control jcbudtotal autoN"
+                                           type="text"
+                                           id="AdditionalCost-@string.Format("{0}", report.Project)"
+                                           data-projectid="@report.Project"
+                                           data-upsertlevel="PR"
+                                           data-companycode="W"
+                                           data-field="AdditionalCost"
+                                           data-source="JC_APP"
+                                           value="@report.AdditionalCost.ToString("N2")" />
+                                </div>
+                            </td>
+                            <td><span class="autoNCur" style="width:200px;">@report.VehicleQuoteBreakout.ToString("N2")</span></td>
+                            <td><span class="autoNCur" style="width:200px;">@report.HSQuoteBreakout.ToString("N2")</span></td>
+                            <td>
+                                <div class="input-group" style="width:200px;">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">$</span>
+                                    </div>
+                                    <input class="values-input form-control jcbudtotal autoN"
+                                           type="text"
+                                           id="ChangeOrder-@string.Format("{0}", report.Project)"
+                                           data-projectid="@report.Project"
+                                           data-upsertlevel="PR"
+                                           data-companycode="W"
+                                           data-field="ChangeOrder"
+                                           data-source="JC_APP"
+                                           value="@report.ChangeOrder.ToString("N2")" />
+                                </div>
+                            </td>
+                            <td><span id="jcbudtotal-@string.Format("{0}", report.Project)" class="autoNCur">@report.BudgetTotal.ToString("N2")</span></td>
+                            <td>
+                                <table>
+                                    <tr>
+                                        <td>Reg:</td>
+                                        <td>
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">$</span>
+                                                <input class="values-input form-control autoN hourRate"
+                                                       type="text"
+                                                       id="RegHrsRate-@string.Format("{0}", report.Project)"
+                                                       data-projectid="@report.Project"
+                                                       data-upsertlevel="PR"
+                                                       data-companycode="W"
+                                                       data-field="RegHrsRate"
+                                                       data-source="JC_APP"
+                                                       value="@report.RegHrsRate.ToString("N2")"
+                                                       @(quotes.Count() > 0 ? "readonly" : "")
+                                                       style="width:80px;" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>OT:</td>
+                                        <td>
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">$</span>
+                                                <input class="values-input form-control autoN hourRate"
+                                                       type="text"
+                                                       id="OTHrsRate-@string.Format("{0}", report.Project)"
+                                                       data-projectid="@report.Project"
+                                                       data-upsertlevel="PR"
+                                                       data-companycode="W"
+                                                       data-field="OTHrsRate"
+                                                       data-source="JC_APP"
+                                                       value="@report.OTHrsRate.ToString("N2")"
+                                                       @(quotes.Count() > 0 ? "readonly" : "")
+                                                       style="width:80px;" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>DT:</td>
+                                        <td>
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">$</span>
+                                                <input class="values-input form-control autoN hourRate"
+                                                       type="text"
+                                                       id="DTHrsRate-@string.Format("{0}", report.Project)"
+                                                       data-projectid="@report.Project"
+                                                       data-upsertlevel="PR"
+                                                       data-companycode="W"
+                                                       data-field="DTHrsRate"
+                                                       data-source="JC_APP"
+                                                       value="@report.DTHrsRate.ToString("N2")"
+                                                       @(quotes.Count() > 0 ? "readonly" : "")
+                                                       style="width:80px;" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>PW Reg:</td>
+                                        <td>
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">$</span>
+                                                <input class="values-input form-control autoN hourRate"
+                                                       type="text"
+                                                       id="PWRegHrsRate-@string.Format("{0}", report.Project)"
+                                                       data-projectid="@report.Project"
+                                                       data-upsertlevel="PR"
+                                                       data-companycode="W"
+                                                       data-field="PWRegHrsRate"
+                                                       data-source="JC_APP"
+                                                       value="@report.PWRegHrsRate.ToString("N2")"
+                                                       @(quotes.Count() > 0 ? "readonly" : "")
+                                                       style="width:80px;" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>PW OT:</td>
+                                        <td>
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">$</span>
+
+                                                <input class="values-input form-control autoN hourRate"
+                                                       type="text"
+                                                       id="PWOTHrsRate-@string.Format("{0}", report.Project)"
+                                                       data-projectid="@report.Project"
+                                                       data-upsertlevel="PR"
+                                                       data-companycode="W"
+                                                       data-field="PWOTHrsRate"
+                                                       data-source="JC_APP"
+                                                       value="@report.PWOTHrsRate.ToString("N2")"
+                                                       @(quotes.Count() > 0 ? "readonly" : "")
+                                                       style="width:80px;" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>PW DT:</td>
+                                        <td>
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">$</span>
+                                                <input class="values-input form-control autoN hourRate"
+                                                       type="text"
+                                                       id="PWDTHrsRate-@string.Format("{0}", report.Project)"
+                                                       data-projectid="@report.Project"
+                                                       data-upsertlevel="PR"
+                                                       data-companycode="W"
+                                                       data-field="PWDTHrsRate"
+                                                       data-source="JC_APP"
+                                                       value="@report.PWDTHrsRate.ToString("N2")"
+                                                       @(quotes.Count() > 0 ? "readonly" : "")
+                                                       style="width:80px;" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td>
+                                <table>
+                                    <tr>
+                                        <td>Reg:</td>
+                                        <td>
+                                            <span id="RegHs-@string.Format("{0}", report.Project)" class="autoN">@report.RegHrs.ToString("N2")</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>OT:</td>
+                                        <td>
+                                            <span id="OTHs-@string.Format("{0}", report.Project)" class="autoN">@report.OTHrs.ToString("N2")</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>DT:</td>
+                                        <td>
+                                            <span id="DTHs-@string.Format("{0}", report.Project)" class="autoN">@report.DTHrs.ToString("N2")</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>PW Reg:</td>
+                                        <td>
+                                            <span id="PWRegHs-@string.Format("{0}", report.Project)" class="autoN">@report.PWRegHrs.ToString("N2")</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>PW OT:</td>
+                                        <td>
+                                            <span id="PWOTHs-@string.Format("{0}", report.Project)" class="autoN">@report.PWOTHrs.ToString("N2")</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>PW DT:</td>
+                                        <td>
+                                            <span id="PWDTHs-@string.Format("{0}", report.Project)" class="autoN">@report.PWDTHrs.ToString("N2")</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td><span id="jclaborcost-@string.Format("{0}", report.Project)" class="autoNCur" style="width:200px;">@report.LaborCost.ToString("N2")</span></td>
+                            <td><span id="jcvehiclecost-@string.Format("{0}", report.Project)" class="autoNCur" style="width:200px;">@report.VehicleCost.ToString("N2")</span></td>
+                            <td>
+                                <div class="input-group" style="width:200px;">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">$</span>
+                                    </div>
+                                    <input class="values-input form-control jccosttotal autoN"
+                                           type="text"
+                                           id="AdditionalExpenses-@string.Format("{0}", report.Project)"
+                                           data-projectid="@report.Project"
+                                           data-upsertlevel="PR"
+                                           data-companycode="W"
+                                           data-field="AdditionalExpenses"
+                                           data-source="JC_APP"
+                                           value="@report.AdditionalExpenses.ToString("N2")" />
+                                </div>
+                            </td>
+                            <td><span id="jccosttotal-@string.Format("{0}", report.Project)" class="autoNCur" style="width:200px;">@report.TotalCost.ToString("N2")</span></td>
+                            <td id="jcgpdollar-@string.Format("{0}", report.Project)" class="autoNCur" style="width:200px;">@report.GPDollar.ToString("N2")</td>
+                            <td id="jcgppct-@string.Format("{0}", report.Project)" class="autoNPct" style="width:200px;">@report.GPPct<span> %</span></td>
+                            <td>
+                                @{ string[] orders = Array.Empty<string>();
+                                    string[] orderIndex = Array.Empty<string>();
+                                    if (report.Order_Nos != null)
+                                    {
+                                        orders = report.Order_Nos.Split(",");
+                                    }
+                                    if (report.Order_Idxs != null)
+                                    {
+                                        orderIndex = report.Order_Idxs.Split(",");
+                                    }
+                                }
+                                @for (var i = 0; i < orders.Count(); i++)
+                                {
+                                    <a asp-controller="jobcosting"
+                                       asp-action="orderdetails"
+                                       asp-route-orderindex="@orderIndex[i]"
+                                       asp-route-orderdatefrom="@Model.DateFrom"
+                                       asp-route-orderdateto="@Model.DateTo"
+                                       target="_blank">@orders[i]</a>
+                                    <br />
+                                }
+                            </td>
+                            <td>@(report.FullyDeliveredProject == 1 ? "X" : "")</td>
+                            <td>@(report.FullyInvoicedProject == 1 ? "X" : "")</td>
+                            <td>
+                                <input class="values-input form-control"
+                                       id="AdditionalOrders-@string.Format("{0}", report.Project)"
+                                       data-projectid="@report.Project"
+                                       data-upsertlevel="PR"
+                                       data-companycode="W"
+                                       data-field="AdditionalOrders"
+                                       data-source="JC_APP"
+                                       value="@report.AdditionalOrders"
+                                       style="width:150px;" />
+                            </td>
+                            <td>
+                                <input class="values-input form-control"
+                                       id="AdditionalLines-@string.Format("{0}", report.Project)"
+                                       data-projectid="@report.Project"
+                                       data-upsertlevel="PR"
+                                       data-companycode="W"
+                                       data-field="AdditionalLines"
+                                       data-source="JC_APP"
+                                       value="@report.AdditionalLines"
+                                       style="width:150px;" />
+                            </td>
+                            <td>
+                                <input class="values-input form-control"
+                                       id="Delivered-@string.Format("{0}", report.Project)"
+                                       data-projectid="@report.Project"
+                                       data-upsertlevel="PR"
+                                       data-companycode="W"
+                                       data-field="Delivered"
+                                       data-source="JC_APP"
+                                       value=""
+                                       style="width:150px;" />
+                            </td>
+                            <td>
+                                <input class="values-input form-control"
+                                       id="Invoiced-@string.Format("{0}", report.Project)"
+                                       data-projectid="@report.Project"
+                                       data-upsertlevel="PR"
+                                       data-companycode="W"
+                                       data-field="Invoiced"
+                                       data-source="JC_APP"
+                                       value=""
+                                       style="width:150px;" />
+                            </td>
+                            <td>
+                                <textarea class="values-input form-control"
+                                       id="Notes-@string.Format("{0}", report.Project)"
+                                       data-projectid="@report.Project"
+                                       data-upsertlevel="PR"
+                                       data-companycode="W"
+                                       data-field="Notes"
+                                       data-source="JC_APP"
+                                       value="@report.Notes"
+                                       style="width:150px; height:max-content;"></textarea>
+                            </td>
+                            <td>
+                                <input class="values-input form-control"
+                                       id="BillingTeamInitials-@string.Format("{0}", report.Project)"
+                                       data-projectid="@report.Project"
+                                       data-upsertlevel="PR"
+                                       data-companycode="W"
+                                       data-field="BillingTeamInitials"
+                                       data-source="JC_APP"
+                                       value="@report.BillingTeamInitials"
+                                       style="width:150px;" />
+                            </td>
+                            <td>
+                                <input class="values-input form-control"
+                                       id="BillingStatus-@string.Format("{0}", report.Project)"
+                                       data-projectid="@report.Project"
+                                       data-upsertlevel="PR"
+                                       data-companycode="W"
+                                       data-source="JC_APP"
+                                       data-field="BillingStatus"
+                                       value="@report.BillingStatus"
+                                       style="width:150px;" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+else if (Model.ProjectDetails != null)
+{
+    if (Model.ProjectDetails.Count() > 0)
+    {
+        <div class="col-12 lines-header">
+            <br />
+            <h3 class="d-inline-block">Project Details</h3>
+        </div>
+        <div class="row">
+            <div class="col-2"></div>
+            <div class="col-8">
+                <div class="card col-12 p-3">
+                    <table class="table table-sm table-bordered text-center sortable">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="table-header">Scheduled Date</th>
+                                <th scope="col" class="table-header">Order</th>
+                                <th scope="col" class="table-header">Lines</th>
+                                <th scope="col" class="table-header">Cost of Lines</th>
+                                <th scope="col" class="table-header">MxT Actual Hrs.</th>
+                                <th scope="col" class="table-header">MxT Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var report in Model.ProjectDetails)
+                            {
+                                <tr>
+                                    <td>@report.SchDate</td>
+                                    <td>@report.Order_No</td>
+                                    <td>@report.Lines</td>
+                                    <td>@report.TotalCost.ToString("C", numberFormat)</td>
+                                    <td>@report.MxTActualHours</td>
+                                    <td>@report.MxTCost.ToString("C", numberFormat)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    }
+}
+else if (Model.OrderDetails != null)
+{
+    if (Model.OrderDetails.Count() > 0)
+    {
+        <div class="col-12 lines-header">
+            <br />
+            <h3 class="d-inline-block">Order Details</h3>
+        </div>
+        <div class="row">
+            <div class="col-2"></div>
+            <div class="col-8">
+                <div class="card col-12 p-3">
+                    <table class="table table-sm table-bordered text-center sortable">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="table-header">SO Order</th>
+                                <th scope="col" class="table-header">Line #</th>
+                                <th scope="col" class="table-header">Cost</th>
+                                <th scope="col" class="table-header">Scheduled Date</th>
+                                <th scope="col" class="table-header">MxT Actual Hrs.</th>
+                                <th scope="col" class="table-header">MxT Cost</th>
+                                <th scope="col" class="table-header">Delivered Date</th>
+                                <th scope="col" class="table-header">Invoiced Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var report in Model.OrderDetails)
+                            {
+                                <tr>
+                                    <td>@report.Order_No</td>
+                                    <td>@report.Lines</td>
+                                    <td>@report.TotalCost.ToString("C", numberFormat)</td>
+                                    <td>@report.SchDate</td>
+                                    <td>@report.MxTActualHours</td>
+                                    <td>@report.MxTCost.ToString("C", numberFormat)</td>
+                                    <td>@report.LDelivDate</td>
+                                    <td>@report.LInvDate</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    }
+}
+else
+{
+    <div class="no-results">
+
+        <span id="noresults">No results to show.</span>
+
+        <div class="d-flex justify-content-center">
+            <div id="loading" class="spinner-border text-@ViewData["NavBarColor"]--custom" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+
+    </div>
+}
